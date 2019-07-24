@@ -23,14 +23,19 @@ def does_match(cls, name: str, asserter: Callable[[Any], bool]) -> bool:
 class Function:
     has_sideeffect: bool = False
     require_restart: FrozenSet[str] = frozenset()
-    disable = False
+    disabled = False
 
     InputTypes: Dict[str, Type]
     OutputTypes: Dict[str, Type]
 
+    name: str
+
     def __init_subclass__(cls, *args, **kargs):
         def error(msg):
             raise TypeError(f"Function {cls.__name__} must have a {msg}")
+
+        if not does_match(cls, "Settings", is_dataclass):
+            error("dataclass 'Settings'")
 
         if not does_match(cls, "Inputs", is_dataclass):
             error("dataclass 'Inputs'")
@@ -44,8 +49,8 @@ class Function:
         if not hasattr(cls, "require_restart"):
             error("property 'require_restart'")
 
-        if not does_match(cls, "disable", is_bool):
-            error("bool property 'disable'")
+        if not does_match(cls, "disabled", is_bool):
+            error("bool property 'disabled'")
 
         cls.InputTypes = get_type_hints(cls.Inputs)
         cls.OutputTypes = get_type_hints(cls.Outputs)
@@ -56,6 +61,8 @@ class Function:
                 error(f"field '{field}'")
 
         super().__init_subclass__(*args, **kargs)
+
+    # Any of these dataclasses can be ommited to use the default
 
     @dataclass
     class Settings:
@@ -69,6 +76,9 @@ class Function:
     class Outputs:
         pass
 
+    # These are the main implementation methods that would
+    # be defined in a concrete Function
+
     def __init__(self, settings: Settings):
         self.settings = settings
 
@@ -79,8 +89,27 @@ class Function:
         return self.Outputs()
 
 
-# path.path = path to module, can be empty for curr dirr
-# path.name = name of file w/o .py)
+def isfunction(func):
+    try:
+        return issubclass(func, Function)
+    except TypeError:  # func is not a type
+        return False
+
+
+"""
+ModulePath is used to locate a module to register
+path = path to module, relative or absolute. Can be empty for current directory
+name = name of file without .py extention
+"""
 ModulePath = namedtuple("ModulePath", "path name")
-ModuleInfo = namedtuple("ModuleInfo", "name version")
+
+"""
+ModuleInfo is used to store metadata about the module
+after it has been registered
+"""
+ModuleInfo = namedtuple("ModuleInfo", "package version")
+
+"""
+ModuleItem is a single value in the 'modules' dict of a Manager
+"""
 ModuleItem = namedtuple("ModuleItem", "info funcs")

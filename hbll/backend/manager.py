@@ -1,14 +1,15 @@
 import importlib
 import inspect
 import sys
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple, Type
 
-from manager_schema import Function, ModulePath, ModuleInfo, ModuleItem
+from .manager_schema import Function, ModuleInfo, ModuleItem, ModulePath, isfunction
 
 
 class Manager:
     def __init__(self):
         self.modules: Dict[str, Tuple[ModuleInfo, List[Function]]] = {}
+        self.funcs: Dict[str, Type[Function]] = {}
 
     @classmethod
     def is_valid_function(cls, module):
@@ -16,7 +17,7 @@ class Manager:
             # Todo: are there any other times we don't want to register a Function?
             # This is important because the default is registering every single Function
             return (
-                isinstance(func, Function)
+                isfunction(func)
                 and (not func.disabled)
                 # If a module imports a Function from another module, do not register that Function
                 and (inspect.getmodule(func) == module)
@@ -28,10 +29,10 @@ class Manager:
     def get_module_info(cls, module):
         # Generate ModuleInfo from global variables in a module, with fallbacks
 
-        name = getattr(module, "__fullname__", module.__name__)
+        package = getattr(module, "__package__", module.__name__)
         version = getattr(module, "__version__", "1.0")
 
-        return ModuleInfo(name, version)
+        return ModuleInfo(package, version)
 
     @classmethod
     def import_module(cls, path: ModulePath):
@@ -45,6 +46,7 @@ class Manager:
     def register_module(self, path: ModulePath):
         module = Manager.import_module(path)
         info = Manager.get_module_info(module)
+        funcs: Dict[str, Type[Function]]
         funcs = inspect.getmembers(module, Manager.is_valid_function(module))
 
         if len(funcs) == 0:
@@ -52,4 +54,8 @@ class Manager:
             print(f"No Functions found in module {path}")
             return
 
-        self.modules[info.name] = ModuleItem(info, funcs)
+        for name, func in funcs:
+            func.name = info.package + "/" + name
+            self.funcs[func.name] = func
+
+        self.modules[info.package] = ModuleItem(info, funcs)
