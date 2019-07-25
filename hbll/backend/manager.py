@@ -17,7 +17,7 @@ def import_module(path: ModulePath):
 
 class Manager:
     def __init__(self):
-        self.modules: Dict[str, Tuple[ModuleInfo, List[Function]]] = {}
+        self.modules: Dict[str, ModuleItem] = {}
         self.funcs: Dict[str, Type[Function]] = {}
 
     @classmethod
@@ -46,16 +46,21 @@ class Manager:
     def register_module(self, path: ModulePath):
         module = import_module(path)
         info = Manager.get_module_info(module)
-        funcs: Dict[str, Type[Function]]
-        funcs = inspect.getmembers(module, Manager.is_valid_function(module))
 
-        if len(funcs) == 0:
+        funcs_tuple: List[Tuple[str, Type[Function]]]
+        funcs_tuple = inspect.getmembers(module, Manager.is_valid_function(module))
+
+        if len(funcs_tuple) == 0:
             # Todo: error, return value?
             print(f"No Functions found in module {path}")
             return
 
-        for name, func in funcs:
+        funcs: Dict[str, Type[Function]] = {}
+
+        for name, func in funcs_tuple:
             func.type = info.package + "/" + name
+
+            funcs[name] = func
             self.funcs[func.type] = func
 
         self.modules[info.package] = ModuleItem(info, funcs)

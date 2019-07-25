@@ -16,7 +16,7 @@ def export_manager(manager) -> SchemaF:
     for mod_package, mod in manager.modules.items():
         module = ModuleF(package=mod_package, version=mod.info.version)
 
-        for name, func in mod.funcs:
+        for name, func in mod.funcs.items():
             function = FunctionF(
                 name=name,
                 type=func.type,

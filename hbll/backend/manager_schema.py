@@ -1,7 +1,15 @@
 import random
-from collections import namedtuple
 from dataclasses import dataclass, is_dataclass
-from typing import Any, Callable, Dict, FrozenSet, Tuple, Type, get_type_hints
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    FrozenSet,
+    NamedTuple,
+    Tuple,
+    Type,
+    get_type_hints,
+)
 
 
 def isinstance_partial(type: Type) -> Callable[[Any], bool]:
@@ -98,20 +106,31 @@ def isfunction(func):
         return False
 
 
-"""
-ModulePath is used to locate a module to register
-path = path to module, relative or absolute. Can be empty for current directory
-name = name of file without .py extention
-"""
-ModulePath = namedtuple("ModulePath", "path name")
+class ModulePath(NamedTuple):
+    """
+    ModulePath is used to locate a module to register
+    path = path to module, relative or absolute. Can be empty for current directory
+    name = name of file without .py extention
+    """
 
-"""
-ModuleInfo is used to store metadata about the module
-after it has been registered
-"""
-ModuleInfo = namedtuple("ModuleInfo", "package version")
+    path: str
+    name: str
 
-"""
-ModuleItem is a single value in the 'modules' dict of a Manager
-"""
-ModuleItem = namedtuple("ModuleItem", "info funcs")
+
+class ModuleInfo(NamedTuple):
+    """
+    ModuleInfo is used to store metadata about the module
+    after it has been registered
+    """
+
+    package: str
+    version: str
+
+
+class ModuleItem(NamedTuple):
+    """
+    ModuleItem is a single value in the 'modules' dict of a Manager
+    """
+
+    info: ModuleInfo
+    funcs: Dict[str, Type[Function]]
