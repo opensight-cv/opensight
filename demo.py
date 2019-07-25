@@ -4,6 +4,7 @@ from hbll.backend.manager import Manager
 from hbll.backend.manager_schema import ModulePath
 from hbll.backend.pipeline import Connection
 from hbll.backend.pipeline_recursive import RecursivePipeline
+from hbll.webserver.serialize import export_manager
 
 
 def main():
@@ -23,6 +24,10 @@ def main():
     pipeline.create_links(node_print, {"val": Connection(node_sum, "out")})
 
     pipeline.run()
+
+    x = export_manager(manager)
+
+    print(x.json())
 
 
 if __name__ == "__main__":
