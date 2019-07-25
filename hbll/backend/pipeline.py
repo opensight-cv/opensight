@@ -1,7 +1,7 @@
-from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Set, Type, Union, Tuple
-from uuid import uuid4, UUID
 from collections import namedtuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Type, Union
+from uuid import UUID, uuid4
 
 from .manager import Manager
 from .manager_schema import Function

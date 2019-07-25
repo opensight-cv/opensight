@@ -1,8 +1,9 @@
+from uuid import uuid4
+
 from hbll.backend.manager import Manager
 from hbll.backend.manager_schema import ModulePath
-from hbll.backend.pipeline_recursive import RecursivePipeline
 from hbll.backend.pipeline import Connection
-from uuid import uuid4
+from hbll.backend.pipeline_recursive import RecursivePipeline
 
 
 def main():

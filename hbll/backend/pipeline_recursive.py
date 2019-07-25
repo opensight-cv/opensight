@@ -1,5 +1,6 @@
-from .pipeline import Node, Link, Pipeline
 from dataclasses import dataclass
+
+from .pipeline import Link, Node, Pipeline
 
 
 @dataclass

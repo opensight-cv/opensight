@@ -25,10 +25,11 @@ class Function:
     require_restart: FrozenSet[str] = frozenset()
     disabled = False
 
+    SettingTypes: Dict[str, Type]
     InputTypes: Dict[str, Type]
     OutputTypes: Dict[str, Type]
 
-    name: str
+    type: str
 
     def __init_subclass__(cls, *args, **kargs):
         def error(msg):
@@ -52,6 +53,7 @@ class Function:
         if not does_match(cls, "disabled", is_bool):
             error("bool property 'disabled'")
 
+        cls.SettingTypes = get_type_hints(cls.Settings)
         cls.InputTypes = get_type_hints(cls.Inputs)
         cls.OutputTypes = get_type_hints(cls.Outputs)
 

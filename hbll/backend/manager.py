@@ -6,6 +6,15 @@ from typing import Dict, List, Tuple, Type
 from .manager_schema import Function, ModuleInfo, ModuleItem, ModulePath, isfunction
 
 
+def import_module(path: ModulePath):
+    path_bak = sys.path[:]
+    try:
+        sys.path.insert(0, path.path)
+        return importlib.import_module(path.name)
+    finally:
+        sys.path = path_bak[:]
+
+
 class Manager:
     def __init__(self):
         self.modules: Dict[str, Tuple[ModuleInfo, List[Function]]] = {}
@@ -34,17 +43,8 @@ class Manager:
 
         return ModuleInfo(package, version)
 
-    @classmethod
-    def import_module(cls, path: ModulePath):
-        path_bak = sys.path[:]
-        try:
-            sys.path.insert(0, path.path)
-            return importlib.import_module(path.name)
-        finally:
-            sys.path = path_bak[:]
-
     def register_module(self, path: ModulePath):
-        module = Manager.import_module(path)
+        module = import_module(path)
         info = Manager.get_module_info(module)
         funcs: Dict[str, Type[Function]]
         funcs = inspect.getmembers(module, Manager.is_valid_function(module))
@@ -55,7 +55,7 @@ class Manager:
             return
 
         for name, func in funcs:
-            func.name = info.package + "/" + name
-            self.funcs[func.name] = func
+            func.type = info.package + "/" + name
+            self.funcs[func.type] = func
 
         self.modules[info.package] = ModuleItem(info, funcs)
