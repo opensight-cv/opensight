@@ -21,7 +21,8 @@ class NodeN(BaseModel):
     type: str
     id: UUID
     settings: Dict[str, Any] = {}
-    inputs: Dict[str, InputN] = {}
+    # inputs: Dict[str, InputN] = {}
+    inputs: Dict[str, LinkN] = {}
 
 
 class NodeTreeN(BaseModel):
@@ -51,4 +52,5 @@ class ModuleF(BaseModel):
 
 
 class SchemaF(BaseModel):
-    modules: List[ModuleF] = []
+    # modules: List[ModuleF] = []
+    funcs: List[FunctionF] = []
