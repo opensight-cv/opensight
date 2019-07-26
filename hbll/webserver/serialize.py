@@ -1,4 +1,5 @@
 from .schema import *
+from ..backend.manager_schema import Function
 
 
 def get_type(type) -> InputOutputF:
@@ -10,26 +11,41 @@ def get_types(types):
     return {name: get_type(type) for name, type in types}
 
 
-def export_manager(manager) -> SchemaF:
-    schema = SchemaF()
+def _serialize_funcs(funcs: Dict[str, Type[Function]]) -> List[FunctionF]:
+    func_schemas = []
 
-    for mod_package, mod in manager.modules.items():
-        module = ModuleF(package=mod_package, version=mod.info.version)
+    for func in funcs.values():
+        function = FunctionF(
+            name=func.__name__,
+            type=func.type,
+            settings=get_types(func.SettingTypes.items()),
+            inputs=get_types(func.InputTypes.items()),
+            outputs=get_types(func.OutputTypes.items()),
+        )
 
-        for name, func in mod.funcs.items():
-            function = FunctionF(
-                name=name,
-                type=func.type,
-                settings=get_types(func.SettingTypes.items()),
-                inputs=get_types(func.InputTypes.items()),
-                outputs=get_types(func.OutputTypes.items()),
+        func_schemas.append(function)
+
+    return func_schemas
+
+
+def _serialize_modules(modules) -> List[ModuleF]:
+    module_schemas = []
+
+    for mod_package, mod in modules.items():
+        module_schemas.append(
+            ModuleF(
+                package=mod_package,
+                version=mod.info.version,
+                funcs=_serialize_funcs(mod.funcs),
             )
+        )
 
-            module.funcs.append(function)
+    return module_schemas
 
-        schema.modules.append(module)
 
-    return schema
+def export_manager(manager) -> SchemaF:
+    return SchemaF(modules=_serialize_modules(manager.modules))
+    # return SchemaF(funcs=_serialize_funcs(manager.funcs))
 
 
 def export_nodetree(pipeline) -> NodeTreeN:
