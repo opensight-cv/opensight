@@ -7,13 +7,18 @@ from pydantic import BaseModel
 # F = Function = initial load
 
 
+# Constant flags, to be False eventually
+FUNC_INSTEAD_OF_MODS = True
+LINKS_INSTEAD_OF_INPUTS = True
+
+
 class LinkN(BaseModel):
-    node_id: UUID
-    output_name: str
+    id: UUID
+    name: str
 
 
 class InputN(BaseModel):
-    link: LinkN
+    link: Optional[LinkN] = None
     value: Optional[Any] = None
 
 
@@ -21,8 +26,10 @@ class NodeN(BaseModel):
     type: str
     id: UUID
     settings: Dict[str, Any] = {}
-    inputs: Dict[str, InputN] = {}
-    # inputs: Dict[str, LinkN] = {}
+    if LINKS_INSTEAD_OF_INPUTS:
+        inputs: Dict[str, Optional[LinkN]] = {}
+    else:
+        inputs: Dict[str, InputN] = {}
 
 
 class NodeTreeN(BaseModel):
@@ -52,5 +59,7 @@ class ModuleF(BaseModel):
 
 
 class SchemaF(BaseModel):
-    modules: List[ModuleF] = []
-    # funcs: List[FunctionF] = []
+    if FUNC_INSTEAD_OF_MODS:
+        funcs: List[FunctionF] = []
+    else:
+        modules: List[ModuleF] = []
