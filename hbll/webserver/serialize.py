@@ -1,10 +1,10 @@
-from .schema import *
-from ..backend.manager_schema import Function
-from ..backend.pipeline import StaticLink, Link, Pipeline
-from ..backend.pipeline_recursive import RecursiveLink
-
 from dataclasses import asdict
 
+from ..backend.manager import Manager
+from ..backend.manager_schema import Function, ModuleItem
+from ..backend.pipeline import Link, Pipeline, StaticLink
+from ..backend.pipeline_recursive import RecursiveLink
+from .schema import *
 
 __all__ = ("export_manager", "export_nodetree", "import_nodetree")
 
@@ -34,7 +34,7 @@ def _serialize_funcs(funcs: Dict[str, Type[Function]]) -> List[FunctionF]:
     ]
 
 
-def _serialize_modules(modules) -> List[ModuleF]:
+def _serialize_modules(modules: Dict[str, ModuleItem]) -> List[ModuleF]:
     return [
         ModuleF(
             package=mod_package,
@@ -45,7 +45,7 @@ def _serialize_modules(modules) -> List[ModuleF]:
     ]
 
 
-def export_manager(manager) -> SchemaF:
+def export_manager(manager: Manager) -> SchemaF:
     if FUNC_INSTEAD_OF_MODS:
         return SchemaF(funcs=_serialize_funcs(manager.funcs))
     else:
@@ -114,5 +114,5 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 # ---------------------------------------------------------
 
 
-def import_nodetree(pipeline, nodetree: NodeTreeN):
+def import_nodetree(pipeline: Pipeline, nodetree: NodeTreeN):
     pass  # todo

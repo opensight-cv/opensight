@@ -1,5 +1,6 @@
 import importlib
 import inspect
+import os.path
 import sys
 from typing import Dict, List, Tuple, Type
 
@@ -7,12 +8,33 @@ from .manager_schema import Function, ModuleInfo, ModuleItem, ModulePath, isfunc
 
 
 def import_module(path: ModulePath):
+    # So this sometimes doesn't work if the module name also exists in site-packages
+    # But I don't understand exactly when and why this happens
+
+    """
     path_bak = sys.path[:]
     try:
-        sys.path.insert(0, path.path)
+        sys.path.insert(0, os.path.abspath(path.path))
         return importlib.import_module(path.name)
     finally:
         sys.path = path_bak[:]
+    """
+
+    # Workaround for now: only allow import .py file, not full package
+
+    full_path = os.path.abspath(os.path.join(path.path, path.name + ".py"))
+
+    # https://docs.python.org/3.7/library/importlib.html#importing-a-source-file-directly
+
+    spec = importlib.util.spec_from_file_location(path.name, full_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    # This will break if the standard library package is imported, I think?
+    # But it's necessary for inspect.getmodule to work
+    sys.modules[path.name] = module
+
+    return module
 
 
 class Manager:

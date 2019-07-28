@@ -1,33 +1,17 @@
-from uuid import uuid4
+import uvicorn
 
-from hbll.backend.manager import Manager
+from hbll.backend import Program
 from hbll.backend.manager_schema import ModulePath
-from hbll.backend.pipeline import Connection
-from hbll.backend.pipeline_recursive import RecursivePipeline
-from hbll.webserver.serialize import *
+from hbll.webserver import WebServer
 
 
 def main():
-    manager = Manager()
-    manager.register_module(ModulePath("modules", "five"))
-    print(manager)
+    program = Program()
+    program.manager.register_module(ModulePath("modules", "six"))
 
-    pipeline = RecursivePipeline()
+    webserver = WebServer(program)
 
-    node_five = pipeline.create_node(manager.funcs["demo.five/Five"], uuid4())
-    node_sum = pipeline.create_node(manager.funcs["demo.five/Sum"], uuid4())
-    node_print = pipeline.create_node(manager.funcs["demo.five/Print"], uuid4())
-
-    pipeline.create_links(node_sum, {"num1": Connection(node_five, "five")})
-    node_sum.set_staticlinks({"num2": 10})
-
-    pipeline.create_links(node_print, {"val": Connection(node_sum, "out")})
-
-    pipeline.run()
-
-    print(export_manager(manager).json())
-    print()
-    print(export_nodetree(pipeline).json())
+    uvicorn.run(webserver.app)
 
 
 if __name__ == "__main__":
