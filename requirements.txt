@@ -1,0 +1,14 @@
+black
+mypy
+isort
+
+starlette
+aiofiles
+
+fastapi
+pydantic
+
+uvicorn
+
+# numpy
+# opencv-python
