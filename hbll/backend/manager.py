@@ -28,11 +28,12 @@ def import_module(path: ModulePath):
 
     spec = importlib.util.spec_from_file_location(path.name, full_path)
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
 
     # This will break if the standard library package is imported, I think?
     # But it's necessary for inspect.getmodule to work
     sys.modules[path.name] = module
+
+    spec.loader.exec_module(module)
 
     return module
 

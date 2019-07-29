@@ -1,9 +1,11 @@
 from dataclasses import asdict
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from ..backend.manager import Manager
 from ..backend.manager_schema import Function, ModuleItem
 from ..backend.pipeline import Link, Pipeline, StaticLink
 from ..backend.pipeline_recursive import RecursiveLink
+from ..backend.types import *
 from .schema import *
 
 __all__ = ("export_manager", "export_nodetree", "import_nodetree")
@@ -12,9 +14,33 @@ __all__ = ("export_manager", "export_nodetree", "import_nodetree")
 # ---------------------------------------------------------
 
 
-def get_type(type) -> InputOutputF:
-    # todo: params
-    return InputOutputF(type=type.__name__, params={})
+def _parse_range(type):
+    if not isinstance(type, RangeType):
+        return None
+
+    return InputOutputF(type="Range", params=type.serialize())
+
+
+# If type is in _normal_types, then the type is supported and it has no params
+_normal_types = {int, float, bool, str, Mat, MatBW, Contour, Contours}
+
+# Each item in _abnormal_types takes in a type and returns InputOutputF if the
+# parser supports the type, or None if it does not
+_abnormal_types: List[Callable[[Type], Optional[InputOutputF]]]
+_abnormal_types = [_parse_range]  # add new type parsers here
+
+
+def get_type(type: Type) -> InputOutputF:
+    if type in _normal_types:
+        return InputOutputF(type=type.__name__, params={})
+
+    for parser in _abnormal_types:
+        IO = parser(type)
+
+        if IO is not None:
+            return IO
+
+    raise TypeError(f"Unknown type {type}")
 
 
 def get_types(types):

@@ -8,6 +8,7 @@ from hbll.webserver import WebServer
 def main():
     program = Program()
     program.manager.register_module(ModulePath("modules", "six"))
+    program.manager.register_module(ModulePath("modules", "seven"))
 
     webserver = WebServer(program)
 
