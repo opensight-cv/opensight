@@ -22,7 +22,7 @@ def make_nodetree(program):
 
     node = program.create_node(func_type)
     node.settings = settings
-    node.set_staticlink("num", 20)
+    node.set_staticlinks({"num": 20})
 
 
 def test_webserver(webserver):
