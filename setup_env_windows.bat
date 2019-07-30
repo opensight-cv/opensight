@@ -1,10 +1,10 @@
 @echo off
 
-echo Delete env\ folder
+echo Deleting env\ folder
 rd /s /q "%~dp0env"
 
 echo:
-echo Create new env
+echo Creating new env
 py -3 -m venv env
 
 echo:
