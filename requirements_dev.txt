@@ -1,0 +1,22 @@
+# Code formatting and linting
+black
+mypy
+isort
+
+# Manager Requirements
+aiofiles
+fastapi
+uvicorn
+
+# Testing
+requests
+
+# Required, use version specified by above
+# starlette
+# pydantic
+
+# starlette
+
+# Needed eventually, but not now
+# numpy
+# opencv-python

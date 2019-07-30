@@ -18,7 +18,7 @@ python -m pip install -U setuptools wheel
 
 echo:
 echo Install dependencies
-pip install -r requirements.txt
+pip install -r requirements_working.txt
 
 echo:
 echo Done!
