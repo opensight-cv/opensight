@@ -1,15 +1,16 @@
+#! /usr/bin/env python3
 import uvicorn
 from starlette.testclient import TestClient
 
-from hbll.backend import Program
-from hbll.backend.manager_schema import ModulePath
-from hbll.webserver import WebServer
+from opsi.backend import Program
+from opsi.backend.manager_schema import ModulePath
+from opsi.webserver import WebServer
 
 
 def make_program():
     program = Program()
-    program.manager.register_module(ModulePath("modules", "six"))
-    program.manager.register_module(ModulePath("modules", "seven"))
+    program.manager.register_module(ModulePath("/usr/share/opensight/modules", "six"))
+    program.manager.register_module(ModulePath("/usr/share/opensight/modules", "seven"))
 
     return program
 

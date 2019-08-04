@@ -17,7 +17,9 @@ class WebServer:
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
 
-        self.app.mount("/", StaticFiles(directory="../async-frontend/nodeUI"))
+        self.app.mount(
+            "/", StaticFiles(directory="/usr/share/opensight/async-frontend/nodeUI")
+        )
         self.app.route("/")(lambda request: RedirectResponse(url="/index.html"))
 
     # These test functions go through the entire http pipeline

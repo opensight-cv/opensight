@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from hbll.backend.manager_schema import Function
-from hbll.backend.types import RangeType
+from opsi.backend.manager_schema import Function
+from opsi.backend.types import RangeType
 
 __package__ = "demo.seven"
 __version__ = "0.123"
