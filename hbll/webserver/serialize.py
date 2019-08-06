@@ -1,10 +1,11 @@
 from dataclasses import asdict
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
 
 from ..backend.manager import Manager
 from ..backend.manager_schema import Function, ModuleItem
-from ..backend.pipeline import Link, Pipeline, StaticLink
+from ..backend.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from ..backend.pipeline_recursive import RecursiveLink
+from ..backend.program import Program
 from ..backend.types import *
 from .schema import *
 
@@ -140,5 +141,72 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 # ---------------------------------------------------------
 
 
-def import_nodetree(pipeline: Pipeline, nodetree: NodeTreeN):
-    pass  # todo
+def _process_node_links(program: Program, node: NodeN) -> List[str]:
+    links: Links = {}
+    empty_links: List[str] = []
+
+    link: Optional[LinkN]
+
+    for name, input in node.inputs.items():
+        if LINKS_INSTEAD_OF_INPUTS:
+            link = input
+        else:
+            link = input.link
+
+        if link is None:
+            empty_links.append(name)
+            continue
+
+        links[name] = Connection(link.id, link.name)
+
+    program.pipeline.create_links(node.id, links)
+
+    return empty_links
+
+
+def _process_widget(type: Type, val):
+    if isinstance(type, RangeType):
+        # Val is a Tuple[float, float]
+        # Convert to Range
+        val = type.create(*val)
+
+    return val
+
+
+def _process_node_inputs(program: Program, node: NodeN):
+    empty_links = _process_node_links(program, node)
+
+    if LINKS_INSTEAD_OF_INPUTS:
+        return
+
+    # node.inputs : Dict[str, InputN]
+    real_node = program.pipeline.nodes[node.id]
+
+    for name in empty_links:
+        type = real_node.func.InputTypes[name]
+        real_node.set_staticlink(name, _process_widget(type, node.inputs[name].value))
+
+
+def _process_node_settings(program: Program, node: NodeN):
+    real_node = program.pipeline.nodes[node.id]
+
+    settings = real_node.func.Settings(**node.settings)
+
+    real_node.settings = settings
+
+
+def import_nodetree(program: Program, nodetree: NodeTreeN):
+    # return "NotImplemented"
+
+    ids = [node.id for node in nodetree.nodes]
+    program.pipeline.prune_nodetree(ids)
+
+    for node in nodetree.nodes:
+        if node.id not in program.pipeline.nodes:
+            program.create_node(node.type, node.id)
+
+    for node in nodetree.nodes:
+        if LINKS_INSTEAD_OF_INPUTS:
+            _process_node_links(program, node)
+        else:
+            _process_node_inputs(program, node)

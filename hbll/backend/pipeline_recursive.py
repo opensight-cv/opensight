@@ -17,5 +17,5 @@ class RecursivePipeline(Pipeline):
         for id in self.entrynodes:
             self.nodes[id].run()
 
-    def _create_link(self, node, name, conn):
-        return RecursiveLink(conn.node, conn.name)
+    def _create_link(self, input_node, input_name, output_node, output_name) -> Link:
+        return RecursiveLink(output_node, output_name)

@@ -1,6 +1,5 @@
-from collections import namedtuple
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set, Type
+from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
 
 from .manager import Manager
@@ -13,7 +12,11 @@ class Link:
 
 
 # Map inputname -> (output_node, output_name)
-Connection = namedtuple("Connection", "node name")
+class Connection(NamedTuple):
+    id: UUID
+    name: str
+
+
 Links = Dict[str, Connection]
 
 
@@ -57,9 +60,12 @@ class Node:
         self.func.dispose()
         self.func = None
 
-    def set_staticlinks(self, vals: Dict[str, Any]):
-        for key, item in vals.items():
-            self.inputLinks[key] = StaticLink(item)
+    def set_staticlink(self, key: str, item: Any):
+        self.inputLinks[key] = StaticLink(item)
+
+    # def set_staticlinks(self, vals: Dict[str, Any]):
+    #     for key, item in vals.items():
+    #         self.set_staticlink(key, item)
 
     def run(self):
         if self.has_run:
@@ -104,14 +110,18 @@ class Pipeline:
 
         return self.nodes[id]
 
-    def create_links(self, node, links: Links):
-        for name, conn in links.items():
-            link = self._create_link(node, name, conn)
+    def create_links(self, input_node_id, links: Links):
+        input_node = self.nodes[input_node_id]
 
-            node.inputLinks[name] = link
+        for input_name, conn in links.items():
+            output_node = self.nodes[conn.id]
+
+            link = self._create_link(input_node, input_name, output_node, conn.name)
+
+            input_node.inputLinks[input_name] = link
             self.links.append(link)
 
-    def _create_link(self, node, name, conn: Connection) -> Link:
+    def _create_link(self, input_node, input_name, output_node, output_name) -> Link:
         raise NotImplementedError
 
     def prune_nodetree(self, new_node_ids):
@@ -120,7 +130,7 @@ class Pipeline:
 
         # clear existing links
 
-        self.links = {}
+        self.links = []
 
         for node in self.nodes.values():
             node.reset_io()
