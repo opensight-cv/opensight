@@ -63,9 +63,9 @@ class Node:
     def set_staticlink(self, key: str, item: Any):
         self.inputLinks[key] = StaticLink(item)
 
-    # def set_staticlinks(self, vals: Dict[str, Any]):
-    #     for key, item in vals.items():
-    #         self.set_staticlink(key, item)
+    def set_staticlinks(self, vals: Dict[str, Any]):
+        for key, item in vals.items():
+            self.set_staticlink(key, item)
 
     def run(self):
         if self.has_run:

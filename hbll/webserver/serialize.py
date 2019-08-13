@@ -190,7 +190,7 @@ def _process_node_inputs(program: Program, node: NodeN):
 def _process_node_settings(program: Program, node: NodeN):
     real_node = program.pipeline.nodes[node.id]
 
-    settings = real_node.func.Settings(**node.settings)
+    settings = real_node.func_type.Settings(**node.settings)
 
     real_node.settings = settings
 
@@ -206,6 +206,7 @@ def import_nodetree(program: Program, nodetree: NodeTreeN):
             program.create_node(node.type, node.id)
 
     for node in nodetree.nodes:
+        _process_node_settings(program, node)
         if LINKS_INSTEAD_OF_INPUTS:
             _process_node_links(program, node)
         else:
