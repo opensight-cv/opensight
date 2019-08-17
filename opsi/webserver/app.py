@@ -17,8 +17,8 @@ class WebServer:
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
 
-        self.app.mount("/", StaticFiles(directory="opsi/frontend/nodeUI"))
-        self.app.route("/")(lambda request: RedirectResponse(url="/index.html"))
+        self.app.mount("/", StaticFiles(directory="opsi/frontend/nodeUI", html=True))
+        # self.app.route("/")(lambda request: RedirectResponse(url="/index.html"))
 
     # These test functions go through the entire http pipeline
 
