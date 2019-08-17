@@ -1,6 +1,10 @@
 #! /usr/bin/env python3
+
 import uvicorn
 from starlette.testclient import TestClient
+
+from os import listdir
+from os.path import isdir, isfile, join, splitext
 
 from opsi.backend import Program
 from opsi.backend.manager_schema import ModulePath
@@ -9,9 +13,14 @@ from opsi.webserver import WebServer
 
 def make_program():
     program = Program()
-    program.manager.register_module(ModulePath("/usr/share/opensight/modules", "six"))
-    program.manager.register_module(ModulePath("/usr/share/opensight/modules", "seven"))
-
+    if isdir("modules"):
+        files = [
+            splitext(f)[0] for f in listdir("modules") if isfile(join("modules", f))
+        ]
+        for path in files:
+            program.manager.register_module(ModulePath("modules", path))
+    # program.manager.register_module(ModulePath("/usr/share/opensight/modules", "six"))
+    # program.manager.register_module(ModulePath("/usr/share/opensight/modules", "seven"))
     return program
 
 
