@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from opsi.backend.manager_schema import Function
+from opsi.manager.manager_schema import Function
 
 __package__ = "demo.six"
 __version__ = "0.123"

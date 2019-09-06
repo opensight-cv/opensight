@@ -2,7 +2,7 @@ from starlette.applications import Starlette
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from ..backend.program import Program
+from ..manager.program import Program
 from .api import Api
 from .test import WebserverTest
 
@@ -17,8 +17,7 @@ class WebServer:
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
 
-        self.app.mount("/", StaticFiles(directory="opsi/frontend/nodeUI", html=True))
-        # self.app.route("/")(lambda request: RedirectResponse(url="/index.html"))
+        self.app.mount("/", StaticFiles(directory="opsi/frontend/", html=True))
 
     # These test functions go through the entire http pipeline
 

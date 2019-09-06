@@ -6,8 +6,8 @@ from starlette.testclient import TestClient
 from os import listdir
 from os.path import isdir, isfile, join, splitext
 
-from opsi.backend import Program
-from opsi.backend.manager_schema import ModulePath
+from opsi.manager import Program
+from opsi.manager.manager_schema import ModulePath
 from opsi.webserver import WebServer
 
 

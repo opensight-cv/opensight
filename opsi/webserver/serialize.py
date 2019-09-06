@@ -1,12 +1,12 @@
 from dataclasses import asdict
 from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
 
-from ..backend.manager import Manager
-from ..backend.manager_schema import Function, ModuleItem
-from ..backend.pipeline import Connection, Link, Links, Pipeline, StaticLink
-from ..backend.pipeline_recursive import RecursiveLink
-from ..backend.program import Program
-from ..backend.types import *
+from ..manager.manager import Manager
+from ..manager.manager_schema import Function, ModuleItem
+from ..manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
+from ..manager.pipeline_recursive import RecursiveLink
+from ..manager.program import Program
+from ..manager.types import *
 from .schema import *
 
 __all__ = ("export_manager", "export_nodetree", "import_nodetree")

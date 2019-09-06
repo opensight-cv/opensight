@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from opsi.backend.manager_schema import Function
-from opsi.backend.types import RangeType
+from opsi.manager.manager_schema import Function
+from opsi.manager.types import RangeType
 
 __package__ = "demo.seven"
 __version__ = "0.123"

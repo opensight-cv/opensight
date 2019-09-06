@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from ..backend.program import Program
+from ..manager.program import Program
 from .schema import NodeTreeN, SchemaF
 from .serialize import *
 
