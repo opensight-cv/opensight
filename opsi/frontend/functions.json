@@ -1,0 +1,276 @@
+{
+	"funcs": [
+		{
+			"name": "Add",
+			"type": "demo.six/Add",
+			"settings": {
+				"dec":{
+					"type":"dec",
+					"params":{
+						"default":0
+					}
+				},
+				"int":{
+					"type":"num",
+					"params":{
+						"default":0,
+						"min":0,
+						"max":1,
+						"dec":"true",
+						"slider":"true"
+					}
+				},
+				"string":{
+					"type":"string",
+					"params":{
+						"default":0
+					}
+				},
+				"boolean":{
+					"type":"boolean",
+					"params":{
+						"default":"false"
+					}
+				},
+				"slide":{
+					"type":"slide",
+					"params":{
+						"min":0,
+						"max":100,
+						"default":50
+					}
+				},
+				"range":{
+					"type":"range",
+					"params":{
+						"min":0,
+						"max":255,
+						"defaultMin":0,
+						"defaultMax":255
+					}
+				},
+				"box":{
+					"type":"box",
+					"params":{
+						"options":["option1","option2","option3"],
+						"default":"option2"
+					}
+				}
+			},
+			"inputs": {
+				"num1": {
+					"type": "dec",
+					"params": {}
+				},
+				"num2": {
+					"type": "dec",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"sum": {
+					"type": "int",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Concat",
+			"type": "demo.six/Concat",
+			"settings": {},
+			"inputs": {
+				"str1": {
+					"type": "str",
+					"params": {}
+				},
+				"str2": {
+					"type": "str",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"out": {
+					"type": "str",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Divide",
+			"type": "demo.six/Divide",
+			"settings": {},
+			"inputs": {
+				"num1": {
+					"type": "int",
+					"params": {}
+				},
+				"num2": {
+					"type": "int",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"quotient": {
+					"type": "int",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Multiply",
+			"type": "demo.six/Multiply",
+			"settings": {},
+			"inputs": {
+				"num1": {
+					"type": "int",
+					"params": {}
+				},
+				"num2": {
+					"type": "int",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"product": {
+					"type": "int",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Number",
+			"type": "demo.six/Number",
+			"settings": {
+				"val": {
+					"type": "int",
+					"params": {}
+				}
+			},
+			"inputs": {},
+			"outputs": {
+				"val": {
+					"type": "int",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Two Numbers",
+			"type": "demo.six/Number2",
+			"settings": {
+				"val": {
+					"type": "int",
+					"params": {}
+				},
+				"val2": {
+					"type": "int",
+					"params": {}
+				}
+			},
+			"inputs": {},
+			"outputs": {
+				"val": {
+					"type": "int",
+					"params": {}
+				},
+				"val2": {
+					"type": "int",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Print",
+			"type": "demo.six/Print",
+			"settings": {},
+			"inputs": {
+				"val": {
+					"type": "str",
+					"params": {}
+				}
+			},
+			"outputs": {}
+		},
+		{
+			"name": "String",
+			"type": "demo.six/String",
+			"settings": {
+				"val": {
+					"type": "str",
+					"params": {}
+				}
+			},
+			"inputs": {},
+			"outputs": {
+				"val": {
+					"type": "str",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "Subtract",
+			"type": "demo.six/Subtract",
+			"settings": {},
+			"inputs": {
+				"num1": {
+					"type": "int",
+					"params": {}
+				},
+				"num2": {
+					"type": "int",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"difference": {
+					"type": "int",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "ToString",
+			"type": "demo.six/ToString",
+			"settings": {},
+			"inputs": {
+				"number": {
+					"type": "int",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"string": {
+					"type": "str",
+					"params": {}
+				}
+			}
+		},
+		{
+			"name": "IsInRange",
+			"type": "demo.seven/IsInRange",
+			"settings": {
+				"range": {
+					"type": "Range",
+					"params": {
+						"min": 0.0,
+						"max": 100.0,
+						"decimal": true
+					}
+				}
+			},
+			"inputs": {
+				"num": {
+					"type": "float",
+					"params": {}
+				}
+			},
+			"outputs": {
+				"in_range": {
+					"type": "bool",
+					"params": {}
+				}
+			}
+		}
+	]
+}
