@@ -4,7 +4,6 @@ try:
     from numpy import ndarray
 except ModuleNotFoundError:
     print("Warning: numpy not found")
-    print("It's ok if you're not running opencv")
 
     ndarray = object  # for the custom type declarations
 

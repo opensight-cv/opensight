@@ -1,14 +1,11 @@
-from dataclasses import dataclass
-from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
+from itertools import chain
+from typing import Any, Dict, NamedTuple, Optional, Set, Type, List
 from uuid import UUID
 
-from .manager import Manager
+from opsi.manager.link import NodeLink, StaticLink, Link
 from .manager_schema import Function
 
-
-class Link:
-    def run(self):
-        raise NotImplementedError
+from toposort import toposort
 
 
 # Map inputname -> (output_node, output_name)
@@ -20,38 +17,32 @@ class Connection(NamedTuple):
 Links = Dict[str, Connection]
 
 
-@dataclass(frozen=True)
-class StaticLink(Link):
-    value: Any
-
-    def run(self):
-        return self.value
-
-
 class Node:
     def __init__(self, func: Type[Function], id: UUID):
-        self.func: Optional[Function] = None
         self.func_type = func
+        self.inputLinks: Dict[str, Link] = dict()
+        self.func: Optional[Function] = None
         self.id = id
 
-        self.settings = None
-        self.next_frame()
-        self.reset_io()
-
-    def next_frame(self):
-        self.results: Optional[self.func_type.Outputs] = None
+        self.results = None
         self.has_run: bool = False
 
-    def reset_io(self):
-        self.inputLinks: Dict[str, Optional[Link]] = {
-            name: StaticLink(None) for name in self.func_type.InputTypes.keys()
-        }
+        self.settings = None
+
+    def next_frame(self):
+        self.results = None
+        self.has_run = False
+
+    def reset_links(self):
+        self.inputLinks.clear()
 
     def ensure_init(self):
         if self.func is not None:
             return
 
         self.func = self.func_type(self.settings)
+        if hasattr(self.func, "on_start"):
+            self.func.on_start()
 
     def dispose(self):
         if self.func is None:
@@ -60,12 +51,12 @@ class Node:
         self.func.dispose()
         self.func = None
 
-    def set_staticlink(self, key: str, item: Any):
+    def set_static_link(self, key: str, item: Any):
         self.inputLinks[key] = StaticLink(item)
 
-    def set_staticlinks(self, vals: Dict[str, Any]):
+    def set_static_links(self, vals: Dict[str, Any]):
         for key, item in vals.items():
-            self.set_staticlink(key, item)
+            self.set_static_link(key, item)
 
     def run(self):
         if self.has_run:
@@ -73,7 +64,7 @@ class Node:
 
         self.ensure_init()
 
-        inputs = {name: link.run() for name, link in self.inputLinks.items()}
+        inputs = {name: link.get() for name, link in self.inputLinks.items()}
         inputs = self.func_type.Inputs(**inputs)
 
         self.results = self.func.run(inputs)
@@ -85,60 +76,52 @@ class Node:
 class Pipeline:
     def __init__(self):
         self.nodes: Dict[UUID, Node] = {}
-        self.links: List[Link] = []
-        self.entrynodes: Set[UUID] = set()
+        self.adjList: Dict[Node, Set[Node]] = {}
+        self.run_order: List[Node] = []
 
     def run(self):
-        for node in self.nodes.values():
-            node.next_frame()
+        if not self.run_order:
+            self.run_order = list(chain.from_iterable(toposort(self.adjList)))
 
-        self._run()
+        for n in self.run_order:  # Each node to be processed
+            n.next_frame()
+            n.run()
 
-    def _run(self):
-        raise NotImplementedError
-
-    def create_node(self, func: Type[Function], id: UUID):
+    def create_node(self, func: Type[Function], uuid: UUID):
         """
         The caller is responsible for calling
         pipeline.create_links(node, ...) and node.set_staticlinks(...),
         and setting node.settings as appropriate
         """
-        self.nodes[id] = Node(func, id)
+        self.run_order.clear()
+        temp = Node(func, uuid)
 
-        if self.nodes[id].func_type.has_sideeffect:
-            self.entrynodes.add(id)
+        self.adjList[temp] = set()
+        self.nodes[uuid] = temp
 
-        return self.nodes[id]
+        return temp
 
     def create_links(self, input_node_id, links: Links):
+        self.run_order.clear()
         input_node = self.nodes[input_node_id]
 
         for input_name, conn in links.items():
             output_node = self.nodes[conn.id]
+            self.adjList[input_node].add(output_node)
 
-            link = self._create_link(input_node, input_name, output_node, conn.name)
-
-            input_node.inputLinks[input_name] = link
-            self.links.append(link)
-
-    def _create_link(self, input_node, input_name, output_node, output_name) -> Link:
-        raise NotImplementedError
+            input_node.inputLinks[input_name] = NodeLink(output_node, conn.name)
 
     def prune_nodetree(self, new_node_ids):
         old_node_ids = set(self.nodes.keys())
         new_node_ids = set(new_node_ids)
 
-        # clear existing links
-
-        self.links = []
-
         for node in self.nodes.values():
-            node.reset_io()
+            node.reset_links()
+            if hasattr(node.func, "dispose"):
+                node.func.dispose()
+            node.func = None
 
         # remove deleted nodes
-
-        for id in old_node_ids - new_node_ids:
-            self.nodes[id].dispose()
-
-            del self.nodes[id]
-            self.entrynodes.discard(id)
+        for uuid in old_node_ids - new_node_ids:
+            self.nodes[uuid].dispose()
+            del self.nodes[uuid]

@@ -1,10 +1,12 @@
 from dataclasses import asdict
 from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
 
+import uuid
+
+from ..manager.link import NodeLink
 from ..manager.manager import Manager
 from ..manager.manager_schema import Function, ModuleItem
 from ..manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
-from ..manager.pipeline_recursive import RecursiveLink
 from ..manager.program import Program
 from ..manager.types import *
 from .schema import *
@@ -15,33 +17,37 @@ __all__ = ("export_manager", "export_nodetree", "import_nodetree")
 # ---------------------------------------------------------
 
 
-def _parse_range(type):
+def _rangetype_serialize(type):
     if not isinstance(type, RangeType):
         return None
 
     return InputOutputF(type="Range", params=type.serialize())
 
 
-# If type is in _normal_types, then the type is supported and it has no params
-_normal_types = {int, float, bool, str, Mat, MatBW, Contour, Contours}
+_type_name: Dict[Type, str] = {int: "int", float: "dec", str: "string", bool: "boolean"}
+_normal_types = {Mat, MatBW, Contour, Contours}
 
 # Each item in _abnormal_types takes in a type and returns InputOutputF if the
 # parser supports the type, or None if it does not
-_abnormal_types: List[Callable[[Type], Optional[InputOutputF]]]
-_abnormal_types = [_parse_range]  # add new type parsers here
+_abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
+    _rangetype_serialize
+]  # add new type parsers here
 
 
-def get_type(type: Type) -> InputOutputF:
-    if type in _normal_types:
-        return InputOutputF(type=type.__name__, params={})
+def get_type(_type: Type) -> InputOutputF:
+    if _type in _type_name:
+        name = _type_name.get(_type)
+        return InputOutputF(type=name)
+    elif _type in _normal_types:
+        return InputOutputF(type=_type.__name__)
 
     for parser in _abnormal_types:
-        IO = parser(type)
+        IO = parser(_type)
 
         if IO is not None:
             return IO
 
-    raise TypeError(f"Unknown type {type}")
+    raise TypeError(f"Unknown type {_type}")
 
 
 def get_types(types):
@@ -95,7 +101,7 @@ def _serialize_link(link: Optional[Link]) -> Optional[LinkN]:
 
     if isinstance(link, StaticLink):
         return None
-    if isinstance(link, RecursiveLink):
+    if isinstance(link, NodeLink):
         return LinkN(id=link.node.id, name=link.name)
 
     raise TypeError(f"Unknown link type: {type(link)}")
@@ -109,8 +115,6 @@ def _serialize_input(link: Optional[Link]) -> InputN:
 
     if isinstance(link, StaticLink):
         return InputN(link=linkn, value=link.value)
-    if isinstance(link, RecursiveLink):
-        return InputN(link=linkn, value=None)
 
     raise TypeError(f"Unknown link type: {type(link)}")
 
@@ -184,7 +188,7 @@ def _process_node_inputs(program: Program, node: NodeN):
 
     for name in empty_links:
         type = real_node.func.InputTypes[name]
-        real_node.set_staticlink(name, _process_widget(type, node.inputs[name].value))
+        real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
 
 
 def _process_node_settings(program: Program, node: NodeN):

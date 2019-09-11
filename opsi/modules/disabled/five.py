@@ -45,16 +45,3 @@ class Multiply(Function):
         product = inputs.num1 * inputs.num2
 
         return self.Outputs(product=product)
-
-
-class Print(Function):
-    has_sideeffect = True
-
-    @dataclass
-    class Inputs:
-        val: int
-
-    def run(self, inputs):
-        print(f"Print node: {inputs.val}")
-
-        return self.Outputs()

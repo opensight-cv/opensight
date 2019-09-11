@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import random
 
 from opsi.manager.manager_schema import Function
 
@@ -112,7 +113,16 @@ class Divide(Function):
         quotient: int
 
     def run(self, inputs):
-        return self.quotient(product=(inputs.num1 / inputs.num2))
+        return self.Outputs(quotient=(inputs.num1 / inputs.num2))
+
+
+class Random(Function):
+    @dataclass
+    class Outputs:
+        val: str
+
+    def run(self, inputs):
+        return self.Outputs(val=str(random.random()))
 
 
 class Print(Function):

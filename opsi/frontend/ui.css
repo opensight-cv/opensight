@@ -1,4 +1,11 @@
-
+/* disable text selection */
+* {
+   -ms-user-select: none; /* IE 10+ */
+   -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   user-select: none;
+}
 
 body {
 	font-family: Arial, Helvetica, sans-serif;

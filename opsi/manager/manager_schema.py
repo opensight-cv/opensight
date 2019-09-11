@@ -88,6 +88,9 @@ class Function:
     def run(self, inputs) -> Outputs:
         return self.Outputs()
 
+    def on_start(self):
+        pass
+
 
 def isfunction(func):
     try:

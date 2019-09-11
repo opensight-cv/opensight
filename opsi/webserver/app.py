@@ -8,7 +8,7 @@ from .test import WebserverTest
 
 
 class WebServer:
-    def __init__(self, program: Program):
+    def __init__(self, program: Program, frontend: str):
         self.program = program
 
         self.app = Starlette()
@@ -17,7 +17,7 @@ class WebServer:
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
 
-        self.app.mount("/", StaticFiles(directory="opsi/frontend/", html=True))
+        self.app.mount("/", StaticFiles(directory=frontend, html=True))
 
     # These test functions go through the entire http pipeline
 
