@@ -7,6 +7,3 @@ $.get("/api/nodes", function(data) {
     nodeTreeImport = new importNodeTree(data, funct);
     nodeTreeImport.go();
 })
-
-//uncomment this line and put in the URL that the nodetree should go, and the location of the data
-// postRequestReady(url, formLocation);

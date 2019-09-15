@@ -199,13 +199,14 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
 	this.outputs = outputs;
 	this.id = id;
 	this.create = function() {
-		$("#container").prepend(
+		$("#container").append(
 			'<div class="node" id="' +
 				this.uuid +
 				'">' +
 				"<h1>" +
 				this.name +
 				"</h1>" +
+				'<div id="x' + this.uuid + '" class="x">-</div>' +
 				'<div class="ioContainer">' +
 				'<div class="inputContainer">' +
 				inputLoop(this.inputs, this.uuid) +
@@ -219,6 +220,14 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
 		);
 		$("#" + this.uuid).draggable({
 			cancel: ".clicker, input, select"
+		});
+		$("#x" + this.uuid).on('click', function() {
+			$("#"+this.id.substring(1)).remove();
+			for(let i = 0; i<nodeTree.nodes.length; i++){
+				if(nodeTree.nodes[i].id == this.id.substring(1)){
+					nodeTree.nodes.splice(i, 1);
+				}
+			}
 		});
 		settingsGo(this.settings);
 	};
