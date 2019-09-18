@@ -69,13 +69,13 @@ class Erode(Function):
 
     @dataclass
     class Outputs:
-        img: MatBW
+        eroded: MatBW
 
     def run(self, inputs):
         eroded = cv2.erode(
             inputs.img, interations=round(self.settings.size), **ERODE_DILATE_CONSTS
         )
-        return self.Outputs(img=eroded)
+        return self.Outputs(eroded=eroded)
 
 
 class Dilate(Function):
@@ -89,30 +89,62 @@ class Dilate(Function):
 
     @dataclass
     class Outputs:
-        img: MatBW
+        dilated: MatBW
 
     def run(self, inputs):
         dilated = cv2.dilate(
             inputs.img, iterations=round(self.settings.size), **ERODE_DILATE_CONSTS
         )
-        return self.Outputs(img=dilateds)
+        return self.Outputs(dilated=dilated)
 
 
 class FindContours(Function):
+    @dataclass
+    class Settings:
+        draw: bool
+
     @dataclass
     class Inputs:
         img: MatBW
 
     @dataclass
     class Outputs:
-        img: Contours
+        contours: Contours
+        visual: MatBW
 
     def run(self, inputs):
         vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)
+        if self.settings.draw:
+            cv2.drawContours(inputs.mat, vals, -1, (255, 255, 255), 3)
         if OPENCV3:
-            return self.Outputs(img=vals[1])
+            return self.Outputs(contours=vals[1], visual=inputs.img)
         else:
-            return self.Outputs(img=vals[0])
+            return self.Outputs(contours=vals[0], visual=inputs.img)
+
+class FindCenter(Function):
+    @dataclass
+    class Settings:
+        draw: bool
+
+    @dataclass
+    class Inputs:
+        contours: Contours
+        img: MatBW
+
+    @dataclass
+    class Outputs:
+        center: int
+        visual: MatBW
+
+    def run(self, inputs):
+        for cnt in inputs.contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            cx = (x + (x + w)) // 2
+            cy = (y + (y + h)) // 2
+            midpoint = (cx, cy)
+            if self.settings.draw:
+                cv2.circle(inputs.img, midpoint, (255, 255, 255), 3)
+        return self.Outputs(center=midpoint, visual=inputs.img)
 
 
 class ConvexHulls(Function):
