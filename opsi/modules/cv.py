@@ -46,12 +46,9 @@ class Blur(Function):
 class HSVRange(Function):
     @dataclass
     class Settings:
-        hue_min: int
-        sat_min: int
-        value_min: int
-        hue_max: int
-        sat_max: int
-        value_max: int
+        hue: RangeType(0, 255)
+        sat: RangeType(0, 255)
+        val: RangeType(0, 255)
 
     @dataclass
     class Inputs:
@@ -63,10 +60,18 @@ class HSVRange(Function):
 
     def run(self, inputs):
         lower = np.array(
-            [self.settings.hue_min, self.settings.sat_min, self.settings.value_min]
+            [
+                self.settings.hue["min"],
+                self.settings.sat["min"],
+                self.settings.val["min"],
+            ]
         )
         upper = np.array(
-            [self.settings.hue_max, self.settings.sat_max, self.settings.value_max]
+            [
+                self.settings.hue["max"],
+                self.settings.sat["max"],
+                self.settings.val["max"],
+            ]
         )
         masked = cv2.inRange(inputs.img, lower, upper)
         return self.Outputs(masked=masked)

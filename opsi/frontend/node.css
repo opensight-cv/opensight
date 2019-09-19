@@ -189,7 +189,7 @@ td {
 html .ui-button.ui-state-disabled:hover,
 html .ui-button.ui-state-disabled:active {
 	border: 6px solid #2DBC4E;
-	background-color: #243E36;
+	background-color: #CCCCCC;
 	font-weight: normal;
 	color: #454545;
 	border-radius: 9999px;

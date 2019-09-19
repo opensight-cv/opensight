@@ -18,10 +18,10 @@ __all__ = ("export_manager", "export_nodetree", "import_nodetree")
 
 
 def _rangetype_serialize(type):
-    if not issubclass(type, RangeType):
+    if not isinstance(type, RangeType):
         return None
 
-    return InputOutputF(type="Range", params=type.serialize())
+    return InputOutputF(type="range", params=type.serialize())
 
 
 _type_name: Dict[Type, str] = {
