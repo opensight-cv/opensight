@@ -2,6 +2,7 @@ import time
 from dataclasses import dataclass
 
 from networktables import NetworkTables
+
 from opsi.manager.manager_schema import Function
 
 

@@ -12,7 +12,9 @@ idna==2.8
 isort==4.3.21
 mypy==0.720
 mypy-extensions==0.4.1
+numpy==1.17.2
 pydantic==0.30
+pynetworktables==2019.0.2
 requests==2.22.0
 starlette==0.12.0
 toml==0.10.0
