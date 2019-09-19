@@ -1,19 +1,17 @@
 import asyncio
-from typing import AsyncGenerator, Dict, List, Tuple
-from dataclasses import dataclass
-import uvloop
 import threading
-from time import sleep
-
-
 from dataclasses import dataclass
-from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat
+from time import sleep
+from typing import AsyncGenerator, Dict, List, Tuple
 
 import cv2
 import uvicorn
+import uvloop
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse
+
+from opsi.manager.manager_schema import Function
+from opsi.manager.types import Mat
 
 __package__ = "demo.server"
 __version__ = "0.123"

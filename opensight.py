@@ -1,15 +1,14 @@
 #! /usr/bin/env python3
 
+import asyncio
 import logging
 import threading
-import asyncio
-import uvloop
+from os import listdir
+from os.path import dirname, isdir, isfile, join, splitext
 
 import uvicorn
+import uvloop
 from starlette.testclient import TestClient
-
-from os import listdir
-from os.path import isdir, isfile, join, splitext, dirname
 
 import opsi
 from opsi.manager import Program

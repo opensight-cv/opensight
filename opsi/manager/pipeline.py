@@ -1,11 +1,12 @@
 from itertools import chain
-from typing import Any, Dict, NamedTuple, Optional, Set, Type, List
+from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
 
-from opsi.manager.link import NodeLink, StaticLink, Link
-from .manager_schema import Function
-
 from toposort import toposort
+
+from opsi.manager.link import Link, NodeLink, StaticLink
+
+from .manager_schema import Function
 
 
 # Map inputname -> (output_node, output_name)
@@ -41,11 +42,7 @@ class Node:
             return
 
         self.func = self.func_type(self.settings)
-        # ask for forgiveness not permission
-        try:
-            self.func.on_start()
-        except AttributeError:
-            pass
+        self.func.on_start()
 
     def dispose(self):
         if self.func is None:
@@ -120,10 +117,7 @@ class Pipeline:
 
         for node in self.nodes.values():
             node.reset_links()
-            try:
-                node.func.dispose()
-            except AttributeError:
-                pass
+            node.func.dispose()
             node.func = None
 
         # remove deleted nodes

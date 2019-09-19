@@ -5,7 +5,6 @@ import cv2
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat
 
-
 __package__ = "demo.input"
 __version__ = "0.123"
 

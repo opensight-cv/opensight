@@ -1,7 +1,6 @@
-from dataclasses import asdict
-from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
-
 import uuid
+from dataclasses import asdict
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
 from ..manager.link import NodeLink
 from ..manager.manager import Manager

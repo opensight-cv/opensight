@@ -5,7 +5,7 @@ import numpy as np
 
 import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat, MatBW, RangeType, Contours
+from opsi.manager.types import Contours, Mat, MatBW, RangeType
 
 OPENCV3 = False
 
