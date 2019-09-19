@@ -270,9 +270,14 @@ class CameraServer(Function):
         return self.Outputs()
 
     def dispose(self):
-        self.ws.server.force_exit = True
-        asyncio.run_coroutine_threadsafe(self.ws.server.shutdown(), self.loop)
-        asyncio.run_coroutine_threadsafe(self.ws.server.lifespan.shutdown(), self.loop)
+        try:
+            self.ws.server.force_exit = True
+            asyncio.run_coroutine_threadsafe(self.ws.server.shutdown(), self.loop)
+            asyncio.run_coroutine_threadsafe(
+                self.ws.server.lifespan.shutdown(), self.loop
+            )
+        except AttributeError:
+            pass
         # self.loop.stop()
 
 

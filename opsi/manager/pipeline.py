@@ -41,8 +41,11 @@ class Node:
             return
 
         self.func = self.func_type(self.settings)
-        if hasattr(self.func, "on_start"):
+        # ask for forgiveness not permission
+        try:
             self.func.on_start()
+        except AttributeError:
+            pass
 
     def dispose(self):
         if self.func is None:
@@ -117,8 +120,10 @@ class Pipeline:
 
         for node in self.nodes.values():
             node.reset_links()
-            if hasattr(node.func, "dispose"):
+            try:
                 node.func.dispose()
+            except AttributeError:
+                pass
             node.func = None
 
         # remove deleted nodes

@@ -1,10 +1,16 @@
 from dataclasses import dataclass
 
 import cv2
+import numpy as np
 
 import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat, MatBW, Contours
+from opsi.manager.types import Mat, MatBW, RangeType, Contours
+
+OPENCV3 = False
+
+if cv2.__version__[0] == "3":
+    OPENCV3 = True
 
 ERODE_DILATE_CONSTS = {
     "kernel": None,
@@ -37,12 +43,15 @@ class Blur(Function):
         return self.Outputs(blurred=blurredImg)
 
 
-class HSLThreshold(Function):
+class HSVRange(Function):
     @dataclass
     class Settings:
-        hue: int
-        sat: int
-        lum: int
+        hue_min: int
+        sat_min: int
+        value_min: int
+        hue_max: int
+        sat_max: int
+        value_max: int
 
     @dataclass
     class Inputs:
@@ -50,12 +59,17 @@ class HSLThreshold(Function):
 
     @dataclass
     class Outputs:
-        img: MatBW
+        masked: MatBW
 
     def run(self, inputs):
-        ranges = tuple(zip(self.settings.hue, self.settings.lum, self.settings.sat))
-        thresh = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HLS), *ranges)
-        return self.Outputs(img=thresh)
+        lower = np.array(
+            [self.settings.hue_min, self.settings.sat_min, self.settings.value_min]
+        )
+        upper = np.array(
+            [self.settings.hue_max, self.settings.sat_max, self.settings.value_max]
+        )
+        masked = cv2.inRange(inputs.img, lower, upper)
+        return self.Outputs(masked=masked)
 
 
 class Erode(Function):
@@ -73,7 +87,7 @@ class Erode(Function):
 
     def run(self, inputs):
         eroded = cv2.erode(
-            inputs.img, interations=round(self.settings.size), **ERODE_DILATE_CONSTS
+            inputs.img, iterations=round(self.settings.size), **ERODE_DILATE_CONSTS
         )
         return self.Outputs(eroded=eroded)
 
@@ -113,13 +127,15 @@ class FindContours(Function):
         visual: MatBW
 
     def run(self, inputs):
-        vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)
-        if self.settings.draw:
-            cv2.drawContours(inputs.mat, vals, -1, (255, 255, 255), 3)
         if OPENCV3:
-            return self.Outputs(contours=vals[1], visual=inputs.img)
+            vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)[1]
         else:
-            return self.Outputs(contours=vals[0], visual=inputs.img)
+            vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)[0]
+        if self.settings.draw:
+            visual = cv2.drawContours(inputs.img, vals, -1, (255, 255, 255), 3)
+            return self.Outputs(contours=vals, visual=visual)
+        return self.Outputs(contours=vals, visual=inputs.img)
+
 
 class FindCenter(Function):
     @dataclass
@@ -134,17 +150,19 @@ class FindCenter(Function):
     @dataclass
     class Outputs:
         center: int
-        visual: MatBW
+        visual: Mat
 
     def run(self, inputs):
+        image = cv2.cvtColor(inputs.img, cv2.COLOR_GRAY2BGR)
+        midpoint = None
         for cnt in inputs.contours:
             x, y, w, h = cv2.boundingRect(cnt)
             cx = (x + (x + w)) // 2
             cy = (y + (y + h)) // 2
             midpoint = (cx, cy)
             if self.settings.draw:
-                cv2.circle(inputs.img, midpoint, (255, 255, 255), 3)
-        return self.Outputs(center=midpoint, visual=inputs.img)
+                image = cv2.circle(image, midpoint, 10, (0, 0, 255), 3)
+        return self.Outputs(center=midpoint, visual=image)
 
 
 class ConvexHulls(Function):
@@ -164,11 +182,11 @@ class ConvexHulls(Function):
 class MatBWToMat(Function):
     @dataclass
     class Inputs:
-        img: MatBW
+        bwMat: MatBW
 
     @dataclass
     class Outputs:
-        img: Mat
+        regMat: Mat
 
     def run(self, inputs):
-        return self.Outputs(img=cv2.cvtColor(inputs.img, cv2.COLOR_GRAY2BGR))
+        return self.Outputs(regMat=cv2.cvtColor(inputs.bwMat, cv2.COLOR_GRAY2BGR))

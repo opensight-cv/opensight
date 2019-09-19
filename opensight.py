@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import logging
 import threading
 import asyncio
 import uvloop
@@ -71,6 +72,10 @@ def create_threaded_loop():
 
 
 def main():
+
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+
     package_path = dirname(opsi.__file__)
     program = make_program(package_path)
 
@@ -84,7 +89,7 @@ def main():
         try:
             program.pipeline.run()
         except Exception as e:
-            print(e)
+            logger.exception(e)
 
 
 if __name__ == "__main__":

@@ -18,14 +18,20 @@ __all__ = ("export_manager", "export_nodetree", "import_nodetree")
 
 
 def _rangetype_serialize(type):
-    if not isinstance(type, RangeType):
+    if not issubclass(type, RangeType):
         return None
 
     return InputOutputF(type="Range", params=type.serialize())
 
 
-_type_name: Dict[Type, str] = {int: "int", float: "dec", str: "string", bool: "boolean"}
-_normal_types = {Mat, MatBW, Contour, Contours}
+_type_name: Dict[Type, str] = {
+    float: "dec",
+    bool: "boolean",
+    MatBW: "mbw",
+    Contour: "cnt",
+    Contours: "cts",
+}
+_normal_types = {int, str, Mat}
 
 # Each item in _abnormal_types takes in a type and returns InputOutputF if the
 # parser supports the type, or None if it does not
