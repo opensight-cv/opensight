@@ -678,7 +678,7 @@ const functions = function(jsonData) {
 				case "int":
 					this.settings[this.settingsCount].push([x, new intInput(nam[j])]);
 					break;
-				case "string":
+				case "str":
 					this.settings[this.settingsCount].push([x, new strInput(nam[j])]);
 					break;
 				case "boolean":
