@@ -1,5 +1,5 @@
 //get request, change functions.json url to wherever yours is
-$.get("functions.json", function(data) {
+$.get("/api/funcs", function(data) {
     funct = new functions(data);
     funct.ui();
 })

@@ -1012,7 +1012,7 @@ const importNodeTree = function(nodetree, functions) {
 							nodetree.nodes[i].settings[x]
 						);
 						break;
-					case "string":
+					case "str":
 						$("#" + nodetree.nodes[i].id + "str").val(
 							nodetree.nodes[i].settings[x]
 						);

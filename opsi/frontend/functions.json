@@ -19,7 +19,7 @@
 					}
 				},
 				"string":{
-					"type":"string",
+					"type":"str",
 					"params":{
 					}
 				},
