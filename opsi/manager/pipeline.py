@@ -117,7 +117,8 @@ class Pipeline:
 
         for node in self.nodes.values():
             node.reset_links()
-            node.func.dispose()
+            if node.func is not None:
+                node.func.dispose()
             node.func = None
 
         # remove deleted nodes
