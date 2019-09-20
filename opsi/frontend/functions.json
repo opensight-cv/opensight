@@ -7,13 +7,11 @@
 				"dec":{
 					"type":"dec",
 					"params":{
-						"default":0
 					}
 				},
 				"int":{
-					"type":"num",
+					"type":"int",
 					"params":{
-						"default":0,
 						"min":0,
 						"max":1,
 						"dec":"true",
@@ -23,37 +21,31 @@
 				"string":{
 					"type":"string",
 					"params":{
-						"default":0
 					}
 				},
 				"boolean":{
 					"type":"boolean",
 					"params":{
-						"default":"false"
 					}
 				},
 				"slide":{
 					"type":"slide",
 					"params":{
 						"min":0,
-						"max":100,
-						"default":50
+						"max":100
 					}
 				},
 				"range":{
 					"type":"range",
 					"params":{
 						"min":0,
-						"max":255,
-						"defaultMin":0,
-						"defaultMax":255
+						"max":255
 					}
 				},
 				"box":{
 					"type":"box",
 					"params":{
-						"options":["option1","option2","option3"],
-						"default":"option2"
+						"options":["option1","option2","option3"]
 					}
 				}
 			},
@@ -69,7 +61,7 @@
 			},
 			"outputs": {
 				"sum": {
-					"type": "int",
+					"type": "dec",
 					"params": {}
 				}
 			}
@@ -143,7 +135,9 @@
 			"settings": {
 				"val": {
 					"type": "int",
-					"params": {}
+					"params": {
+						"default":1
+					}
 				}
 			},
 			"inputs": {},

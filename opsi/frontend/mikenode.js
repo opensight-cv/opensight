@@ -206,7 +206,9 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
 				"<h1>" +
 				this.name +
 				"</h1>" +
-				'<div id="x' + this.uuid + '" class="x">-</div>' +
+				'<div id="x' +
+				this.uuid +
+				'" class="x">-</div>' +
 				'<div class="ioContainer">' +
 				'<div class="inputContainer">' +
 				inputLoop(this.inputs, this.uuid) +
@@ -221,10 +223,12 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
 		$("#" + this.uuid).draggable({
 			cancel: ".clicker, input, select"
 		});
-		$("#x" + this.uuid).on('click', function() {
-			$("#"+this.id.substring(1)).remove();
-			for(let i = 0; i<nodeTree.nodes.length; i++){
-				if(nodeTree.nodes[i].id == this.id.substring(1)){
+		$("#x" + this.uuid).on("click", function() {
+			killLoop(uuid);
+			$("#" + this.id.substring(1)).remove();
+
+			for (let i = 0; i < nodeTree.nodes.length; i++) {
+				if (nodeTree.nodes[i].id == this.id.substring(1)) {
 					nodeTree.nodes.splice(i, 1);
 				}
 			}
@@ -233,15 +237,15 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
 	};
 };
 
-// ------------------------------------- settings land ------------------------------------------------------
+// ------------------------------------- settings ------------------------------------------------------
 
-const intInput = function(name) {
+const intInput = function(name, def) {
 	this.value = null;
 	this.id = "";
 	this.create = function(uuid) {
 		this.id = uuid;
 		return (
-			'<input type="number" class="numInput int setting" oninput="" id="' +
+			'<input value="' +def+'" type="number" class="numInput int setting" oninput="" id="' +
 			uuid +
 			name +
 			'">' +
@@ -251,6 +255,13 @@ const intInput = function(name) {
 	this.go = function() {
 		let id = this.id;
 
+		findNodeTreeSpot(
+			$("#" + this.id + name)
+				.parent()
+				.parent()
+				.attr("id")
+		).settings[name] = parseFloat($("#" + this.id + name).val());
+		postRequest();
 		$("#" + this.id + name)
 			.on("keyup", function(e) {
 				if (e.which === 46) return false;
@@ -262,6 +273,7 @@ const intInput = function(name) {
 						self.value = parseInt(self.value, 10);
 				}, 0);
 			});
+
 		$("#" + this.id + name).on("input", function() {
 			findNodeTreeSpot(
 				$(this)
@@ -273,13 +285,13 @@ const intInput = function(name) {
 		});
 	};
 };
-const decInput = function(name) {
-	this.value = null;
+const decInput = function(name, def) {
+	this.value = def;
 	this.id = "";
 	this.create = function(uuid) {
 		this.id = uuid;
 		return (
-			'<input type="number" class="numInput setting" oninput="" id="' +
+			'<input value="' + def + '" type="number" class="numInput setting" oninput="" id="' +
 			uuid +
 			name +
 			'">' +
@@ -289,7 +301,14 @@ const decInput = function(name) {
 	this.go = function() {
 		let id = this.id;
 
-		
+		findNodeTreeSpot(
+			$("#" + this.id + name)
+				.parent()
+				.parent()
+				.attr("id")
+		).settings[name] = parseFloat($("#" + this.id + name).val());
+		postRequest();
+
 		$("#" + this.id + name).on("input", function() {
 			findNodeTreeSpot(
 				$(this)
@@ -302,13 +321,13 @@ const decInput = function(name) {
 	};
 };
 
-const strInput = function(name) {
+const strInput = function(name, def) {
 	this.value = null;
 	this.id = "";
 	this.create = function(uuid) {
 		this.id = uuid;
 		return (
-			'<input class="strInput setting" oninput="" id="' +
+			'<input value="'+def+'" class="strInput setting" oninput="" id="' +
 			uuid +
 			name +
 			'">' +
@@ -317,6 +336,13 @@ const strInput = function(name) {
 	};
 	this.go = function() {
 		let id = this.id;
+		findNodeTreeSpot(
+			$("#" + this.id + name)
+				.parent()
+				.parent()
+				.attr("id")
+		).settings[name] = $("#" + this.id + name).val();
+		postRequest();
 		$("#" + this.id + name).on("input", function() {
 			findNodeTreeSpot(
 				$(this)
@@ -329,23 +355,55 @@ const strInput = function(name) {
 	};
 };
 
-const booleanInput = function(name) {
+const booleanInput = function(name, def) {
 	this.value = null;
 	this.id = "";
 	this.create = function(uuid) {
 		this.id = uuid;
-		return (
-			'<label class="switch">' +
-			'<input type="checkbox" id="' +
-			uuid +
-			name +
-			'">' +
-			'<span class="slidey round"></span>' +
-			"</label>"
-		);
+		if(def == "true"){
+			return (
+				'<label class="switch">' +
+				'<input checked type="checkbox" id="' +
+				uuid +
+				name +
+				'">' +
+				'<span class="slidey round"></span>' +
+				"</label>"
+			);
+
+		}else{
+			
+			return (
+				'<label class="switch">' +
+				'<input type="checkbox" id="' +
+				uuid +
+				name +
+				'">' +
+				'<span class="slidey round"></span>' +
+				"</label>"
+			);
+		}
 	};
 	this.go = function() {
 		let id = this.id;
+		if (def == "true") {
+			findNodeTreeSpot(
+				$("#" + this.id + name)
+					.parent()
+					.parent()
+					.parent()
+					.attr("id")
+			).settings[name] = true;
+		} else {
+			findNodeTreeSpot(
+				$($("#" + this.id + name))
+					.parent()
+					.parent()
+					.parent()
+					.attr("id")
+			).settings[name] = false;
+		}
+		postRequest();
 		$("#" + this.id + name).on("change", function() {
 			if (this.checked) {
 				findNodeTreeSpot(
@@ -369,7 +427,7 @@ const booleanInput = function(name) {
 	};
 };
 
-const range = function(min, max, name) {
+const range = function(min, max, name, defMin, defMax) {
 	this.min = min;
 	this.max = max;
 	this.minVal = min;
@@ -386,21 +444,27 @@ const range = function(min, max, name) {
 			uuid +
 			name +
 			'out1"class="setting sliderOut">' +
-			this.minVal +
+			defMin +
 			'</div><div id="' +
 			uuid +
 			name +
 			'out2"class="setting sliderOut2">' +
-			this.maxVal +
+			defMax +
 			"</div>"
 		);
 	};
 	this.go = function() {
+		findNodeTreeSpot(
+			$("#" + this.id + name)
+				.parent()
+				.parent()
+				.attr("id")
+		).settings[name] = { min: parseFloat(defMin), max: parseFloat(defMax) };
 		$("#" + this.id + name).slider({
 			range: true,
 			min: this.min,
 			max: this.max,
-			values: [this.min, this.max],
+			values: [defMin, defMax],
 			slide: function(event, ui) {
 				this.minVal = ui.values[0];
 				this.maxVal = ui.values[1];
@@ -410,7 +474,10 @@ const range = function(min, max, name) {
 						.parent()
 						.parent()
 						.attr("id")
-				).settings[name] = { min: parseFloat(this.minVal), max: parseFloat(this.maxVal) };
+				).settings[name] = {
+					min: parseFloat(this.minVal),
+					max: parseFloat(this.maxVal)
+				};
 
 				$("#" + this.id + "out1").text(this.minVal);
 
@@ -422,10 +489,10 @@ const range = function(min, max, name) {
 	};
 };
 
-const slide = function(min, max, name) {
+const slide = function(min, max, name, def) {
 	this.min = min;
 	this.max = max;
-	this.val = (max + min) / 2;
+	this.val = def;
 	var slider = null;
 	this.id = "";
 	this.create = function(uuid) {
@@ -443,6 +510,13 @@ const slide = function(min, max, name) {
 		);
 	};
 	this.go = function() {
+		findNodeTreeSpot(
+			$("#" + this.id + name)
+				.parent()
+				.parent()
+				.attr("id")
+		).settings[name] = parseFloat(def);
+		postRequest();
 		$("#" + this.id + name).slider({
 			range: false,
 			min: this.min,
@@ -467,7 +541,7 @@ const slide = function(min, max, name) {
 	};
 };
 
-const box = function(options, name) {
+const box = function(options, name, def) {
 	this.options = options;
 	this.value = options[0];
 	this.id = "";
@@ -490,6 +564,14 @@ const box = function(options, name) {
 		);
 	};
 	this.go = function() {
+		$("#" + this.id + name).val(def);
+		findNodeTreeSpot(
+			$("#" + this.id + name)
+				.parent()
+				.parent()
+				.attr("id")
+		).settings[name] = def;
+		postRequest();
 		$("#" + this.id + name).on("change", function() {
 			findNodeTreeSpot(
 				$(this)
@@ -610,6 +692,24 @@ var popLoop = function(loop, id) {
 	}
 };
 
+//loop to get rid of all connections for a node UUID
+var killLoop = function(id) {
+	for (let i = 0; i < nodes.length; i++) {
+		if(typeof(nodes[i][0])!="undefined"){
+			if (nodes[i][0].search(id) != -1) {
+				nodes.splice(i, 1);
+				i--;
+				list--;
+		}else if(typeof(nodes[i][1])!="undefined"){
+if(nodes[i][1].search(id) != -1) {
+	nodes.splice(i, 1);
+	i--;
+	list--;
+}
+		} 
+	}}
+};
+
 //tofix
 
 function uuid(a) {
@@ -673,42 +773,94 @@ const functions = function(jsonData) {
 
 			switch (this.rawArr[i][2][x].type) {
 				case "dec":
-					this.settings[this.settingsCount].push([x, new decInput(nam[j])]);
+						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+					this.settings[this.settingsCount].push([x, new decInput(nam[j],this.rawArr[i][2][x].params.default)]);
+				}else{
+					this.settings[this.settingsCount].push([x, new decInput(nam[j],0)]);
+		}
+				
 					break;
 				case "int":
-					this.settings[this.settingsCount].push([x, new intInput(nam[j])]);
+					if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+						this.settings[this.settingsCount].push([x, new intInput(nam[j],this.rawArr[i][2][x].params.default)]);
+					}else{
+						this.settings[this.settingsCount].push([x, new intInput(nam[j],0)]);
+			}
+					
 					break;
 				case "str":
-					this.settings[this.settingsCount].push([x, new strInput(nam[j])]);
+						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+					this.settings[this.settingsCount].push([x, new strInput(nam[j],this.rawArr[i][2][x].params.default)]);
+						}else{
+							this.settings[this.settingsCount].push([x, new strInput(nam[j],"enter text")]);
+
+						}
 					break;
 				case "boolean":
-					this.settings[this.settingsCount].push([x, new booleanInput(nam[j])]);
+						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+					this.settings[this.settingsCount].push([x, new booleanInput(nam[j],this.rawArr[i][2][x].params.default)]);
+						}else{
+							this.settings[this.settingsCount].push([x, new booleanInput(nam[j],"false")]);
+
+						}
 					break;
 				case "slide":
+						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([
 						x,
 						new slide(
 							this.rawArr[i][2][x].params.min,
 							this.rawArr[i][2][x].params.max,
-							nam[j]
+							nam[j],this.rawArr[i][2][x].params.default
 						)
-					]);
+					]);}else{
+						this.settings[this.settingsCount].push([
+							x,
+							new slide(
+								this.rawArr[i][2][x].params.min,
+								this.rawArr[i][2][x].params.max,
+								nam[j],
+								((this.rawArr[i][2][x].params.min+this.rawArr[i][2][x].params.max)/2)
+							)
+						]);
+
+					}
 					break;
 				case "range":
+						if(typeof(this.rawArr[i][2][x].params.defaultMin)!="undefined"){
 					this.settings[this.settingsCount].push([
 						x,
 						new range(
 							this.rawArr[i][2][x].params.min,
 							this.rawArr[i][2][x].params.max,
-							nam[j]
+							nam[j],this.rawArr[i][2][x].params.defaultMin,this.rawArr[i][2][x].params.defaultMax,
 						)
-					]);
+					]);}else{
+						this.settings[this.settingsCount].push([
+							x,
+							new range(
+								this.rawArr[i][2][x].params.min,
+								this.rawArr[i][2][x].params.max,
+								nam[j],
+								this.rawArr[i][2][x].params.min,
+								this.rawArr[i][2][x].params.max,
+							)
+						]);
+
+					}
 					break;
 				case "box":
+						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([
 						x,
-						new box(this.rawArr[i][2][x].params.options, nam[j])
-					]);
+						new box(this.rawArr[i][2][x].params.options, nam[j],this.rawArr[i][2][x].params.default)
+					]);}else{
+						this.settings[this.settingsCount].push([
+							x,
+							new box(this.rawArr[i][2][x].params.options, nam[j],this.rawArr[i][2][x].params.options[0])
+						]);
+
+					}
 					break;
 			}
 			j++;
@@ -736,7 +888,6 @@ const functions = function(jsonData) {
 	this.findSettingType = function(name, parentType) {
 		for (let i = 0; i < this.rawArr.length; i++) {
 			if (this.rawArr[i][1] == parentType) {
-
 				return this.rawArr[i][2][name].type;
 			}
 		}
