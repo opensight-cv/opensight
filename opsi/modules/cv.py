@@ -119,32 +119,41 @@ class Dilate(Function):
 
 class FindContours(Function):
     @dataclass
-    class Settings:
-        draw: bool
-
-    @dataclass
     class Inputs:
         img: MatBW
 
     @dataclass
     class Outputs:
         contours: Contours
-        visual: MatBW
 
     def run(self, inputs):
         if OPENCV3:
             vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)[1]
         else:
             vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)[0]
-        if self.settings.draw:
-            visual = cv2.drawContours(inputs.img, vals, -1, (255, 255, 255), 3)
-            return self.Outputs(contours=vals, visual=visual)
-        return self.Outputs(contours=vals, visual=inputs.img)
+        return self.Outputs(contours=vals)
+
+
+class DrawContours(Function):
+    @dataclass
+    class Inputs:
+        conts: Contours
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        visual: Mat
+
+    def run(self, inputs):
+        draw = inputs.img
+        cv2.drawContours(draw, inputs.conts, -1, (100, 100, 100), 3)
+        return self.Outputs(visual=draw)
 
 
 class FindCenter(Function):
     @dataclass
     class Settings:
+        maxConts: int
         draw: bool
 
     @dataclass
@@ -160,7 +169,8 @@ class FindCenter(Function):
     def run(self, inputs):
         image = cv2.cvtColor(inputs.img, cv2.COLOR_GRAY2BGR)
         midpoint = None
-        for cnt in inputs.contours:
+        for i in range(self.settings.maxConts):
+            cnt = inputs.contours[i]
             x, y, w, h = cv2.boundingRect(cnt)
             cx = (x + (x + w)) // 2
             cy = (y + (y + h)) // 2
