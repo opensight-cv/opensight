@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import math
 import cv2
 import numpy as np
 
@@ -179,6 +180,33 @@ class FindCenter(Function):
                 image = cv2.circle(image, midpoint, 10, (0, 0, 255), 3)
         return self.Outputs(center=midpoint, visual=image)
 
+class FindAngle(Function):
+    @dataclass
+    class Settings:
+        draw: bool
+
+    @dataclas
+    class Inputs:
+        pnt: int
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        angle: int
+        visual: Mat
+
+    def run(self, inputs):
+        width = input.img.shape[0] // 2
+        height = input.img.shape[1] // 2
+        x = input.pnt[0]
+        y = input.pnt[1]
+        delta = (width - x, height - y)
+        deg = math.degrees(math.atan2(delta[1], delta[0]))
+        if self.settings.draw:
+            line = cv2.line(input.img, (width, height), (x, y), (0, 255, 0), 2)
+            return self.Outputs(angle=deg, visual=line)
+        else:
+            return self.Outputs(angle=deg, visual=inputs.img)
 
 class ConvexHulls(Function):
     @dataclass
