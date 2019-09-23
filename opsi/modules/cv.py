@@ -208,6 +208,20 @@ class FindAngle(Function):
         else:
             return self.Outputs(angle=deg, visual=inputs.img)
 
+class BitwiseAND(Function):
+    @dataclass
+    class Inputs:
+        img: Mat
+        mask: MatBW
+
+    @dataclass
+    class Outputs:
+        result: Mat
+
+    def run(self, inputs):
+        res = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask)
+        return self.Outpus(result=res)
+
 class ConvexHulls(Function):
     @dataclass
     class Inputs:
