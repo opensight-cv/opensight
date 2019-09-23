@@ -548,7 +548,7 @@ const box = function(options, name, def) {
 	let loopy = function() {
 		let going = "";
 		for (let i = 0; i < options.length; i++) {
-			going += "<option value=" + options[i] + ">" + options[i] + "</option>";
+			going += "<option value=\"" + options[i] + "\">" + options[i] + "</option>";
 		}
 		return going;
 	};
