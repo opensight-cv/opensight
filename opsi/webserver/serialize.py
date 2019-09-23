@@ -23,6 +23,13 @@ def _rangetype_serialize(type):
     return InputOutputF(type="range", params=type.serialize())
 
 
+def _tuple_serialize(type):
+    if not isinstance(type, tuple):
+        return None
+
+    return InputOutputF(type="box", params={"options": type})
+
+
 _type_name: Dict[Type, str] = {
     float: "dec",
     bool: "boolean",
@@ -35,7 +42,8 @@ _normal_types = {int, str, Mat}
 # Each item in _abnormal_types takes in a type and returns InputOutputF if the
 # parser supports the type, or None if it does not
 _abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
-    _rangetype_serialize
+    _rangetype_serialize,
+    _tuple_serialize,
 ]  # add new type parsers here
 
 
@@ -52,7 +60,7 @@ def get_type(_type: Type) -> InputOutputF:
         if IO is not None:
             return IO
 
-    raise TypeError(f"Unknown type {_type}")
+    raise TypeError(f"Unknown type {_type} ({type(_type)})")
 
 
 def get_types(types):
