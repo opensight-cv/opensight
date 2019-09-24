@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import opsi.modules.fps as fps
 import math
 import cv2
 import numpy as np
@@ -147,7 +148,7 @@ class DrawContours(Function):
 
     def run(self, inputs):
         draw = inputs.img
-        cv2.drawContours(draw, inputs.conts, -1, (100, 100, 100), 3)
+        cv2.drawContours(draw, inputs.conts, -1, (255, 255, 0), 3)
         return self.Outputs(visual=draw)
 
 
@@ -160,7 +161,7 @@ class FindCenter(Function):
     @dataclass
     class Inputs:
         contours: Contours
-        img: MatBW
+        img: Mat
 
     @dataclass
     class Outputs:
@@ -168,7 +169,6 @@ class FindCenter(Function):
         visual: Mat
 
     def run(self, inputs):
-        image = cv2.cvtColor(inputs.img, cv2.COLOR_GRAY2BGR)
         midpoint = None
         for i in range(self.settings.maxConts):
             cnt = inputs.contours[i]
@@ -177,8 +177,10 @@ class FindCenter(Function):
             cy = (y + (y + h)) // 2
             midpoint = (cx, cy)
             if self.settings.draw:
-                image = cv2.circle(image, midpoint, 10, (0, 0, 255), 3)
-        return self.Outputs(center=midpoint, visual=image)
+                image = cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
+                return self.Outputs(center=midpoint, visual=image)
+            else:
+                return self.Outputs(center=midpoint, visual=inputs.img)
 
 
 class FindAngle(Function):
@@ -197,8 +199,8 @@ class FindAngle(Function):
         visual: Mat
 
     def run(self, inputs):
-        width = inputs.img.shape[0] // 2
-        height = inputs.img.shape[1] // 2
+        width = inputs.img.shape[1] // 2
+        height = inputs.img.shape[0] // 2
         x = inputs.pnt[0]
         y = inputs.pnt[1]
         delta = (width - x, height - y)
@@ -222,7 +224,7 @@ class BitwiseAND(Function):
 
     def run(self, inputs):
         res = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask)
-        return self.Outpus(result=res)
+        return self.Outputs(result=res)
 
 
 class ConvexHulls(Function):
@@ -250,3 +252,31 @@ class MatBWToMat(Function):
 
     def run(self, inputs):
         return self.Outputs(regMat=cv2.cvtColor(inputs.bwMat, cv2.COLOR_GRAY2BGR))
+
+
+class DrawFPS(Function):
+    def on_start(self):
+        self.f = fps.FPS()
+        self.f.start()
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        imgFPS: Mat
+
+    def run(self, inputs):
+        self.f.update()
+        fps_str = str(round(self.f.fps(), 1))
+        text = cv2.putText(
+            inputs.img,
+            fps_str,
+            (30, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            (255, 255, 255),
+            lineType=cv2.LINE_AA,
+        )
+        return self.Outputs(imgFPS=text)
