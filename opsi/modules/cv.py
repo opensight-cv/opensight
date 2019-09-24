@@ -164,7 +164,7 @@ class FindCenter(Function):
 
     @dataclass
     class Outputs:
-        center: int
+        center: ()
         visual: Mat
 
     def run(self, inputs):
@@ -180,14 +180,15 @@ class FindCenter(Function):
                 image = cv2.circle(image, midpoint, 10, (0, 0, 255), 3)
         return self.Outputs(center=midpoint, visual=image)
 
+
 class FindAngle(Function):
     @dataclass
     class Settings:
         draw: bool
 
-    @dataclas
+    @dataclass
     class Inputs:
-        pnt: int
+        pnt: ()
         img: Mat
 
     @dataclass
@@ -196,17 +197,18 @@ class FindAngle(Function):
         visual: Mat
 
     def run(self, inputs):
-        width = input.img.shape[0] // 2
-        height = input.img.shape[1] // 2
-        x = input.pnt[0]
-        y = input.pnt[1]
+        width = inputs.img.shape[0] // 2
+        height = inputs.img.shape[1] // 2
+        x = inputs.pnt[0]
+        y = inputs.pnt[1]
         delta = (width - x, height - y)
         deg = math.degrees(math.atan2(delta[1], delta[0]))
         if self.settings.draw:
-            line = cv2.line(input.img, (width, height), (x, y), (0, 255, 0), 2)
+            line = cv2.line(inputs.img, (width, height), (x, y), (0, 255, 0), 2)
             return self.Outputs(angle=deg, visual=line)
         else:
             return self.Outputs(angle=deg, visual=inputs.img)
+
 
 class BitwiseAND(Function):
     @dataclass
@@ -221,6 +223,7 @@ class BitwiseAND(Function):
     def run(self, inputs):
         res = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask)
         return self.Outpus(result=res)
+
 
 class ConvexHulls(Function):
     @dataclass
