@@ -232,6 +232,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
 					nodeTree.nodes.splice(i, 1);
 				}
 			}
+			postRequest();
 		});
 		settingsGo(this.settings);
 	};

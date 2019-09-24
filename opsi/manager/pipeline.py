@@ -114,14 +114,18 @@ class Pipeline:
     def prune_nodetree(self, new_node_ids):
         old_node_ids = set(self.nodes.keys())
         new_node_ids = set(new_node_ids)
+        removed = old_node_ids - new_node_ids
 
         for node in self.nodes.values():
             node.reset_links()
             if node.func is not None:
                 node.func.dispose()
             node.func = None
+            if node.id in removed:
+                self.run_order.clear()
+                del self.adjList[node]
 
         # remove deleted nodes
-        for uuid in old_node_ids - new_node_ids:
+        for uuid in removed:
             self.nodes[uuid].dispose()
             del self.nodes[uuid]
