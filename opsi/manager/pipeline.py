@@ -82,7 +82,7 @@ class Pipeline:
         self.nodes: Dict[UUID, Node] = {}
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
-        self.lock = FifoLock(self.program)
+        self.lock = FifoLock(self.program.queue)
 
     def run(self):
         if not self.run_order:

@@ -2,9 +2,9 @@ import threading
 
 
 class FifoLock:
-    def __init__(self, program=None, *, queue=None):
-        if queue is None:
-            queue = program.queue
+    def __init__(self, queue):
+        # if queue is None:
+        #     queue = program.queue
         self.queue = queue
         self.condition = threading.Condition()
 

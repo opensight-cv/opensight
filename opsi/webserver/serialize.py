@@ -215,7 +215,7 @@ def _process_node_settings(program: Program, node: NodeN):
 
 def import_nodetree(program: Program, nodetree: NodeTreeN):
     # todo: how to cache FifoLock in the stateless import_nodetree function?
-    with FifoLock(program):
+    with FifoLock(program.queue):
         ids = [node.id for node in nodetree.nodes]
         program.pipeline.prune_nodetree(ids)
 
