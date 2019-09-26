@@ -1,3 +1,4 @@
+import logging
 from itertools import chain
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
@@ -6,6 +7,7 @@ from toposort import toposort
 
 from opsi.manager.link import Link, NodeLink, StaticLink
 
+from ..util.concurrency import FifoLock
 from .manager_schema import Function
 
 
@@ -16,6 +18,7 @@ class Connection(NamedTuple):
 
 
 Links = Dict[str, Connection]
+logger = logging.getLogger(__name__)
 
 
 class Node:
@@ -74,10 +77,12 @@ class Node:
 
 
 class Pipeline:
-    def __init__(self):
+    def __init__(self, program):
+        self.program = program
         self.nodes: Dict[UUID, Node] = {}
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
+        self.lock = FifoLock(self.program)
 
     def run(self):
         if not self.run_order:
@@ -86,6 +91,14 @@ class Pipeline:
         for n in self.run_order:  # Each node to be processed
             n.next_frame()
             n.run()
+
+    def mainloop(self):
+        while True:
+            try:
+                with self.lock:
+                    self.run()
+            except Exception as e:
+                logger.exception(e)
 
     def create_node(self, func: Type[Function], uuid: UUID):
         """

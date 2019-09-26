@@ -84,11 +84,7 @@ def main():
     loop = create_threaded_loop()
     asyncio.run_coroutine_threadsafe(run_app(webserver.app, host="0.0.0.0"), loop)
 
-    while True:
-        try:
-            program.pipeline.run()
-        except Exception as e:
-            logger.exception(e)
+    program.mainloop()
 
 
 if __name__ == "__main__":

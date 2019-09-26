@@ -8,6 +8,7 @@ from ..manager.manager_schema import Function, ModuleItem
 from ..manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from ..manager.program import Program
 from ..manager.types import *
+from ..util.concurrency import FifoLock
 from .schema import *
 
 __all__ = ("export_manager", "export_nodetree", "import_nodetree")
@@ -213,18 +214,18 @@ def _process_node_settings(program: Program, node: NodeN):
 
 
 def import_nodetree(program: Program, nodetree: NodeTreeN):
-    # return "NotImplemented"
+    # todo: how to cache FifoLock in the stateless import_nodetree function?
+    with FifoLock(program):
+        ids = [node.id for node in nodetree.nodes]
+        program.pipeline.prune_nodetree(ids)
 
-    ids = [node.id for node in nodetree.nodes]
-    program.pipeline.prune_nodetree(ids)
+        for node in nodetree.nodes:
+            if node.id not in program.pipeline.nodes:
+                program.create_node(node.type, node.id)
 
-    for node in nodetree.nodes:
-        if node.id not in program.pipeline.nodes:
-            program.create_node(node.type, node.id)
-
-    for node in nodetree.nodes:
-        _process_node_settings(program, node)
-        if LINKS_INSTEAD_OF_INPUTS:
-            _process_node_links(program, node)
-        else:
-            _process_node_inputs(program, node)
+        for node in nodetree.nodes:
+            _process_node_settings(program, node)
+            if LINKS_INSTEAD_OF_INPUTS:
+                _process_node_links(program, node)
+            else:
+                _process_node_inputs(program, node)
