@@ -4,6 +4,7 @@ from networktables import NetworkTables
 
 from opsi.manager.manager_schema import Function
 
+
 class InitializeNT(Function):
     @dataclass
     class Settings:

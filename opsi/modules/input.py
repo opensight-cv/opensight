@@ -1,11 +1,11 @@
+import glob
+import re
+import subprocess
+from collections import OrderedDict
 from dataclasses import dataclass
 
 import cv2
-import subprocess
-import re
-import glob
 
-from collections import OrderedDict
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat
 

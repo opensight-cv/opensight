@@ -1,11 +1,11 @@
+import math
 from dataclasses import dataclass
 
-import opsi.modules.fps as fps
-import math
 import cv2
 import numpy as np
 
 import opsi.manager.cvwrapper as cvw
+import opsi.modules.fps as fps
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW, RangeType
 
