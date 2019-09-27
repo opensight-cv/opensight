@@ -1,4 +1,6 @@
 import uuid
+import logging
+
 from dataclasses import asdict
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
@@ -206,11 +208,13 @@ def _process_node_inputs(program: Program, node: NodeN):
 
 
 def _process_node_settings(program: Program, node: NodeN):
-    real_node = program.pipeline.nodes[node.id]
+    try:
+        real_node = program.pipeline.nodes[node.id]
 
-    settings = real_node.func_type.Settings(**node.settings)
-
-    real_node.settings = settings
+        settings = real_node.func_type.Settings(**node.settings)
+        real_node.settings = settings
+    except TypeError as e:
+        logging.getLogger(__name__).debug(e, exc_info=True)
 
 
 def import_nodetree(program: Program, nodetree: NodeTreeN):

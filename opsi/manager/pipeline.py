@@ -8,6 +8,7 @@ from toposort import toposort
 from opsi.manager.link import Link, NodeLink, StaticLink
 
 from ..util.concurrency import FifoLock
+from ..util.persistence import PersistentNodetree
 from .manager_schema import Function
 
 
@@ -79,6 +80,7 @@ class Node:
 class Pipeline:
     def __init__(self, program):
         self.program = program
+        self.persist = PersistentNodetree()
         self.nodes: Dict[UUID, Node] = {}
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
@@ -97,6 +99,8 @@ class Pipeline:
             try:
                 with self.lock:
                     self.run()
+            except (TypeError, AttributeError) as e:
+                logger.debug(e, exc_info=True)
             except Exception as e:
                 logger.exception(e)
 

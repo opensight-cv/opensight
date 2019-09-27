@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import asyncio
+import json
 import logging
 import threading
 from os import listdir
@@ -14,6 +15,8 @@ import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.webserver import WebServer
+from opsi.webserver.schema import NodeTreeN
+from opsi.webserver.serialize import import_nodetree
 
 
 def make_program(module_path):
@@ -25,14 +28,6 @@ def make_program(module_path):
             program.manager.register_module(ModulePath(dir, path))
 
     return program
-
-
-def make_nodetree(program):
-    func_type = "demo.five/Five"
-    node = program.create_node(func_type)
-
-    func_type = "demo.five/Sum"
-    node = program.create_node(func_type)
 
 
 def test_webserver(webserver):
@@ -72,11 +67,17 @@ def create_threaded_loop():
 
 def main():
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
     package_path = dirname(opsi.__file__)
     program = make_program(package_path)
+
+    nodetree = program.pipeline.persist.get()
+    if nodetree is not None:
+        threading.Thread(
+            target=import_nodetree, args=(program, NodeTreeN(**nodetree))
+        ).start()
 
     webserver = WebServer(program, join(package_path, "frontend"))
     test_webserver(webserver)
