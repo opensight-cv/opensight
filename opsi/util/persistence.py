@@ -1,6 +1,5 @@
 import json
 import logging
-
 from os import makedirs
 from os.path import expanduser, join
 
