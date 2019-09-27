@@ -176,11 +176,14 @@ class FindCenter(Function):
             cx = (x + (x + w)) // 2
             cy = (y + (y + h)) // 2
             midpoint = (cx, cy)
-            if self.settings.draw:
-                image = cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
-                return self.Outputs(center=midpoint, visual=image)
+            if cnt != None:
+                if self.settings.draw:
+                    image = cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
+                    return self.Outputs(center=midpoint, visual=image)
+                else:
+                    return self.Outputs(center=midpoint, visual=inputs.img)
             else:
-                return self.Outputs(center=midpoint, visual=inputs.img)
+                return self.Outputs(center=(0, 0), visual=inputs.img)
 
 
 class FindAngle(Function):

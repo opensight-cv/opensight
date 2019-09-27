@@ -16,7 +16,8 @@ class InitializeNT(Function):
         if not self.settings.client:
             NetworkTables.initialize()
         else:
-            static = f"10.{self.settings.teamnum[:2]}.{self.settings.teamnum[:-2]}.2"
+            teamStr = str(self.settings.teamnum)
+            static = f"10.{teamStr[:2]}.{teamStr[:-2]}.2"
             mDNS = f"roboRIO-{self.settings.teamnum}-FRC.local"
             if self.settings.staticIP:
                 NetworkTables.initialize(server=static)
