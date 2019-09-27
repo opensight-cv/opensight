@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class WebserverTest:
     def __init__(self, app):
         self.app = app
@@ -8,7 +13,12 @@ class WebserverTest:
             # Importing this requires requests
             # Since this is only for testing,
             # don't require dependency unless used
-            from starlette.testclient import TestClient
+
+            try:
+                from starlette.testclient import TestClient
+            except ModuleNotFoundError:
+                logger.exception("Requests module needed for WebserverTest")
+                raise
 
             self.client = TestClient(self.app)
 
