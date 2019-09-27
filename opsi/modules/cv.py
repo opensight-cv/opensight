@@ -170,20 +170,21 @@ class FindCenter(Function):
 
     def run(self, inputs):
         midpoint = None
+        cnt = None
         for i in range(self.settings.maxConts):
-            cnt = inputs.contours[i]
-            x, y, w, h = cv2.boundingRect(cnt)
-            cx = (x + (x + w)) // 2
-            cy = (y + (y + h)) // 2
-            midpoint = (cx, cy)
-            if cnt != None:
+            if len(inputs.contours) != 0:
+                cnt = inputs.contours[i]
+                x, y, w, h = cv2.boundingRect(cnt)
+                cx = (x + (x + w)) // 2
+                cy = (y + (y + h)) // 2
+                midpoint = (cx, cy)
                 if self.settings.draw:
                     image = cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
                     return self.Outputs(center=midpoint, visual=image)
                 else:
                     return self.Outputs(center=midpoint, visual=inputs.img)
             else:
-                return self.Outputs(center=(0, 0), visual=inputs.img)
+                return self.Outputs(center=(inputs.img.shape[1] // 2, inputs.img.shape[0] // 2), visual=inputs.img)
 
 
 class FindAngle(Function):
