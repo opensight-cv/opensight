@@ -2,13 +2,12 @@ from starlette.applications import Starlette
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from ..manager.program import Program
 from .api import Api
 from .test import WebserverTest
 
 
 class WebServer:
-    def __init__(self, program: Program, frontend: str):
+    def __init__(self, program, frontend: str):
         self.program = program
 
         self.app = Starlette()

@@ -1,9 +1,13 @@
+import logging
 from typing import List, NamedTuple
+
+logger = logging.getLogger(__name__)
+
 
 try:
     from numpy import ndarray
 except ModuleNotFoundError:
-    print("Warning: numpy not found")
+    logger.warning("numpy not found")
 
     ndarray = object  # for the custom type declarations
 

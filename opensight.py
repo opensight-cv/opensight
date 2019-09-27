@@ -18,6 +18,9 @@ from opsi.webserver import WebServer
 from opsi.webserver.schema import NodeTreeN
 from opsi.webserver.serialize import import_nodetree
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def make_program(module_path):
     dir = join(module_path, "modules")
@@ -31,11 +34,8 @@ def make_program(module_path):
 
 
 def test_webserver(webserver):
-    print()
-    print(webserver.get_funcs())
-    print()
-    print(webserver.get_nodes())
-    print()
+    logger.info("Funcs: %s", webserver.get_funcs())
+    logger.info("Nodes: %s", webserver.get_nodes())
 
 
 # reimplementation of uvicorn.run without main-thread calls
@@ -66,21 +66,10 @@ def create_threaded_loop():
 
 
 def main():
-
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
     package_path = dirname(opsi.__file__)
     program = make_program(package_path)
 
-    nodetree = program.pipeline.persist.get()
-    if nodetree is not None:
-        threading.Thread(
-            target=import_nodetree, args=(program, NodeTreeN(**nodetree))
-        ).start()
-
     webserver = WebServer(program, join(package_path, "frontend"))
-    test_webserver(webserver)
 
     loop = create_threaded_loop()
     asyncio.run_coroutine_threadsafe(run_app(webserver.app, host="0.0.0.0"), loop)

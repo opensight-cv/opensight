@@ -7,12 +7,13 @@ from ..manager.link import NodeLink
 from ..manager.manager import Manager
 from ..manager.manager_schema import Function, ModuleItem
 from ..manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
-from ..manager.program import Program
 from ..manager.types import *
 from ..util.concurrency import FifoLock
 from .schema import *
 
 __all__ = ("export_manager", "export_nodetree", "import_nodetree")
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------
@@ -160,7 +161,7 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 # ---------------------------------------------------------
 
 
-def _process_node_links(program: Program, node: NodeN) -> List[str]:
+def _process_node_links(program, node: NodeN) -> List[str]:
     links: Links = {}
     empty_links: List[str] = []
 
@@ -192,7 +193,7 @@ def _process_widget(type: Type, val):
     return val
 
 
-def _process_node_inputs(program: Program, node: NodeN):
+def _process_node_inputs(program, node: NodeN):
     empty_links = _process_node_links(program, node)
 
     if LINKS_INSTEAD_OF_INPUTS:
@@ -206,17 +207,17 @@ def _process_node_inputs(program: Program, node: NodeN):
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
 
 
-def _process_node_settings(program: Program, node: NodeN):
+def _process_node_settings(program, node: NodeN):
     try:
         real_node = program.pipeline.nodes[node.id]
 
         settings = real_node.func_type.Settings(**node.settings)
         real_node.settings = settings
-    except TypeError as e:
-        logging.getLogger(__name__).debug(e, exc_info=True)
+    except TypeError:
+        logger.debug("Error during nodetree import", exc_info=True)
 
 
-def import_nodetree(program: Program, nodetree: NodeTreeN):
+def import_nodetree(program, nodetree: NodeTreeN):
     # todo: how to cache FifoLock in the stateless import_nodetree function?
     with FifoLock(program.queue):
         ids = [node.id for node in nodetree.nodes]

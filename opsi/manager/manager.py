@@ -1,10 +1,13 @@
 import importlib
 import inspect
+import logging
 import os.path
 import sys
 from typing import Dict, List, Tuple, Type
 
 from .manager_schema import Function, ModuleInfo, ModuleItem, ModulePath, isfunction
+
+logger = logging.getLogger(__name__)
 
 
 def import_module(path: ModulePath):
@@ -75,7 +78,7 @@ class Manager:
 
         if len(funcs_tuple) == 0:
             # Todo: error, return value?
-            print(f"No Functions found in module {path}")
+            logger.debug("No Functions found in module %s", path)
             return
 
         funcs: Dict[str, Type[Function]] = {}

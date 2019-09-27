@@ -1,52 +1,76 @@
-import json
 import logging
-from os import makedirs
-from os.path import expanduser, join
+from json import JSONDecodeError
+from pathlib import PosixPath
+
+from pydantic import ValidationError
+
+from ..webserver.schema import NodeTreeN
+
+logger = logging.getLogger(__name__)
 
 
 class PersistentNodetree:
+    PATHS = ("/var/lib/opensight", "~/.local/share/opensight")
+    NODETREE_PATH = "nodetree.json"
+
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.nodetree = None
-        self.path = self.__get_path__()
+        self._nodetree = None
 
-    def __get_path__(self):
-        return self.__create__("/var/lib/opensight") or self.__create__(
-            join(expanduser("~"), ".local/share/opensight")
+        self.base_path = self._get_path()
+        self.nodetree_path = (
+            self.base_path / self.NODETREE_PATH if self.enabled else None
         )
-        self.logger.error("Failed to setup nodetree persistent")
+
+    def _get_path(self):
+        for path in self.PATHS:
+            path = PosixPath(path).expanduser().resolve()  # get absolute canonical path
+
+            try:
+                logger.debug("Trying path: %s", path)
+
+                # mkdir -p and then ensure file created + write perms
+                path.mkdir(parents=True, exist_ok=True)
+                (path / self.NODETREE_PATH).touch()
+
+            except OSError:
+                logger.debug("Skipping path", exc_info=True)
+                continue
+
+            else:
+                logger.info("Decided upon path: %s", path)
+
+                return path
+
+        logger.error("Failed to setup persistence")
         return None
 
-    def __create__(self, path):
-        try:
-            # mkdir -p and then ensure file created + write perms
-            makedirs(path, exist_ok=True)
-            open(join(path, "nodetree.json"), "a+").close()
-        except IOError as e:
-            self.logger.debug(e, exc_info=True)
-            return None
-        return path
+    @property
+    def nodetree(self) -> NodeTreeN:
+        if self._nodetree:
+            return self._nodetree
 
-    def set(self, nodetree):
-        if self.path is None:
+        try:
+            self._nodetree = NodeTreeN.parse_file(self.nodetree_path)
+            return self._nodetree
+        except (ValidationError, JSONDecodeError):
+            logger.warning("Nodetree persistence invalid", exc_info=True)
+        except OSError:
+            logger.exception("Failed to read from nodetree persistence")
+
+        return None
+
+    @nodetree.setter
+    def nodetree(self, nodetree: NodeTreeN):
+        if self.base_path is None:
             return
-        self.nodetree = nodetree
-        try:
-            with open(join(self.path, "nodetree.json"), "w") as file:
-                file.write(nodetree.json())
-        except Exception as e:
-            self.logger.exception(e)
-            self.logger.error("Failed to write to nodetree persistence")
 
-    def get(self):
-        if self.nodetree:
-            return self.nodetree
+        self._nodetree = nodetree
+
         try:
-            with open(join(self.path, "nodetree.json"), "r") as file:
-                return json.load(file)
-        except json.decoder.JSONDecodeError:
-            self.logger.info("Nodetree persistence invalid, continuing...")
-        except Exception as e:
-            self.logger.exception(e)
-            self.logger.error("Failed to read from nodetree persistence")
-        return None
+            self.nodetree_path.write_text(nodetree.json())
+        except OSError:
+            logger.exception("Failed to write to nodetree persistence")
+
+    @property
+    def enabled(self):
+        return bool(self.base_path)

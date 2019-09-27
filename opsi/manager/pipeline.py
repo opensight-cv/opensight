@@ -8,8 +8,9 @@ from toposort import toposort
 from opsi.manager.link import Link, NodeLink, StaticLink
 
 from ..util.concurrency import FifoLock
-from ..util.persistence import PersistentNodetree
 from .manager_schema import Function
+
+logger = logging.getLogger(__name__)
 
 
 # Map inputname -> (output_node, output_name)
@@ -19,7 +20,6 @@ class Connection(NamedTuple):
 
 
 Links = Dict[str, Connection]
-logger = logging.getLogger(__name__)
 
 
 class Node:
@@ -80,7 +80,6 @@ class Node:
 class Pipeline:
     def __init__(self, program):
         self.program = program
-        self.persist = PersistentNodetree()
         self.nodes: Dict[UUID, Node] = {}
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
@@ -99,10 +98,14 @@ class Pipeline:
             try:
                 with self.lock:
                     self.run()
-            except (TypeError, AttributeError) as e:
-                logger.debug(e, exc_info=True)
-            except Exception as e:
-                logger.exception(e)
+            except (TypeError, AttributeError):
+                logger.debug(
+                    "(Harmless?) Error during pipeline mainloop", exc_info=True
+                )
+            except KeyboardInterrupt:
+                raise
+            except:  # todo: wildcard except
+                logger.exception("Error during pipeline mainloop")
 
     def create_node(self, func: Type[Function], uuid: UUID):
         """

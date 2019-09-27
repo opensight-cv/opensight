@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 
-from ..manager.program import Program
 from .schema import NodeTreeN, SchemaF
 from .serialize import *
 
 
 class Api:
-    def __init__(self, parent_app, program: Program, prefix="/api"):
+    def __init__(self, parent_app, program, prefix="/api"):
         self.program = program
 
         self.app = FastAPI(openapi_prefix=prefix)
@@ -24,5 +23,7 @@ class Api:
         return export_nodetree(self.program.pipeline)
 
     def save_nodes(self, *, nodetree: NodeTreeN):
-        self.program.pipeline.persist.set(nodetree)
         import_nodetree(self.program, nodetree)
+
+        # only save if successful import
+        self.program.persist.nodetree = nodetree
