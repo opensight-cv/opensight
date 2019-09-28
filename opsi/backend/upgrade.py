@@ -1,8 +1,8 @@
-import tarfile
-import tempfile
+import logging
 import os
 import subprocess
-import logging
+import tarfile
+import tempfile
 
 
 class UpgradeClient:

@@ -184,7 +184,10 @@ class FindCenter(Function):
                 else:
                     return self.Outputs(center=midpoint, visual=inputs.img)
             else:
-                return self.Outputs(center=(inputs.img.shape[1] // 2, inputs.img.shape[0] // 2), visual=inputs.img)
+                return self.Outputs(
+                    center=(inputs.img.shape[1] // 2, inputs.img.shape[0] // 2),
+                    visual=inputs.img,
+                )
 
 
 class FindAngle(Function):

@@ -1,10 +1,10 @@
 from subprocess import CalledProcessError
+
 from fastapi import FastAPI, File, UploadFile
 
+from ..backend.upgrade import UpgradeClient
 from .schema import NodeTreeN, SchemaF
 from .serialize import *
-
-from ..backend.upgrade import UpgradeClient
 
 
 class Api:
