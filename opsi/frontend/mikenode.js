@@ -1,3 +1,42 @@
+$(document).ready(function () {
+
+	$("#uploadBTN").click(function (event) {
+
+		//stop submit the form, we will post it manually.
+		event.preventDefault();
+
+		// Get form
+		var form = $('#fileinfo')[0];
+
+		// Create an FormData object
+		var data = new FormData(form);
+
+		// disabled the submit button
+		$("#uploadBTN").prop("disabled", true);
+
+		$.ajax({
+			type: "POST",
+			enctype: 'multipart/form-data',
+			url: "/api/upgrade",
+			data: data,
+			processData: false,
+			contentType: false,
+			cache: false,
+			// timeout: 600000,
+			success: function (data) {
+				$("#result").text(data);
+				console.log("SUCCESS : ", data);
+				$("#uploadBTN").prop("disabled", false);
+			},
+			error: function (e) {
+				$("#result").text(e.responseText);
+				console.log("ERROR : ", e);
+				$("#uploadBTN").prop("disabled", false);
+			}
+		});
+	});
+});
+
 var cursorX = 0;
 var cursorY = 0;
 
@@ -793,7 +832,7 @@ const functions = function(jsonData) {
 						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([x, new strInput(nam[j],this.rawArr[i][2][x].params.default)]);
 						}else{
-							this.settings[this.settingsCount].push([x, new strInput(nam[j],"enter text")]);
+							this.settings[this.settingsCount].push([x, new strInput(nam[j],"")]);
 
 						}
 					break;

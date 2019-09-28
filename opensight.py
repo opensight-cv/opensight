@@ -18,7 +18,7 @@ from opsi.webserver import WebServer
 from opsi.webserver.schema import NodeTreeN
 from opsi.webserver.serialize import import_nodetree
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
