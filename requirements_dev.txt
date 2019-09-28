@@ -2,6 +2,7 @@ aiofiles
 fastapi
 numpy
 pynetworktables
+python-multipart
 toposort
 uvicorn
 

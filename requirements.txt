@@ -6,6 +6,8 @@ httptools==0.0.13
 numpy==1.17.2
 pydantic==0.32.2
 pynetworktables==2019.0.2
+python-multipart==0.0.5
+six==1.12.0
 starlette==0.12.8
 toposort==1.5
 uvicorn==0.9.0
