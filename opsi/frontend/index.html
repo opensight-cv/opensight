@@ -6,26 +6,26 @@
 		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 		<title>OpenSight</title>
 		<link rel="stylesheet" href="ui.css" />
-        <link rel="stylesheet" href="node.css" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="stylesheet" href="node.css" />
+		<link rel="icon" type="image/png" sizes="192x192" href="favicon/favicon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
 	</head>
 	<body id="body">
 
-
 		<canvas id="canvas"></canvas>
 		<div id="container">
-			<div id="upload" style="position:absolute;bottom:0;float:left">
-				<form id="fileinfo" enctype="multipart/form-data" method="post" name="fileinfo">
-					<input type="file" name="file" required />
-				</form>
-				<input id="uploadBTN" type="button" value="Upload"/>
-			</div>
 		</div>
 
 		<div id="menu-container">
+		</div>
+
+		<div id="upload">
+			<form id="fileinfo" enctype="multipart/form-data" method="post" name="fileinfo">
+				<input type="file" name="file" required />
+			</form>
+			<input id="uploadBTN" type="button" value="Update"/>
 		</div>
 
 		<script src="static/jquery-3.4.1.min.js"></script>

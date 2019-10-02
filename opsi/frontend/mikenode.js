@@ -14,6 +14,7 @@ $(document).ready(function () {
 		// disabled the submit button
 		$("#uploadBTN").prop("disabled", true);
 
+		// hi mike, this is my crappy button. feel free to replace it
 		$.ajax({
 			type: "POST",
 			enctype: 'multipart/form-data',
@@ -82,15 +83,15 @@ function getCursorXY(e) {
 	cursorX = window.Event
 		? e.pageX
 		: event.clientX +
-		  (document.documentElement.scrollLeft
-				? document.documentElement.scrollLeft
-				: document.body.scrollLeft);
+		(document.documentElement.scrollLeft
+		 ? document.documentElement.scrollLeft
+		 : document.body.scrollLeft);
 	cursorY = window.Event
 		? e.pageY
 		: event.clientY +
-		  (document.documentElement.scrollTop
-				? document.documentElement.scrollTop
-				: document.body.scrollTop);
+		(document.documentElement.scrollTop
+		 ? document.documentElement.scrollTop
+		 : document.body.scrollTop);
 }
 // master variables
 var styles = "";
@@ -146,9 +147,9 @@ $(document).ready(function() {
 				if (
 					nodes[list][0].substring(36, 39) ==
 						$(this)
-							.attr("id")
-							.substring(36, 39) &&
-					!searchForInput(nodes, $(this).attr("id"))
+						.attr("id")
+						.substring(36, 39) &&
+						!searchForInput(nodes, $(this).attr("id"))
 				) {
 					nodes[list].push($(this).attr("id"));
 					inHand = false;
@@ -286,10 +287,10 @@ const intInput = function(name, def) {
 		this.id = uuid;
 		return (
 			'<input value="' +def+'" type="number" class="numInput int setting" oninput="" id="' +
-			uuid +
-			name +
-			'">' +
-			"</input>"
+				uuid +
+				name +
+				'">' +
+				"</input>"
 		);
 	};
 	this.go = function() {
@@ -332,10 +333,10 @@ const decInput = function(name, def) {
 		this.id = uuid;
 		return (
 			'<input value="' + def + '" type="number" class="numInput setting" oninput="" id="' +
-			uuid +
-			name +
-			'">' +
-			"</input>"
+				uuid +
+				name +
+				'">' +
+				"</input>"
 		);
 	};
 	this.go = function() {
@@ -368,10 +369,10 @@ const strInput = function(name, def) {
 		this.id = uuid;
 		return (
 			'<input value="'+def+'" class="strInput setting" oninput="" id="' +
-			uuid +
-			name +
-			'">' +
-			"</input>"
+				uuid +
+				name +
+				'">' +
+				"</input>"
 		);
 	};
 	this.go = function() {
@@ -403,24 +404,24 @@ const booleanInput = function(name, def) {
 		if(def == "true"){
 			return (
 				'<label class="switch">' +
-				'<input checked type="checkbox" id="' +
-				uuid +
-				name +
-				'">' +
-				'<span class="slidey round"></span>' +
-				"</label>"
+					'<input checked type="checkbox" id="' +
+					uuid +
+					name +
+					'">' +
+					'<span class="slidey round"></span>' +
+					"</label>"
 			);
 
 		}else{
 			
 			return (
 				'<label class="switch">' +
-				'<input type="checkbox" id="' +
-				uuid +
-				name +
-				'">' +
-				'<span class="slidey round"></span>' +
-				"</label>"
+					'<input type="checkbox" id="' +
+					uuid +
+					name +
+					'">' +
+					'<span class="slidey round"></span>' +
+					"</label>"
 			);
 		}
 	};
@@ -478,19 +479,19 @@ const range = function(min, max, name, defMin, defMax) {
 		this.id = uuid;
 		return (
 			'<div class="setting slider" id="' +
-			uuid +
-			name +
-			'"></div><div id="' +
-			uuid +
-			name +
-			'out1"class="setting sliderOut">' +
-			defMin +
-			'</div><div id="' +
-			uuid +
-			name +
-			'out2"class="setting sliderOut2">' +
-			defMax +
-			"</div>"
+				uuid +
+				name +
+				'"></div><div id="' +
+				uuid +
+				name +
+				'out1"class="setting sliderOut">' +
+				defMin +
+				'</div><div id="' +
+				uuid +
+				name +
+				'out2"class="setting sliderOut2">' +
+				defMax +
+				"</div>"
 		);
 	};
 	this.go = function() {
@@ -539,14 +540,14 @@ const slide = function(min, max, name, def) {
 		this.id = uuid;
 		return (
 			'<div class="setting slider" id="' +
-			uuid +
-			name +
-			'"></div><div id="' +
-			uuid +
-			name +
-			'out"class="setting sliderOut">' +
-			this.val +
-			"</div>"
+				uuid +
+				name +
+				'"></div><div id="' +
+				uuid +
+				name +
+				'out"class="setting sliderOut">' +
+				this.val +
+				"</div>"
 		);
 	};
 	this.go = function() {
@@ -596,11 +597,11 @@ const box = function(options, name, def) {
 		this.id = uuid;
 		return (
 			'<select class="setting dropdown" id="' +
-			uuid +
-			name +
-			'">' +
-			loopy() +
-			"</select>"
+				uuid +
+				name +
+				'">' +
+				loopy() +
+				"</select>"
 		);
 	};
 	this.go = function() {
@@ -740,14 +741,14 @@ var killLoop = function(id) {
 				nodes.splice(i, 1);
 				i--;
 				list--;
-		}else if(typeof(nodes[i][1])!="undefined"){
-if(nodes[i][1].search(id) != -1) {
-	nodes.splice(i, 1);
-	i--;
-	list--;
-}
-		} 
-	}}
+			}else if(typeof(nodes[i][1])!="undefined"){
+				if(nodes[i][1].search(id) != -1) {
+					nodes.splice(i, 1);
+					i--;
+					list--;
+				}
+			}
+		}}
 };
 
 //tofix
@@ -812,40 +813,40 @@ const functions = function(jsonData) {
 			let nam = Object.keys(this.rawArr[i][2]);
 
 			switch (this.rawArr[i][2][x].type) {
-				case "dec":
-						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+			case "dec":
+				if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([x, new decInput(nam[j],this.rawArr[i][2][x].params.default)]);
 				}else{
 					this.settings[this.settingsCount].push([x, new decInput(nam[j],0)]);
-		}
+				}
 				
-					break;
-				case "int":
-					if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
-						this.settings[this.settingsCount].push([x, new intInput(nam[j],this.rawArr[i][2][x].params.default)]);
-					}else{
-						this.settings[this.settingsCount].push([x, new intInput(nam[j],0)]);
-			}
-					
-					break;
-				case "str":
-						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+				break;
+			case "int":
+				if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+					this.settings[this.settingsCount].push([x, new intInput(nam[j],this.rawArr[i][2][x].params.default)]);
+				}else{
+					this.settings[this.settingsCount].push([x, new intInput(nam[j],0)]);
+				}
+
+				break;
+			case "str":
+				if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([x, new strInput(nam[j],this.rawArr[i][2][x].params.default)]);
-						}else{
-							this.settings[this.settingsCount].push([x, new strInput(nam[j],"")]);
+				}else{
+					this.settings[this.settingsCount].push([x, new strInput(nam[j],"")]);
 
-						}
-					break;
-				case "boolean":
-						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+				}
+				break;
+			case "boolean":
+				if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([x, new booleanInput(nam[j],this.rawArr[i][2][x].params.default)]);
-						}else{
-							this.settings[this.settingsCount].push([x, new booleanInput(nam[j],"false")]);
+				}else{
+					this.settings[this.settingsCount].push([x, new booleanInput(nam[j],"false")]);
 
-						}
-					break;
-				case "slide":
-						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+				}
+				break;
+			case "slide":
+				if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([
 						x,
 						new slide(
@@ -865,9 +866,9 @@ const functions = function(jsonData) {
 						]);
 
 					}
-					break;
-				case "range":
-						if(typeof(this.rawArr[i][2][x].params.defaultMin)!="undefined"){
+				break;
+			case "range":
+				if(typeof(this.rawArr[i][2][x].params.defaultMin)!="undefined"){
 					this.settings[this.settingsCount].push([
 						x,
 						new range(
@@ -888,9 +889,9 @@ const functions = function(jsonData) {
 						]);
 
 					}
-					break;
-				case "box":
-						if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
+				break;
+			case "box":
+				if(typeof(this.rawArr[i][2][x].params.default)!="undefined"){
 					this.settings[this.settingsCount].push([
 						x,
 						new box(this.rawArr[i][2][x].params.options, nam[j],this.rawArr[i][2][x].params.default)
@@ -901,7 +902,7 @@ const functions = function(jsonData) {
 						]);
 
 					}
-					break;
+				break;
 			}
 			j++;
 		}
@@ -1042,57 +1043,59 @@ const importNodeTree = function(nodetree, functions) {
 
 			for (x in nodetree.nodes[i].settings) {
 				switch (functions.findSettingType(x, nodetree.nodes[i].type)) {
-					case "dec":
-						$("#" + nodetree.nodes[i].id + x).val(
-							nodetree.nodes[i].settings[x]
-						);
-						break;
-					case "int":
-						$("#" + nodetree.nodes[i].id + x).val(
-							nodetree.nodes[i].settings[x]
-						);
-						break;
-					case "str":
-						$("#" + nodetree.nodes[i].id + "str").val(
-							nodetree.nodes[i].settings[x]
-						);
-						break;
-					case "boolean":
-						if (nodetree.nodes[i].settings[x] == "true") {
-							$("#" + nodetree.nodes[i].id + x).prop("checked", true);
-						} else {
-							$("#" + nodetree.nodes[i].id + x).prop("checked", false);
-						}
-						break;
-					case "slide":
-						$("#" + nodetree.nodes[i].id + x).slider(
-							"value",
-							nodetree.nodes[i].settings[x]
-						);
-						$("#" + nodetree.nodes[i].id + x + "out").text(
-							nodetree.nodes[i].settings[x]
-						);
+				case "dec":
+					$("#" + nodetree.nodes[i].id + x).val(
+						nodetree.nodes[i].settings[x]
+					);
+					break;
+				case "int":
+					console.log(x);
+					$("#" + nodetree.nodes[i].id + x).val(
+						nodetree.nodes[i].settings[x]
+					);
+					break;
+				case "str":
+					console.log(nodetree.nodes[i].settings[x]);
+					$("#" + nodetree.nodes[i].id + x).val(
+						nodetree.nodes[i].settings[x]
+					);
+					break;
+				case "boolean":
+					if (nodetree.nodes[i].settings[x] == "true") {
+						$("#" + nodetree.nodes[i].id + x).prop("checked", true);
+					} else {
+						$("#" + nodetree.nodes[i].id + x).prop("checked", false);
+					}
+					break;
+				case "slide":
+					$("#" + nodetree.nodes[i].id + x).slider(
+						"value",
+						nodetree.nodes[i].settings[x]
+					);
+					$("#" + nodetree.nodes[i].id + x + "out").text(
+						nodetree.nodes[i].settings[x]
+					);
 
-						break;
-					case "range":
-						$("#" + nodetree.nodes[i].id + x).slider("values", [
-							nodetree.nodes[i].settings[x].min,
-							nodetree.nodes[i].settings[x].max
-						]);
-						$("#" + nodetree.nodes[i].id + x + "out1").text(
-							nodetree.nodes[i].settings[x].min
-						);
+					break;
+				case "range":
+					$("#" + nodetree.nodes[i].id + x).slider("values", [
+						nodetree.nodes[i].settings[x].min,
+						nodetree.nodes[i].settings[x].max
+					]);
+					$("#" + nodetree.nodes[i].id + x + "out1").text(
+						nodetree.nodes[i].settings[x].min
+					);
 
-						$("#" + nodetree.nodes[i].id + x + "out2").text(
-							nodetree.nodes[i].settings[x].max
-						);
-						// $('#' + nodetree.nodes[i].id + x).maxVal(nodetree.nodes[i].settings[x].max);
-						break;
-					case "box":
-						$("#" + nodetree.nodes[i].id + x).val(
-							nodetree.nodes[i].settings[x]
-						);
-						break;
+					$("#" + nodetree.nodes[i].id + x + "out2").text(
+						nodetree.nodes[i].settings[x].max
+					);
+					// $('#' + nodetree.nodes[i].id + x).maxVal(nodetree.nodes[i].settings[x].max);
+					break;
+				case "box":
+					$("#" + nodetree.nodes[i].id + x).val(
+						nodetree.nodes[i].settings[x]
+					);
+					break;
 				}
 				// console.log('#' + nodetree.nodes[i].id + x);
 			}
