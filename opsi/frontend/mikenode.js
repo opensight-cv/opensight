@@ -36,6 +36,11 @@ $(document).ready(function () {
 			}
 		});
 	});
+
+	$("#shutdown").click(function (event) {
+		$.post("/api/shutdown");
+	});
+
 });
 
 var cursorX = 0;

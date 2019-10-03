@@ -1,102 +1,66 @@
 import asyncio
+import uvloop
 import logging
 import threading
 import time
 from os import listdir
 from os.path import dirname, isdir, isfile, join, splitext
 
-import uvicorn
-import uvloop
 
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.webserver import WebServer
+from .threadserver import ThreadedWebserver
 
 LOGGER = logging.getLogger(__name__)
 
 
-def make_program(module_path):
+def register_modules(program, module_path):
     moddir = join(module_path, "modules")
-    program = Program()
     if isdir(moddir):
         files = [splitext(f)[0] for f in listdir(moddir) if isfile(join(moddir, f))]
         for path in files:
             program.manager.register_module(ModulePath(moddir, path))
-    return program
-
-
-async def manage_webserver(event, app, **kwargs):
-    loop = asyncio.get_event_loop()
-    config = uvicorn.Config(app, **kwargs)
-    server = uvicorn.Server(config=config)
-    server_event = threading.Event()
-
-    # run webserver until shutdown event
-    asyncio.run_coroutine_threadsafe(run_app(server_event, config, server), loop)
-    while not event.is_set():
-        await asyncio.sleep(0.1)
-
-    # wait until server stops gracefully before stopping loop
-    server.should_exit = True
-    while not server_event.is_set():
-        await asyncio.sleep(0.1)
-    await loop.stop()
-
-
-async def run_app(event, config, server):
-    if not config.loaded:
-        config.load()
-
-    server.logger = config.logger_instance
-    server.lifespan = config.lifespan_class(config)
-
-    server.logger.info("Started server process")
-    await server.startup()
-    if server.should_exit:
-        return
-    await server.main_loop()
-    await server.shutdown()
-    event.set()
-    server.logger.info("Finished server process")
 
 
 class Lifespan:
     def __init__(self):
-        self.shutdown_event = asyncio.Event()
+        self.event = threading.Event()
         self.threads = []
 
     def __create_threaded_loop__(self):
         loop = uvloop.new_event_loop()
         thread = threading.Thread(target=loop.run_forever)
+        thread.daemon = True
         thread.start()
         self.threads.append(thread)
         return loop
 
     def __create_thread__(self, target):
-        loop = uvloop.new_event_loop()
-        thread = threading.Thread(target=target, args=(self.shutdown_event, self))
+        thread = threading.Thread(target=target)
+        thread.daemon = True
         thread.start()
         self.threads.append(thread)
-        return loop
+        return thread
 
     def make_threads(self):
-        package_path = dirname(opsi.__file__)
-
-        program = make_program(package_path)
-        webserver = WebServer(program, join(package_path, "frontend"))
-
-        ws_loop = self.__create_threaded_loop__()
-        asyncio.run_coroutine_threadsafe(
-            manage_webserver(self.shutdown_event, webserver.app, host="0.0.0.0"),
-            ws_loop,
-        )
-
+        program = Program(self)
+        path = dirname(opsi.__file__)
+        register_modules(program, path)
         self.__create_thread__(program.mainloop)
 
-    def shutdown(self):
-        LOGGER.info("Shutting program down...")
-        self.shutdown_event.set()
+        ws = WebServer(program, join(path, "frontend"))
+        webserver = ThreadedWebserver(self.event, ws.app, host="0.0.0.0")
+        ws_loop = self.__create_threaded_loop__()
+        asyncio.run_coroutine_threadsafe(webserver.run(), ws_loop)
+
+    def main_loop(self):
+        self.event.wait()
         for thread in self.threads:
             thread.join()
         LOGGER.info("OpenSight successfully shutdown.")
+
+    def shutdown(self):
+        LOGGER.info("Waiting for threads to shut down...")
+        self.event.set()

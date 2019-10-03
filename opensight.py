@@ -16,6 +16,7 @@ def test_webserver(webserver):
 def main():
     lifespan = Lifespan()
     lifespan.make_threads()
+    lifespan.main_loop()
 
 
 if __name__ == "__main__":

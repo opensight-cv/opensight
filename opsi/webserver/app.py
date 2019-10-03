@@ -19,7 +19,6 @@ class WebServer:
         self.app.mount("/", StaticFiles(directory=frontend, html=True))
 
     # These test functions go through the entire http pipeline
-
     def get_funcs(self) -> str:
         return self.testclient.get("/api/funcs")
 

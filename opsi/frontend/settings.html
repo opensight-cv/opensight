@@ -16,21 +16,23 @@
 
 		<div id="nav">
 			<div>
-                    <a href="index.html"><img  class="navItem" src="icons/th.png" alt=""></a>
+				<a href="index.html"><img  class="navItem" src="icons/th.png" alt=""></a>
 			</div>
 			<div>
 				<a href="settings.html"><img  class="navItem" src="icons/cog.png" alt=""></a>
 			</div>
 		</div>
 
+		<div id="container">
+			<input class="shutdown-button" id="shutdown" type="button" value="Shutdown"/>
+		</div>
 
 		<div id="upload">
-				<form id="fileinfo" enctype="multipart/form-data" method="post" name="fileinfo">
-					<input class="up-button" type="file" name="file" required />
-				</form>
-				<input class="up-button" id="uploadBTN" type="button" value="Update"/>
-			</div>
-	
+			<form id="fileinfo" enctype="multipart/form-data" method="post" name="fileinfo">
+				<input class="up-button" type="file" name="file" required />
+			</form>
+			<input class="up-button" id="uploadBTN" type="button" value="Update"/>
+		</div>
 
 		<script src="static/jquery-3.4.1.min.js"></script>
 		<script src="static/jquery-ui-1.12.1.min.js"></script>

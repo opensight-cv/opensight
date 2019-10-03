@@ -15,6 +15,7 @@ class Api:
         self.app.get("/nodes", response_model=NodeTreeN)(self.read_nodes)
         self.app.post("/nodes")(self.save_nodes)
         self.app.post("/upgrade")(self.upgrade)
+        self.app.post("/shutdown")(self.shutdown)
 
         parent_app.mount(prefix, self.app)
 
@@ -31,3 +32,6 @@ class Api:
 
     def upgrade(self, file: UploadFile = File(...)):
         upgrade_opsi(file)
+
+    def shutdown(self):
+        self.program.lifespan.shutdown()

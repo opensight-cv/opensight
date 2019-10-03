@@ -57,6 +57,7 @@ h4 {
 	background-image: radial-gradient(#A5A5A5 3%, transparent 3%);
 	background-position: 0 0, 25px 25px;
 	background-size: 50px 50px;
+    margin-left: 60px;
 }
 .node {
 	width: 250px;
@@ -90,8 +91,8 @@ h4 {
 	top: -18px;
 }
 .navItem{
-	width: 50px;
-	height: 50px;
+	width: 30px;
+	height: 30px;
 	color: green;
 	z-index: 6;
 	display: block;
@@ -100,7 +101,7 @@ h4 {
 
 }
 #nav{
-	width:80px;
+	width:60px;
 	height:100vh;
 	z-index: 5;
 	background-color: #aaa;
@@ -163,7 +164,7 @@ h4 {
 	direction: rtl;
 }
 .setting {
-	margin-top: 5px;
+	margin-top: 10px;
 	text-align: left;
 	margin-left: 30px;
 	margin-right: 30px;
@@ -263,7 +264,7 @@ html .ui-button.ui-state-disabled:active {
 	cursor: pointer;
 }
 .up-button{
-	padding: 5px;
+	margin: 5px;
 	cursor: pointer;
 }
 
