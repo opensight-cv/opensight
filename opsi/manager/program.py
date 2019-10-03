@@ -41,13 +41,15 @@ class Program:
             # queue import_nodetree to run at start of mainloop
             Thread(target=import_nodetree, args=(self, nodetree)).start()
 
-    def mainloop(self):
+    def mainloop(self, shutdown, lifespan):
         self.p_thread = threading.Thread(target=self.pipeline.mainloop)
         self.p_thread.name = "Pipeline Mainloop"
         self.p_thread.daemon = True
+        self.shutdown = shutdown
 
         self.p_thread.start()
 
-        while True:
+        while not self.shutdown.is_set():
             task = self.queue.get()  # todo: blocking & timeout?
             task.run()  # won't send exceptions because runs in seperate thead
+        logger.info("Program main loop is shutting down...")
