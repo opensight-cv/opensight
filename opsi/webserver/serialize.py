@@ -51,6 +51,9 @@ _abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
 
 
 def get_type(_type: Type) -> InputOutputF:
+    if _type is type(None):
+        return None
+
     if _type in _type_name:
         name = _type_name.get(_type)
         return InputOutputF(type=name)
@@ -67,7 +70,12 @@ def get_type(_type: Type) -> InputOutputF:
 
 
 def get_types(types):
-    return {name: get_type(type) for name, type in types}
+    pruned_types = []
+    # if none, just don't show it
+    for _type in types:
+        if _type[1] is not type(None):
+            pruned_types.append(_type)
+    return {name: get_type(type) for name, type in pruned_types}
 
 
 def _serialize_funcs(funcs: Dict[str, Type[Function]]) -> List[FunctionF]:

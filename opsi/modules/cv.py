@@ -171,23 +171,31 @@ class FindCenter(Function):
     def run(self, inputs):
         midpoint = None
         cnt = None
-        for i in range(self.settings.maxConts):
+        mids = []
+        for i in range(len(inputs.contours)):
             if len(inputs.contours) != 0:
                 cnt = inputs.contours[i]
                 x, y, w, h = cv2.boundingRect(cnt)
                 cx = (x + (x + w)) // 2
                 cy = (y + (y + h)) // 2
                 midpoint = (cx, cy)
+                mids.append(midpoint)
                 if self.settings.draw:
-                    image = cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
-                    return self.Outputs(center=midpoint, visual=image)
-                else:
-                    return self.Outputs(center=midpoint, visual=inputs.img)
+                    cv2.rectangle(
+                        inputs.img, (x, y), (x + w, y + h), (234, 234, 0), thickness=2
+                    )
+                    cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
+                    if len(mids) > 1:
+                        mid1 = mids[0]
+                        mid2 = mids[-1]
+                        mx = (mid1[0] + mid2[0]) // 2
+                        my = (mid1[1] + mid2[1]) // 2
+                        truemid = (mx, my)
+                        cv2.circle(inputs.img, truemid, 15, (90, 255, 2), 3)
+                        cv2.line(inputs.img, mid1, mid2, (0, 255, 20), thickness=3)
             else:
-                return self.Outputs(
-                    center=(inputs.img.shape[1] // 2, inputs.img.shape[0] // 2),
-                    visual=inputs.img,
-                )
+                break
+        return self.Outputs(center=midpoint, visual=inputs.img)
 
 
 class FindAngle(Function):
@@ -286,4 +294,5 @@ class DrawFPS(Function):
             (255, 255, 255),
             lineType=cv2.LINE_AA,
         )
+        print(fps_str)
         return self.Outputs(imgFPS=text)

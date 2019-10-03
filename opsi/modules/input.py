@@ -9,24 +9,37 @@ import cv2
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat
 
+import logging
+
+LOGGER = logging.getLogger(__name__)
+ENABLE_RES = True
+ENABLE_FPS = False
+
 __package__ = "demo.input"
 __version__ = "0.123"
 
 
 def get_w(string):
-    cam, w, h, fps = parse_camstring(string)
-    return w + h
+    camstring = parse_camstring(string)
+    if len(camstring) >= 3:
+        camtuple = parse_camstring(string)
+        return camtuple[1] + camtuple[2]
+    # return w+h
+    return 0
 
 
 def get_codec(v4l2_out):
     # for each codec, add the codec name and how the description from v4l2-ctl, regex allowed
     # order by priority
-    codec = None
-    codecs = [("MJPG", "Motion-JPEG, compressed"), ("YUYV", "YUYV \d:\d:\d")]
+    codecs = [
+        ("H264", "H.264, compressed"),
+        ("MJPG", "Motion-JPEG, compressed"),
+        ("YUYV", r"YUYV \d:\d:\d"),
+    ]
     for i in codecs:
         # [digit] '<CODEC NAME>' (<CODEC DESCRIPTION>)
         # ex. [1]: 'MJPG' (Motion-JPEG, compressed)
-        pattern = "\[\d+\]: '" + i[0] + "' \(" + i[1] + "\) (.+)(\[\d+\]?|$)"
+        pattern = fr"\[\d+\]: '{i[0]}' \({i[1]}\) (.+)(\[\d+\]?|$)"
         lines = re.search(pattern, v4l2_out)
         if lines is not None:
             return (cv2.VideoWriter_fourcc(*i[0]), lines.group(1))
@@ -34,15 +47,24 @@ def get_codec(v4l2_out):
 
 
 def get_cam_info(cam):
-    sp_out = subprocess.run(
-        f"v4l2-ctl -d {str(cam)} --list-formats-ext".split(), capture_output=True
-    )
-    return str(sp_out.stdout).replace("\\n", " ").replace("\\t", "")
+    try:
+        sp_out = subprocess.run(
+            f"v4l2-ctl -d {str(cam)} --list-formats-ext".split(),
+            capture_output=True,
+            check=True,
+        )
+        return str(sp_out.stdout).replace("\\n", " ").replace("\\t", "")
+    except subprocess.CalledProcessError:
+        pass
+    return None
 
 
 def get_modes():
+    # TODO: don't use globals
+    global ENABLE_FPS
+    global ENABLE_RES
+
     all_modes = set()
-    cameras = {}
     cam_list = (cam.replace("/dev/video", "") for cam in glob.glob("/dev/video*"))
 
     for cam in sorted(cam_list, key=int):
@@ -54,54 +76,106 @@ def get_modes():
 
         # group 1: resolution
         # group 2: everything up until next instance of Size
-        cam_modes = {}
-        for match in re.finditer("Size: \w+ (\d+x\d+) ", codec[1]):
+        any_set = False
+        for match in re.finditer(r"Size: Discrete (\d+x\d+) ", codec[1]):
             resolution = match.group(1)
-            # get everything from the current resolution to the next resolution
+            # get everything from the curent resolution to the next resolution
             line = re.search(
-                f"{match.group(0)}(.+?)Size|{match.group(0)}(.+)", codec[1]
+                fr"{match.group(0)}(.+?)Size|{match.group(0)}(.+)", codec[1]
             )
             line = line.group(1) or line.group(2)
             fpses = set()
-            for interval in re.finditer("nterval: \w+ \d+\.\d+s \((.+?) fps\)", line):
+            for interval in re.finditer(r"nterval: \w+ \d+\.\d+s \((.+?) fps\)", line):
                 fpses.add(float(interval.group(1)))
             # convert to float to use %g formatting, removing extraneous decimals
-            all_modes.add(
-                "Cam {0}: {1} @ {2:g} fps".format(cam, resolution, float(max(fpses)))
-            )
+            if resolution:
+                if fpses:
+                    all_modes.add(
+                        "Cam {0}: {1} @ {2:g} fps".format(
+                            cam, resolution, float(max(fpses))
+                        )
+                    )
+                    any_set = True
+                else:
+                    all_modes.add("Cam {0}: {1}".format(cam, resolution))
+                    any_set = True
+                    ENABLE_FPS = True
+        if not any_set:
+            all_modes.add("Cam {0}".format(cam))
+            ENABLE_RES = True
 
-    # sort by the width, since camera is sorted by glob and fps is sorted above
     return tuple(sorted(all_modes, key=get_w, reverse=True))
 
 
-def parse_camstring(camstring):
+def parse_camstring(string):
+    camstring = []
     # group 3: any digit+ OR any digit+, decimal, any digit+
-    m = re.search("Cam (\d+): (\d+)x(\d+) @ (\d+|\d+.\d+) fps", camstring)
-    cam = int(m.group(1))
-    w = int(m.group(2))
-    h = int(m.group(3))
-    fps = float(m.group(4))
-    return (cam, w, h, fps)
+    m = re.search(r"(?:Cam (\d+))?(?::( \d+)x(\d+))?(?: @ (\d+|\d+.\d+) fps)?", string)
+    cam = m.group(1)
+    w = m.group(2)
+    h = m.group(3)
+    fps = m.group(4)
+    if cam:
+        camstring.append(int(cam))
+    if w and h:
+        camstring.append(int(w))
+        camstring.append(int(h))
+    if fps:
+        camstring.append(float(fps))
+    return tuple(camstring)
+
+
+def controls(fps=False):
+    if ENABLE_RES:
+        return int
+    if fps and ENABLE_FPS:
+        return int
+    return None
+
+
+def create_capture(settings):
+    mode = parse_camstring(settings.mode)
+    cap = None
+    if len(mode) >= 1:
+        cap = cv2.VideoCapture(mode[0])
+        codec = get_codec(get_cam_info(mode[0]))
+        cap.set(cv2.CAP_PROP_FOURCC, codec[0])
+    if len(mode) >= 3:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, mode[1])
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, mode[2])
+    if len(mode) >= 4:
+        cap.set(cv2.CAP_PROP_FPS, mode[3])
+    cap.set(cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
+    cap.set(cv2.CAP_PROP_CONTRAST, settings.contrast)
+    cap.set(cv2.CAP_PROP_SATURATION, settings.saturation)
+    cap.set(cv2.CAP_PROP_WHITE_BALANCE_U, settings.wb)
+    cap.set(cv2.CAP_PROP_WHITE_BALANCE_V, settings.wb)
+    cap.set(cv2.CAP_PROP_EXPOSURE, settings.exposure)
+    return cap
 
 
 class CameraInput(Function):
     def on_start(self):
-        self.mode = parse_camstring(self.settings.mode)
-        codec = get_codec(get_cam_info(self.mode[0]))
-        self.cap = cv2.VideoCapture(self.mode[0])
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.mode[1])
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.mode[2])
-        self.cap.set(cv2.CAP_PROP_FPS, self.mode[3])
-        self.cap.set(cv2.CAP_PROP_FOURCC, codec[0])
+        self.cap = create_capture(self.settings)
 
     @dataclass
     class Settings:
         mode: get_modes()
+        width: controls()
+        height: controls()
+        fps: controls(True)
+        brightness: int
+        contrast: int
+        saturation: int
+        wb: int
+        exposure: int
 
     @dataclass
     class Outputs:
         img: Mat
 
     def run(self, inputs):
-        ret, frame = self.cap.read()
+        frame = None
+        if self.cap:
+            ret, frame = self.cap.read()
         return self.Outputs(img=frame)
