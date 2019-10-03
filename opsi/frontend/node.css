@@ -90,15 +90,19 @@ h4 {
 	right: -18px;
 	top: -18px;
 }
+
 .navItem{
 	width: 30px;
 	height: 30px;
-	color: green;
 	z-index: 6;
 	display: block;
 	margin-left:15px;
-	margin-top: 30px;
+	padding-top: 15px;
+	padding-bottom: 15px;
 
+}
+.navContainer:hover{
+	background-color: grey;
 }
 #nav{
 	width:60px;
