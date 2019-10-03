@@ -39,7 +39,11 @@ h4 {
 	position: fixed;
 	float: left;
 	bottom: 0px;
-	padding: 15px;
+	z-index: 7;
+	border: 5px solid #2DBC4E;
+	margin: 10px;
+	background-color: #ddd;
+	border-radius: 10px;
 }
 
 #canvas,
@@ -84,6 +88,25 @@ h4 {
 	position: absolute;
 	right: -18px;
 	top: -18px;
+}
+.navItem{
+	width: 50px;
+	height: 50px;
+	color: green;
+	z-index: 6;
+	display: block;
+	margin-left:15px;
+	margin-top: 30px;
+
+}
+#nav{
+	width:80px;
+	height:100vh;
+	z-index: 5;
+	background-color: #aaa;
+	display: flex;
+	position: absolute;
+	flex-direction: column;
 }
 #node1 {
 }
@@ -153,7 +176,6 @@ h4 {
 }
 .numInput {
 	margin: auto;
-	margin-top: 25px;
 	padding: 5px;
 	width: 45px;
 	height: 30px;
@@ -237,6 +259,10 @@ html .ui-button.ui-state-disabled:active {
 	margin-bottom: 15px;
 	margin-left: 15px;
 	margin-right: 15px;
+	padding: 5px;
+	cursor: pointer;
+}
+.up-button{
 	padding: 5px;
 	cursor: pointer;
 }
