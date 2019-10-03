@@ -1,4 +1,5 @@
 import glob
+import logging
 import re
 import subprocess
 from collections import OrderedDict
@@ -9,10 +10,8 @@ import cv2
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat
 
-import logging
-
 LOGGER = logging.getLogger(__name__)
-ENABLE_RES = True
+ENABLE_RES = False
 ENABLE_FPS = False
 
 __package__ = "demo.input"

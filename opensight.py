@@ -12,7 +12,7 @@ from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.webserver import WebServer
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 LOGGER = logging.getLogger(__name__)
 
 
