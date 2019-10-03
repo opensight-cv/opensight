@@ -134,16 +134,24 @@ def controls(fps=False):
 
 def create_capture(settings):
     mode = parse_camstring(settings.mode)
-    cap = None
-    if len(mode) >= 1:
-        cap = cv2.VideoCapture(mode[0])
-        codec = get_codec(get_cam_info(mode[0]))
-        cap.set(cv2.CAP_PROP_FOURCC, codec[0])
+    if len(mode) < 1:
+        return None
+    cap = cv2.VideoCapture(mode[0])
+    codec = get_codec(get_cam_info(mode[0]))
+    cap.set(cv2.CAP_PROP_FOURCC, codec[0])
     if len(mode) >= 3:
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, mode[1])
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, mode[2])
+        w = mode[1]
+        h = mode[2]
+    else:
+        w = self.settings.width
+        h = self.settings.height
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
     if len(mode) >= 4:
-        cap.set(cv2.CAP_PROP_FPS, mode[3])
+        fps = mode[3]
+    else:
+        fps = self.settings.fps
+    cap.set(cv2.CAP_PROP_FPS, fps)
     cap.set(cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
     cap.set(cv2.CAP_PROP_CONTRAST, settings.contrast)
     cap.set(cv2.CAP_PROP_SATURATION, settings.saturation)
