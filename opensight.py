@@ -1,6 +1,6 @@
-import time
-import threading
 import logging
+import threading
+import time
 
 from opsi.lifespan.lifespan import Lifespan
 

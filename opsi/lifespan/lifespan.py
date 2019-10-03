@@ -1,8 +1,7 @@
-import threading
 import asyncio
 import logging
+import threading
 import time
-
 from os import listdir
 from os.path import dirname, isdir, isfile, join, splitext
 
@@ -10,10 +9,9 @@ import uvicorn
 import uvloop
 
 import opsi
-from opsi.manager.manager_schema import ModulePath
 from opsi.manager import Program
+from opsi.manager.manager_schema import ModulePath
 from opsi.webserver import WebServer
-
 
 LOGGER = logging.getLogger(__name__)
 
