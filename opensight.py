@@ -1,21 +1,15 @@
+#!/usr/bin/env python3
 import logging
 import threading
 import time
 
 from opsi.lifespan.lifespan import Lifespan
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 LOGGER = logging.getLogger(__name__)
-
-
-def test_webserver(webserver):
-    LOGGER.info("Funcs: %s", webserver.get_funcs())
-    LOGGER.info("Nodes: %s", webserver.get_nodes())
-
 
 def main():
     lifespan = Lifespan()
-    lifespan.make_threads()
     lifespan.main_loop()
 
 

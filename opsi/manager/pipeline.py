@@ -131,6 +131,13 @@ class Pipeline:
 
             input_node.inputLinks[input_name] = NodeLink(output_node, conn.name)
 
+    def dispose_all(self):
+        for node in self.nodes.values():
+            node.reset_links()
+            if node.func is not None:
+                node.func.dispose()
+            node.func = None
+
     def prune_nodetree(self, new_node_ids):
         old_node_ids = set(self.nodes.keys())
         new_node_ids = set(new_node_ids)

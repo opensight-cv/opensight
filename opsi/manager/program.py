@@ -53,3 +53,4 @@ class Program:
             task = self.queue.get()  # todo: blocking & timeout?
             task.run()  # won't send exceptions because runs in seperate thead
         logger.info("Program main loop is shutting down...")
+        self.pipeline.dispose_all()

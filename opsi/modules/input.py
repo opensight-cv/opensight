@@ -28,12 +28,12 @@ def get_w(string):
 
 
 def get_codec(v4l2_out):
-    # for each codec, add the codec name and how the description from v4l2-ctl, regex allowed
+    # for each codec, add the codec name and the description from v4l2-ctl (regex allowed), and FOURCC name
     # order by priority
     codecs = [
-        ("H264", "H.264, compressed"),
-        ("MJPG", "Motion-JPEG, compressed"),
-        ("YUYV", r"YUYV \d:\d:\d"),
+        ("H264", "H.264, compressed", "X264"),
+        ("MJPG", "Motion-JPEG, compressed", "MJPG"),
+        ("YUYV", r"YUYV \d:\d:\d", "YUYV"),
     ]
     for i in codecs:
         # [digit] '<CODEC NAME>' (<CODEC DESCRIPTION>)
@@ -41,7 +41,7 @@ def get_codec(v4l2_out):
         pattern = fr"\[\d+\]: '{i[0]}' \({i[1]}\) (.+)(\[\d+\]?|$)"
         lines = re.search(pattern, v4l2_out)
         if lines is not None:
-            return (cv2.VideoWriter_fourcc(*i[0]), lines.group(1))
+            return (cv2.VideoWriter_fourcc(*i[2]), lines.group(1))
     return None
 
 
@@ -67,7 +67,19 @@ def get_modes():
     cam_list = (cam.replace("/dev/video", "") for cam in glob.glob("/dev/video*"))
 
     for cam in sorted(cam_list, key=int):
+
         caminfo = get_cam_info(cam)
+
+        # remove cameras of these types
+        # PiCam has extraneous cameras with type "Video Capture Multiplanar"
+
+        skip = False
+        cam_blacklist = ("Video Capture Multiplanar",)
+        for i in cam_blacklist:
+            if re.search(i, caminfo):
+                skip = True
+        if skip:
+            continue
 
         codec = get_codec(caminfo)
         if codec is None:
@@ -132,32 +144,37 @@ def controls(fps=False):
     return None
 
 
+def set_property(cap, prop, value):
+    try:
+        cap.set(prop, value)
+    except AttributeError:
+        LOGGER.debug("Camera does not support property %s", property)
+
+
 def create_capture(settings):
     mode = parse_camstring(settings.mode)
     if len(mode) < 1:
         return None
     cap = cv2.VideoCapture(mode[0])
     codec = get_codec(get_cam_info(mode[0]))
-    cap.set(cv2.CAP_PROP_FOURCC, codec[0])
+    set_property(cap, cv2.CAP_PROP_FOURCC, codec[0])
     if len(mode) >= 3:
         w = mode[1]
         h = mode[2]
     else:
-        w = self.settings.width
-        h = self.settings.height
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
+        w = settings.width
+        h = settings.height
+    set_property(cap, cv2.CAP_PROP_FRAME_WIDTH, w)
+    set_property(cap, cv2.CAP_PROP_FRAME_HEIGHT, h)
     if len(mode) >= 4:
         fps = mode[3]
     else:
-        fps = self.settings.fps
-    cap.set(cv2.CAP_PROP_FPS, fps)
-    cap.set(cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
-    cap.set(cv2.CAP_PROP_CONTRAST, settings.contrast)
-    cap.set(cv2.CAP_PROP_SATURATION, settings.saturation)
-    cap.set(cv2.CAP_PROP_WHITE_BALANCE_U, settings.wb)
-    cap.set(cv2.CAP_PROP_WHITE_BALANCE_V, settings.wb)
-    cap.set(cv2.CAP_PROP_EXPOSURE, settings.exposure)
+        fps = settings.fps
+    set_property(cap, cv2.CAP_PROP_FPS, fps)
+    set_property(cap, cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
+    set_property(cap, cv2.CAP_PROP_CONTRAST, settings.contrast)
+    set_property(cap, cv2.CAP_PROP_SATURATION, settings.saturation)
+    set_property(cap, cv2.CAP_PROP_EXPOSURE, settings.exposure)
     return cap
 
 
@@ -174,7 +191,6 @@ class CameraInput(Function):
         brightness: int
         contrast: int
         saturation: int
-        wb: int
         exposure: int
 
     @dataclass

@@ -231,7 +231,9 @@ class WebServer:
 
 def create_threaded_loop():
     loop = uvloop.new_event_loop()
-    t = threading.Thread(target=loop.run_forever).start()
+    t = threading.Thread(target=loop.run_forever)
+    t.daemon = True
+    t.start()
     return loop, t
 
 

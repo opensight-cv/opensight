@@ -37,9 +37,8 @@ $(document).ready(function () {
 		});
 	});
 
-	$("#shutdown").click(function (event) {
-		$.post("/api/shutdown");
-	});
+	$("#shutdown").click(function (event) {$.post("/api/shutdown");});
+	$("#restart").click(function (event) {$.post("/api/restart");});
 
 });
 

@@ -16,6 +16,7 @@ class Api:
         self.app.post("/nodes")(self.save_nodes)
         self.app.post("/upgrade")(self.upgrade)
         self.app.post("/shutdown")(self.shutdown)
+        self.app.post("/restart")(self.restart)
 
         parent_app.mount(prefix, self.app)
 
@@ -35,3 +36,6 @@ class Api:
 
     def shutdown(self):
         self.program.lifespan.shutdown()
+
+    def restart(self):
+        self.program.lifespan.shutdown(restart=True)

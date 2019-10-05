@@ -28,6 +28,7 @@ class Lifespan:
     def __init__(self):
         self.event = threading.Event()
         self.threads = []
+        self.restart = True
 
     def __create_threaded_loop__(self):
         loop = uvloop.new_event_loop()
@@ -56,11 +57,16 @@ class Lifespan:
         asyncio.run_coroutine_threadsafe(webserver.run(), ws_loop)
 
     def main_loop(self):
-        self.event.wait()
-        for thread in self.threads:
-            thread.join()
-        LOGGER.info("OpenSight successfully shutdown.")
+        while self.restart:
+            LOGGER.info("OpenSight starting...")
+            self.event.clear()
+            self.make_threads()
+            self.event.wait()
+            for thread in self.threads:
+                thread.join()
+            LOGGER.info("OpenSight successfully shutdown.")
 
-    def shutdown(self):
+    def shutdown(self, restart=False):
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()
+        self.restart = restart
