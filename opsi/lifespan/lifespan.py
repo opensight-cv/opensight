@@ -11,6 +11,8 @@ import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.webserver import WebServer
+from ..webserver.serialize import import_nodetree
+from opsi.util.persistence import PersistentNodetree
 from .threadserver import ThreadedWebserver
 
 LOGGER = logging.getLogger(__name__)
@@ -25,10 +27,26 @@ def register_modules(program, module_path):
 
 
 class Lifespan:
-    def __init__(self):
+    def __init__(self, args, load_persist=True):
         self.event = threading.Event()
         self.threads = []
         self.restart = True
+
+        self.program = Program(self)
+        self.args = args
+        self.persist = PersistentNodetree(path=args.persist)
+
+        if load_persist:
+            self.load_persistence()
+
+    def load_persistence(self):
+        nodetree = self.persist.nodetree
+
+        if nodetree is not None:
+            # queue import_nodetree to run at start of mainloop
+            threading.Thread(
+                target=import_nodetree, args=(self.program, nodetree)
+            ).start()
 
     def __create_threaded_loop__(self):
         loop = uvloop.new_event_loop()
@@ -46,13 +64,14 @@ class Lifespan:
         return thread
 
     def make_threads(self):
-        program = Program(self)
         path = dirname(opsi.__file__)
-        register_modules(program, path)
-        self.__create_thread__(program.mainloop)
+        register_modules(self.program, path)
+        self.__create_thread__(self.program.mainloop)
 
-        ws = WebServer(program, join(path, "frontend"))
-        webserver = ThreadedWebserver(self.event, ws.app, host="0.0.0.0", port=ws.port)
+        ws = WebServer(self.program, join(path, "frontend"))
+        webserver = ThreadedWebserver(
+            self.event, ws.app, host="0.0.0.0", port=self.args.port or ws.port
+        )
         ws_loop = self.__create_threaded_loop__()
         asyncio.run_coroutine_threadsafe(webserver.run(), ws_loop)
 

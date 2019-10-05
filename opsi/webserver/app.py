@@ -12,27 +12,26 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WebServer:
-    def __init__(self, program, frontend: str):
+    def __init__(self, program, frontend: str, port: int = None):
         self.program = program
 
         self.app = Starlette()
         self.app.debug = True
 
-        self.port = self.__check_port__()
+        self.port = self.__check_port__(port or 80)
 
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
 
         self.app.mount("/", StaticFiles(directory=frontend, html=True))
 
-    def __check_port__(self):
+    def __check_port__(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        port = 80
         try:
             s.bind(("0.0.0.0", port))
         except socket.error as e:
             LOGGER.debug("Could not bind to port 80.")
-            port = 8080
+            port = 8000
         return port
 
     # These test functions go through the entire http pipeline

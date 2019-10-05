@@ -4,9 +4,7 @@ import threading
 from threading import Thread
 from uuid import UUID, uuid4
 
-from ..util.persistence import PersistentNodetree
 from ..webserver.schema import NodeTreeN
-from ..webserver.serialize import import_nodetree
 from .manager import Manager
 from .pipeline import Node, Pipeline
 
@@ -14,18 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class Program:
-    def __init__(self, lifespan, load_persist=True):
+    def __init__(self, lifespan):
         self.queue = queue.Queue()
         self.lifespan = lifespan
-        self.persist = PersistentNodetree()
 
         self.manager = Manager()
         self.pipeline = Pipeline(self)
 
         self.p_thread = None
-
-        if load_persist:
-            self.load_persistence()
 
     def create_node(self, func_type: str, uuid: UUID = None) -> Node:
         if uuid is None:
@@ -34,13 +28,6 @@ class Program:
         func = self.manager.funcs[func_type]
 
         return self.pipeline.create_node(func, uuid)
-
-    def load_persistence(self):
-        nodetree = self.persist.nodetree
-
-        if nodetree is not None:
-            # queue import_nodetree to run at start of mainloop
-            Thread(target=import_nodetree, args=(self, nodetree)).start()
 
     def mainloop(self):
         self.p_thread = threading.Thread(target=self.pipeline.mainloop)

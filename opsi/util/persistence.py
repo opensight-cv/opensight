@@ -13,8 +13,12 @@ class PersistentNodetree:
     PATHS = ("/var/lib/opensight", "~/.local/share/opensight")
     NODETREE_PATH = "nodetree.json"
 
-    def __init__(self):
+    def __init__(self, path=None):
         self._nodetree = None
+
+        self.paths = self.PATHS
+        if path:
+            self.paths = (path,) + self.paths
 
         self.base_path = self._get_path()
         self.nodetree_path = (
@@ -22,7 +26,7 @@ class PersistentNodetree:
         )
 
     def _get_path(self):
-        for path in self.PATHS:
+        for path in self.paths:
             path = PosixPath(path).expanduser().resolve()  # get absolute canonical path
 
             try:
@@ -52,7 +56,7 @@ class PersistentNodetree:
         try:
             self._nodetree = NodeTreeN.parse_file(self.nodetree_path)
             return self._nodetree
-        except (ValidationError, JSONDecodeError):
+        except (ValidationError, JSONDecodeError, ValueError):
             logger.warning("Nodetree persistence invalid", exc_info=True)
         except OSError:
             logger.exception("Failed to read from nodetree persistence")

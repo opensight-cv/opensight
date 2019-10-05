@@ -29,7 +29,7 @@ class Api:
     def save_nodes(self, *, nodetree: NodeTreeN):
         import_nodetree(self.program, nodetree)
         # only save if successful import
-        self.program.persist.nodetree = nodetree
+        self.program.lifespan.persist.nodetree = nodetree
 
     def upgrade(self, file: UploadFile = File(...)):
         upgrade_opsi(file, self.program.lifespan)
