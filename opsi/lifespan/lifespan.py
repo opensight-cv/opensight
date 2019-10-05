@@ -52,7 +52,7 @@ class Lifespan:
         self.__create_thread__(program.mainloop)
 
         ws = WebServer(program, join(path, "frontend"))
-        webserver = ThreadedWebserver(self.event, ws.app, host="0.0.0.0")
+        webserver = ThreadedWebserver(self.event, ws.app, host="0.0.0.0", port=ws.port)
         ws_loop = self.__create_threaded_loop__()
         asyncio.run_coroutine_threadsafe(webserver.run(), ws_loop)
 
