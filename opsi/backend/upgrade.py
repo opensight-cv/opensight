@@ -22,16 +22,17 @@ def ensure_apt():
     return True
 
 
-def upgrade_opsi(archive):
+def upgrade_opsi(archive, lifespan):
     if not ensure_apt():
         return
+    tempdir = tempfile.mkdtemp()
+    path = os.path.join(os.path.dirname(__file__), "upgrade.sh")
     try:
         tar = tarfile.open(fileobj=archive.file)
-        with tempfile.TemporaryDirectory() as folder:
-            tar.extractall(folder)
-            command = f"dpkg -Ri {folder}"
-            LOGGER.debug("RUNNING UPGRADE COMMAND: %s", command)
-            subprocess.run(command, check=True, shell=True)
-    except subprocess.CalledProcessError as e:
-        LOGGER.error("Failed to upgrade from uploaded tarfile")
-        LOGGER.debug(e, exc_info=True)
+    except tarfile.ReadError:
+        LOGGER.info("File provided is not a tar file")
+        return
+    tar.extractall(tempdir)
+    command = f"{path} {tempdir}"
+    subprocess.Popen(command, shell=True)
+    lifespan.shutdown()

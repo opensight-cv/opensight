@@ -32,7 +32,7 @@ class Api:
         self.program.persist.nodetree = nodetree
 
     def upgrade(self, file: UploadFile = File(...)):
-        upgrade_opsi(file)
+        upgrade_opsi(file, self.program.lifespan)
 
     def shutdown(self):
         self.program.lifespan.shutdown()
