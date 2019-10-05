@@ -11,7 +11,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-n", "--node-persist", dest="persist", help="location to store nodetree pipeline"
 )
-parser.add_argument("-p", "--port", dest="port", help="port to run webserver on")
+parser.add_argument(
+    "-p", "--port", dest="port", type=int, help="port to run webserver on"
+)
 
 
 def main():
