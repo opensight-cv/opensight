@@ -9,3 +9,4 @@ uvicorn
 black
 isort
 requests
+Jinja2
