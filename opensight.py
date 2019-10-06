@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import logging
 import argparse
+import logging
 
 from opsi.lifespan.lifespan import Lifespan
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
@@ -17,7 +17,7 @@ parser.add_argument(
 
 
 def main():
-    lifespan = Lifespan(parser.parse_args())
+    lifespan = Lifespan(parser.parse_args(), catch_signal=True)
     lifespan.main_loop()
 
 

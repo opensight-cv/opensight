@@ -1,12 +1,11 @@
 import logging
 import socket
-from os.path import join, dirname
-
 from abc import abstractmethod
+from os.path import dirname, join
+
 from starlette.applications import Starlette
-from starlette.responses import RedirectResponse
-from starlette.responses import PlainTextResponse
 from starlette.endpoints import HTTPEndpoint
+from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 

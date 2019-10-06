@@ -1,18 +1,20 @@
 import asyncio
-import uvloop
 import logging
+import signal
 import threading
 import time
 from os import listdir
 from os.path import dirname, isdir, isfile, join, splitext
 
+import uvloop
 
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
-from opsi.webserver import WebServer
-from ..webserver.serialize import import_nodetree
 from opsi.util.persistence import PersistentNodetree
+from opsi.webserver import WebServer
+
+from ..webserver.serialize import import_nodetree
 from .threadserver import ThreadedWebserver
 
 LOGGER = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ def register_modules(program, module_path):
 
 
 class Lifespan:
-    def __init__(self, args, load_persist=True):
+    def __init__(self, args, catch_signal=False, load_persist=True):
         self.event = threading.Event()
         self.threads = []
         self.restart = True
@@ -35,6 +37,10 @@ class Lifespan:
         self.program = Program(self)
         self.args = args
         self.persist = PersistentNodetree(path=args.persist)
+
+        if catch_signal:
+            signal.signal(signal.SIGINT, self.catch_signal)
+            signal.signal(signal.SIGTERM, self.catch_signal)
 
         if load_persist:
             self.load_persistence()
@@ -84,6 +90,9 @@ class Lifespan:
             for thread in self.threads:
                 thread.join()
             LOGGER.info("OpenSight successfully shutdown.")
+
+    def catch_signal(self, signum, frame):
+        self.shutdown()
 
     def shutdown(self, restart=False):
         LOGGER.info("Waiting for threads to shut down...")

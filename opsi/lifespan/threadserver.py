@@ -1,6 +1,7 @@
+import asyncio
 import logging
 import threading
-import asyncio
+
 import uvicorn
 
 LOGGER = logging.getLogger(__name__)

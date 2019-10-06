@@ -102,8 +102,6 @@ class Pipeline:
                 logger.debug(
                     "(Harmless?) Error during pipeline mainloop", exc_info=True
                 )
-            except KeyboardInterrupt:
-                raise
             except:  # todo: wildcard except
                 logger.exception("Error during pipeline mainloop")
 
