@@ -23,8 +23,18 @@ $(document).ready(function() {
 
 	$("#shutdown").click(function (event) {$.post("/api/shutdown");});
 	$("#restart").click(function (event) {$.post("/api/restart");});
-
+    $(document).on('click', '#profile-button', function (event) {
+		$.ajax({
+			type: "POST",
+            url: "/api/profile?profile=" + $(this).val(),
+            processData: false,
+            contentType: false,
+            success: function (data) { location.reload(); },
+            error: function (e) { location.reload(); },
+		});
+    });
 });
+
 
 var cursorX = 0;
 var cursorY = 0;

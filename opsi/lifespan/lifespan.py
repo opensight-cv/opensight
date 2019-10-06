@@ -11,7 +11,7 @@ import uvloop
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
-from opsi.util.persistence import PersistentNodetree
+from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
 
 from ..webserver.serialize import import_nodetree
@@ -34,25 +34,19 @@ class Lifespan:
         self.threads = []
         self.restart = True
 
-        self.program = Program(self)
         self.args = args
-        self.persist = PersistentNodetree(path=args.persist)
+        self.persist = Persistence(path=args.persist) if load_persist else None
 
         if catch_signal:
             signal.signal(signal.SIGINT, self.catch_signal)
             signal.signal(signal.SIGTERM, self.catch_signal)
 
-        if load_persist:
-            self.load_persistence()
-
-    def load_persistence(self):
+    def load_persistence(self, program):
         nodetree = self.persist.nodetree
 
         if nodetree is not None:
             # queue import_nodetree to run at start of mainloop
-            threading.Thread(
-                target=import_nodetree, args=(self.program, nodetree)
-            ).start()
+            threading.Thread(target=import_nodetree, args=(program, nodetree)).start()
 
     def __create_threaded_loop__(self):
         loop = uvloop.new_event_loop()
@@ -70,11 +64,16 @@ class Lifespan:
         return thread
 
     def make_threads(self):
-        path = dirname(opsi.__file__)
-        register_modules(self.program, path)
-        self.__create_thread__(self.program.mainloop)
+        program = Program(self)
 
-        ws = WebServer(self.program, join(path, "frontend"))
+        path = dirname(opsi.__file__)
+        register_modules(program, path)
+
+        if self.persist:
+            self.load_persistence(program)
+        self.__create_thread__(program.mainloop)
+
+        ws = WebServer(program, join(path, "frontend"))
         webserver = ThreadedWebserver(
             self.event, ws.app, host="0.0.0.0", port=self.args.port or ws.port
         )

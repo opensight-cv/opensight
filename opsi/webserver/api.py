@@ -1,6 +1,10 @@
+import functools
+import threading
+
 from fastapi import FastAPI, File, UploadFile
 
 from ..backend.upgrade import upgrade_opsi
+from ..util.concurrency import FifoLock
 from .schema import NodeTreeN, SchemaF
 from .serialize import *
 
@@ -17,6 +21,7 @@ class Api:
         self.app.post("/upgrade")(self.upgrade)
         self.app.post("/shutdown")(self.shutdown)
         self.app.post("/restart")(self.restart)
+        self.app.post("/profile")(self.profile)
 
         parent_app.mount(prefix, self.app)
 
@@ -24,7 +29,8 @@ class Api:
         return export_manager(self.program.manager)
 
     def read_nodes(self) -> NodeTreeN:
-        return export_nodetree(self.program.pipeline)
+        with FifoLock(self.program.queue):
+            return export_nodetree(self.program.pipeline)
 
     def save_nodes(self, *, nodetree: NodeTreeN):
         import_nodetree(self.program, nodetree)
@@ -39,3 +45,11 @@ class Api:
 
     def restart(self):
         self.program.lifespan.shutdown(restart=True)
+
+    def profile(self, profile: int):
+        if profile >= 10:
+            return
+        self.program.lifespan.persist.profile = profile
+        self.program.lifespan.persist.update_nodetree()
+        import_nodetree(self.program, self.program.lifespan.persist.nodetree)
+        return profile

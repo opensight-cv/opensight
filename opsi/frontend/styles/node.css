@@ -38,6 +38,9 @@
      -moz-outline-style: none;
 }
 
+p {
+    padding-bottom: 5px;
+}
  #preference {
      float: left;
      z-index: 7;
@@ -51,6 +54,10 @@
  #preference input {
      display: block;
      margin: 5px auto;
+}
+#preference #profile-button {
+    display: inline;
+    margin: 0px;
 }
  #canvas, #container, #prefs-container {
      width: 100%;
@@ -80,7 +87,7 @@ input[type=button] {
     /* probably hacky */
     max-width: 180px;
 }
-input {
+input, button {
      font-family: "DejaVu Sans", sans-serif;
      font-size: 14px;
      padding-top: 5px;

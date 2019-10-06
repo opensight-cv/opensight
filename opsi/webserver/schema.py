@@ -63,3 +63,10 @@ class SchemaF(BaseModel):
         funcs: List[FunctionF] = []
     else:
         modules: List[ModuleF] = []
+
+
+# --------------------------------
+
+
+class Preferences(BaseModel):
+    profile: int

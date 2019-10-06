@@ -1,3 +1,4 @@
+import functools
 import logging
 import socket
 from abc import abstractmethod
@@ -13,11 +14,13 @@ from .api import Api
 from .test import WebserverTest
 
 LOGGER = logging.getLogger(__name__)
+PROGRAM = None
 
 
 class WebServer:
     def __init__(self, program, frontend: str, port: int = None):
         self.program = program
+        PROGRAM = program
 
         self.app = Starlette()
         self.app.debug = True
@@ -25,7 +28,10 @@ class WebServer:
         self.port = self.__check_port__(port or 80)
 
         self.app.router.add_route("/", self.NodetreePage)
-        self.app.router.add_route("/settings", self.SettingsPage)
+        self.app.router.add_route(
+            "/settings",
+            functools.partial(self.SettingsPage, persist=self.program.lifespan.persist),
+        )
 
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
@@ -72,5 +78,14 @@ class WebServer:
             return "nodetree.html"
 
     class SettingsPage(TemplatePage):
+        def __init__(self, scope, recieve, send, persist=None):
+            self.persist = persist
+            super().__init__(scope, recieve, send)
+
         def set_page(self):
             return "settings.html"
+
+        async def get(self, request):
+            return self.templates.TemplateResponse(
+                self.page, {"request": request, "profile": self.persist.profile}
+            )
