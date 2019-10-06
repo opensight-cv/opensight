@@ -8,6 +8,7 @@ for file in "$1/deps/"*; do
     echo "Marking $name as auto"
     apt-mark auto "$name"
 done
-apt-mark auto "opensight"
-dpkg -Ri "$1/sys-deps"
+apt-mark manual "opensight"
+dpkg -Ri "$1/system-deps"
+apt-get -y autoremove
 reboot
