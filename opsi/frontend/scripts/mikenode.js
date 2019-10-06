@@ -1,20 +1,12 @@
-$(document).ready(function () {
-
-	$("#uploadBTN").click(function (event) {
+$(document).ready(function() {
+	$("#upload-button").click(function (event) {
 
 		//stop submit the form, we will post it manually.
 		event.preventDefault();
-
-		// Get form
-		var form = $('#fileinfo')[0];
-
-		// Create an FormData object
-		var data = new FormData(form);
-
-		// disabled the submit button
-		$("#uploadBTN").prop("disabled", true);
-
-		// hi mike, this is my crappy button. feel free to replace it
+		var form = $('#upload-form')[0];
+		var data = new FormData();
+        data.append("file", form[0].files[0]);
+		$("#upload-button").prop("disabled", true);
 		$.ajax({
 			type: "POST",
 			enctype: 'multipart/form-data',
@@ -23,18 +15,10 @@ $(document).ready(function () {
 			processData: false,
 			contentType: false,
 			cache: false,
-			// timeout: 600000,
-			success: function (data) {
-				$("#result").text(data);
-				console.log("SUCCESS : ", data);
-				$("#uploadBTN").prop("disabled", false);
-			},
-			error: function (e) {
-				$("#result").text(e.responseText);
-				console.log("ERROR : ", e);
-				$("#uploadBTN").prop("disabled", false);
-			}
+			success: function (data) { $("#upload-button").prop("disabled", false); },
+			error: function (e) { $("#upload-button").prop("disabled", false); }
 		});
+
 	});
 
 	$("#shutdown").click(function (event) {$.post("/api/shutdown");});
@@ -78,9 +62,10 @@ function notPressingDown(e) {
 window.onload = init;
 function init() {
 	if (window.Event) {
-		document.captureEvents(Event.MOUSEMOVE);
+        document.addEventListener("mousemove", getCursorXY)
+		// document.captureEvents(Event.MOUSEMOVE);
 	}
-	document.onmousemove = getCursorXY;
+	// document.onmousemove = getCursorXY;
 }
 
 function getCursorXY(e) {
@@ -117,12 +102,14 @@ var list = 0;
 
 var c = document.getElementById("canvas");
 
-c.width = window.innerWidth;
-c.height = window.innerHeight;
-var ctx = c.getContext("2d");
+if (c) {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+    var ctx = c.getContext("2d");
+}
 $(document).ready(function() {
-	//add input first
 
+    //add input first
 	$("body").on("mousedown", ".clicker", function() {
 		if (
 			$(this)
@@ -191,6 +178,10 @@ $(document).ready(function() {
 });
 
 function update() {
+    // don't produce a million errors
+    // TODO: mike please fix this i have no idea what this is
+    if (!c) { return; }
+
 	if (!isPressing) {
 		if (inHand) {
 			inHand = false;

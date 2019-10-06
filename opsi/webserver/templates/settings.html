@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="prefs-container">
+    <div id="preference">
+        <h1>Update</h1>
+        <p>
+            You can get the latest version of OpenSight
+            <a href="https://github.com/opensight-cv/packages/releases">here</a>.
+        </p>
+        <p>Updating from web-ui only works on Raspbian</p>
+        <form id="upload-form" enctype="multipart/form-data" method="post" name="upload-form">
+            <input type="file" class="bfi" required />
+        </form>
+        <input class="upload-button" id="upload-button" type="button" value="Update"/>
+    </div>
+    <div id="preference">
+        <h1>Actions</h1>
+        <input id="restart" type="button" value="Restart OpenSight"/>
+        <input id="shutdown" type="button" value="Shutdown OpenSight"/>
+    </div>
+</div>
+{% endblock %}
