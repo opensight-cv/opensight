@@ -100,9 +100,18 @@ button {
   padding-bottom: 5px;
   padding-left: 6px;
   padding-right: 6px;
-  border-radius: 5px;
   color: #444;
+  border-radius: 5px;
   border: #cdc7c2;
+  border-width: 1px;
+  border-style: solid;
+}
+
+input[type="button"]:active {
+  border-radius: 5px;
+  border: #cdc7c2;
+  background: rgb(164,163,162);
+  background: linear-gradient(180deg, rgba(231,229,227) 0%, rgba(217,217,217,1) 100%); 
   border-width: 1px;
   border-style: solid;
 }
@@ -345,11 +354,6 @@ html .ui-button.ui-state-disabled:active {
   margin-right: 15px;
   padding: 5px;
   cursor: pointer;
-}
-.upload-button {
-  margin: 5px;
-  cursor: pointer;
-  text-align: left;
 }
 .switch {
   position: relative;

@@ -9,7 +9,6 @@
 
 		<link rel="stylesheet" href="styles/ui.css" />
 		<link rel="stylesheet" href="styles/node.css" />
-		<link rel="stylesheet" href="styles/node.css" />
 
 		<link rel="icon" type="image/png" sizes="192x192" href="favicon/favicon-192x192.png">
 		<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
@@ -18,10 +17,7 @@
 
 		<script type="text/javascript" src="libs/jquery-3.4.1.min.js" defer></script>
 		<script type="text/javascript" src="libs/jquery-ui-1.12.1.min.js" defer></script>
-		<script type="text/javascript" src="libs/bfi.min.js" defer></script>
-		<script type="text/javascript" src="scripts/zoom.js" defer></script>
-		<script type="text/javascript" src="scripts/mikenode.js" defer></script>
-		<script type="text/javascript" src="scripts/node.js" defer></script>
+        {% block scripts %}{% endblock %}
 	</head>
 
 	<body id="body">

@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script type="text/javascript" src="scripts/zoom.js" defer></script>
+<script type="text/javascript" src="scripts/mikenode.js" defer></script>
+<script type="text/javascript" src="scripts/node.js" defer></script>
+{% endblock %}
+
 {% block content %}
 <canvas id="canvas"></canvas>
 <div id="container">

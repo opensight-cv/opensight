@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script type="text/javascript" src="scripts/settings.js" defer></script>
+<script type="text/javascript" src="libs/bfi.min.js" defer></script>
+{% endblock %}
+
 {% block content %}
 <div id="prefs-container">
     <div id="preference">
@@ -9,10 +14,10 @@
             <a href="https://github.com/opensight-cv/packages/releases">here</a>.
         </p>
         <p>Updating from web-ui only works on Raspbian</p>
-        <form id="upload-form" enctype="multipart/form-data" method="post" name="upload-form">
+        <form id="update-form" enctype="multipart/form-data" method="post" name="upload-form">
             <input type="file" class="bfi" required />
         </form>
-        <input class="upload-button" id="upload-button" type="button" value="Update"/>
+        <input class="update-button" id="upload-button" type="button" value="Update"/>
     </div>
     <div id="preference">
         <h1>Actions</h1>
@@ -33,6 +38,14 @@
         <input id="profile-button" type="button" value="7"/>
         <input id="profile-button" type="button" value="8"/>
         <input id="profile-button" type="button" value="9"/>
+    </div>
+    <div id="preference">
+        <h1>Import/Export</h1>
+        <form id="import-form" enctype="multipart/form-data" method="post" name="import-form">
+            <input type="file" class="bfi" required />
+        </form>
+        <input id="import-button" type="button" value="Import"/>
+        <input id="export-button" type="button" value="Export"/>
     </div>
 </div>
 {% endblock %}
