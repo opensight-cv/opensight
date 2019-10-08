@@ -1,6 +1,6 @@
 import logging
 import uuid
-from dataclasses import asdict
+from dataclasses import asdict, fields, _MISSING_TYPE
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
 from ..manager.link import NodeLink
@@ -82,6 +82,13 @@ def get_type(_type: Type) -> InputOutputF:
     raise TypeError(f"Unknown type {_type} ({type(_type)})")
 
 
+def get_field_type(field) -> InputOutputF:
+    io = get_type(field.type)
+    if field.default and type(field.default) is not _MISSING_TYPE:
+        io.params["default"] = field.default
+    return io
+
+
 def get_types(types):
     pruned_types = []
     # if none, just don't show it
@@ -91,12 +98,21 @@ def get_types(types):
     return {name: get_type(type) for name, type in pruned_types}
 
 
+def get_settings_types(types):
+    pruned_types = []
+    # if none, just don't show it
+    for _type in types:
+        if _type.type is not type(None):
+            pruned_types.append(_type)
+    return {field.name: get_field_type(field) for field in pruned_types}
+
+
 def _serialize_funcs(funcs: Dict[str, Type[Function]]) -> List[FunctionF]:
     return [
         FunctionF(
             name=func.__name__,
             type=func.type,
-            settings=get_types(func.SettingTypes.items()),
+            settings=get_settings_types(func.SettingTypes),
             inputs=get_types(func.InputTypes.items()),
             outputs=get_types(func.OutputTypes.items()),
         )

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, is_dataclass
+from dataclasses import dataclass, is_dataclass, fields
 from typing import Any, Callable, Dict, FrozenSet, NamedTuple, Type, get_type_hints
 
 
@@ -51,7 +51,7 @@ class Function:
         if not does_match(cls, "disabled", is_bool):
             error("bool property 'disabled'")
 
-        cls.SettingTypes = get_type_hints(cls.Settings)
+        cls.SettingTypes = fields(cls.Settings)
         cls.InputTypes = get_type_hints(cls.Inputs)
         cls.OutputTypes = get_type_hints(cls.Outputs)
 

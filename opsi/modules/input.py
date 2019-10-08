@@ -137,6 +137,7 @@ def parse_camstring(string):
 
 
 def controls(fps=False):
+    return int
     if ENABLE_RES:
         return int
     if fps and ENABLE_FPS:
@@ -185,13 +186,13 @@ class CameraInput(Function):
     @dataclass
     class Settings:
         mode: get_modes()
-        width: controls()
-        height: controls()
-        fps: controls(True)
         brightness: int
         contrast: int
         saturation: int
         exposure: int
+        width: controls() = None
+        height: controls() = None
+        fps: controls(True) = None
 
     @dataclass
     class Outputs:

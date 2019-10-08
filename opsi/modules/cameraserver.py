@@ -259,7 +259,7 @@ class CameraServer(Function):
 
     @dataclass
     class Settings:
-        port: int
+        port: int = 8080
 
     @dataclass
     class Inputs:
@@ -278,15 +278,3 @@ class CameraServer(Function):
             )
         except AttributeError:
             pass
-        # self.loop.stop()
-
-
-# def main():
-#     cam = cv2.VideoCapture(0)
-#     server = CameraServer(cam.read()[1])
-#     while True:
-#         server.run(cam.read()[1])
-
-
-if __name__ == "__main__":
-    main()
