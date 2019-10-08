@@ -252,10 +252,9 @@ def _process_node_settings(program, node: NodeN):
 
     try:
         settings = real_node.func_type.Settings(**node.settings)
+        real_node.settings = settings
     except TypeError as e:
         raise NodeTreeImportError(node, "Missing key in settings") from e
-
-    real_node.settings = settings
 
 
 def import_nodetree(program, nodetree: NodeTreeN):

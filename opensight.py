@@ -18,8 +18,8 @@ parser.add_argument(
 
 def main():
     try:
-    lifespan = Lifespan(parser.parse_args(), catch_signal=True)
-    lifespan.main_loop()
+        lifespan = Lifespan(parser.parse_args(), catch_signal=True)
+        lifespan.main_loop()
     finally:
         logging.shutdown()
 
