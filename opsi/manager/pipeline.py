@@ -46,7 +46,6 @@ class Node:
             return
 
         self.func = self.func_type(self.settings)
-        self.func.on_start()
 
     def dispose(self):
         if self.func is None:

@@ -1,7 +1,9 @@
 import functools
+import logging
 import threading
 
 from fastapi import FastAPI, File, UploadFile
+from starlette.responses import JSONResponse
 
 from ..backend.upgrade import upgrade_opsi
 from ..util.concurrency import FifoLock
@@ -15,6 +17,8 @@ class Api:
 
         self.app = FastAPI(openapi_prefix=prefix)
 
+        self.app.exception_handler(NodeTreeImportError)(self.importerror_handler)
+
         self.app.get("/funcs", response_model=SchemaF)(self.read_funcs)
         self.app.get("/nodes", response_model=NodeTreeN)(self.read_nodes)
         self.app.post("/nodes")(self.save_nodes)
@@ -24,6 +28,17 @@ class Api:
         self.app.post("/profile")(self.profile)
 
         parent_app.mount(prefix, self.app)
+
+    def importerror_handler(self, request, exc):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Invalid Nodetree",
+                "node": str(exc.node.id),
+                "type": exc.node.type,
+                "message": exc.args[0],
+            },
+        )
 
     def read_funcs(self) -> SchemaF:
         return export_manager(self.program.manager)

@@ -11,7 +11,12 @@ from ..manager.types import *
 from ..util.concurrency import FifoLock
 from .schema import *
 
-__all__ = ("export_manager", "export_nodetree", "import_nodetree")
+__all__ = (
+    "export_manager",
+    "export_nodetree",
+    "import_nodetree",
+    "NodeTreeImportError",
+)
 
 logger = logging.getLogger(__name__)
 
@@ -177,6 +182,19 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 # ---------------------------------------------------------
 
 
+class NodeTreeImportError(ValueError):
+    def __init__(self, node: NodeN = None, msg=""):
+        self.node = node
+
+        if not self.node:
+            super().__init__(msg)
+        else:
+            super().__init__(f"Node '{self.node.id}' of type '{node.type}' {msg}")
+
+        # since exc_info == True, this class must not be instantiated outside an `except:` clause
+        logger.debug(f"Error during nodetree import: {self.args[0]}", exc_info=True)
+
+
 def _process_node_links(program, node: NodeN) -> List[str]:
     links: Links = {}
     empty_links: List[str] = []
@@ -224,13 +242,17 @@ def _process_node_inputs(program, node: NodeN):
 
 
 def _process_node_settings(program, node: NodeN):
-    try:
-        real_node = program.pipeline.nodes[node.id]
+    if None in node.settings.values():
+        raise NodeTreeImportError(node, "Cannot have None value in settings")
 
+    real_node = program.pipeline.nodes[node.id]
+
+    try:
         settings = real_node.func_type.Settings(**node.settings)
-        real_node.settings = settings
-    except TypeError:
-        logger.debug("Error during nodetree import", exc_info=True)
+    except TypeError as e:
+        raise NodeTreeImportError(node, "Missing key in settings") from e
+
+    real_node.settings = settings
 
 
 def import_nodetree(program, nodetree: NodeTreeN):

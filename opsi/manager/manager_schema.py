@@ -81,6 +81,7 @@ class Function:
 
     def __init__(self, settings: Settings):
         self.settings = settings
+        self.on_start()
 
     def dispose(self):
         pass
