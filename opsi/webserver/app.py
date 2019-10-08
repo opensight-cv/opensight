@@ -2,13 +2,14 @@ import functools
 import logging
 import socket
 from abc import abstractmethod
-from os.path import dirname, join
 
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
+
+from opsi.util.path import join
 
 from .api import Api
 from .test import WebserverTest
@@ -39,7 +40,7 @@ class WebServer:
         self.app.mount("/", StaticFiles(directory=frontend))
 
     def __check_port__(self, port):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.bind(("0.0.0.0", port))
         except socket.error as e:
@@ -61,9 +62,7 @@ class WebServer:
         def __init__(self, scope, recieve, send):
             # opsi/webserver/templates
             self.page = self.set_page()
-            self.templates = Jinja2Templates(
-                directory=join(dirname(__file__), "templates")
-            )
+            self.templates = Jinja2Templates(directory=join(__file__, "templates"))
             super().__init__(scope, recieve, send)
 
         @abstractmethod

@@ -4,13 +4,14 @@ import signal
 import threading
 import time
 from os import listdir
-from os.path import dirname, isdir, isfile, join, splitext
+from os.path import isdir, isfile, splitext
 
 import uvloop
 
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
+from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
 
@@ -21,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def register_modules(program, module_path):
-    moddir = join(module_path, "modules")
+    moddir = join(module_path, "modules") + "/"
     if isdir(moddir):
         files = [splitext(f)[0] for f in listdir(moddir) if isfile(join(moddir, f))]
         for path in files:
@@ -66,7 +67,7 @@ class Lifespan:
     def make_threads(self):
         program = Program(self)
 
-        path = dirname(opsi.__file__)
+        path = opsi.__file__
         register_modules(program, path)
 
         if self.persist:
