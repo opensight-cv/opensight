@@ -219,9 +219,12 @@ def _process_node_links(program, node: NodeN) -> List[str]:
 
 
 def _process_widget(type: Type, val):
-    if isinstance(type, RangeType):
-        # Val is a Tuple[float, float]
-        # Convert to Range
+    if isinstance(type, _RangeBaseType):
+        # if type == RangeType:
+        #   Val is a Tuple[float, float]
+        #   Convert to Range
+        # if type == Slide:
+        #   Val needs to be validated
         val = type.create(*val)
 
     return val

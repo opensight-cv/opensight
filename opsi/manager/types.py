@@ -12,12 +12,7 @@ except ModuleNotFoundError:
     ndarray = object  # for the custom type declarations
 
 
-class Range(NamedTuple):
-    min: float
-    max: float
-
-
-class RangeType:
+class _RangeBaseType:
     __slots__ = ("min", "max", "decimal")
 
     def __init__(self, min, max, *, decimal=True):
@@ -40,19 +35,26 @@ class RangeType:
 
         return self._convert(val)
 
+    def serialize(self):
+        return {key: getattr(self, key) for key in self.__slots__}
+
+
+class Slide(_RangeBaseType):
+    def create(self, val):
+        return self.ensure_in_range(val, "val")
+
+
+class Range(NamedTuple):
+    min: float
+    max: float
+
+
+class RangeType(_RangeBaseType):
     def create(self, min, max):
         min = self.ensure_in_range(min, "min")
         max = self.ensure_in_range(max, "max")
 
         return Range(min, max)
-
-    def serialize(self):
-        return {key: getattr(self, key) for key in self.__slots__}
-
-
-# backend implementation identical
-class Slide(RangeType):
-    pass
 
 
 # There's a reason why I'm declaring classes here and not doing simply
