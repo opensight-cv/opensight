@@ -17,6 +17,15 @@ var postRequest = function() {
   );
 };
 
+// https://stackoverflow.com/a/1909508
+function delay(fn, ms) {
+  let timer = 0
+  return function(...args) {
+    clearTimeout(timer)
+    timer = setTimeout(fn.bind(this, ...args), ms || 0)
+  }
+}
+
 var body = document.querySelector("body");
 // Listening for the mouse and touch events
 body.addEventListener("mousedown", pressingDown, false);
@@ -273,11 +282,11 @@ const intInput = function(name, def) {
         .parent()
         .attr("id")
     ).settings[name] = parseFloat($("#" + this.id + name).val());
-    postRequest();
     $("#" + this.id + name)
-      .on("keyup", function(e) {
+      .on("keyup", delay(function(e) {
         if (e.which === 46) return false;
-      })
+        postRequest();
+      }, 750))
       .on("input", function() {
         var self = this;
         setTimeout(function() {
@@ -293,7 +302,6 @@ const intInput = function(name, def) {
           .parent()
           .attr("id")
       ).settings[name] = parseFloat($(this).val());
-      postRequest();
     });
   };
 };
@@ -321,7 +329,10 @@ const decInput = function(name, def) {
         .parent()
         .attr("id")
     ).settings[name] = parseFloat($("#" + this.id + name).val());
-    postRequest();
+    $("#" + this.id + name)
+      .on("keyup", delay(function(e) {
+        postRequest();
+      }, 750))
 
     $("#" + this.id + name).on("input", function() {
       findNodeTreeSpot(
@@ -330,7 +341,6 @@ const decInput = function(name, def) {
           .parent()
           .attr("id")
       ).settings[name] = parseFloat($(this).val());
-      postRequest();
     });
   };
 };
@@ -358,7 +368,10 @@ const strInput = function(name, def) {
         .parent()
         .attr("id")
     ).settings[name] = $("#" + this.id + name).val();
-    postRequest();
+    $("#" + this.id + name)
+      .on("keyup", delay(function(e) {
+        postRequest();
+      }, 750))
     $("#" + this.id + name).on("input", function() {
       findNodeTreeSpot(
         $(this)
@@ -366,7 +379,6 @@ const strInput = function(name, def) {
           .parent()
           .attr("id")
       ).settings[name] = $(this).val();
-      postRequest();
     });
   };
 };
@@ -482,6 +494,9 @@ const range = function(min, max, name, defMin, defMax) {
       min: this.min,
       max: this.max,
       values: [defMin, defMax],
+      stop: function(event, ui) {
+          postRequest();
+      },
       slide: function(event, ui) {
         this.minVal = ui.values[0];
         this.maxVal = ui.values[1];
@@ -499,8 +514,6 @@ const range = function(min, max, name, defMin, defMax) {
         $("#" + this.id + "out1").text(this.minVal);
 
         $("#" + this.id + "out2").text(this.maxVal);
-        //tofix too many post requests probably
-        postRequest();
       }
     });
   };
@@ -539,6 +552,9 @@ const slide = function(min, max, name, def) {
       min: this.min,
       max: this.max,
       value: this.val,
+      stop: function(event, ui) {
+          postRequest();
+      },
       slide: function(event, ui) {
         this.val = ui.value;
 
@@ -550,9 +566,6 @@ const slide = function(min, max, name, def) {
         ).settings[name] = parseFloat(this.val);
 
         $("#" + this.id + "out").text(this.val);
-
-        //tofix too many post requests probably
-        postRequest();
       }
     });
   };
@@ -1061,13 +1074,11 @@ const importNodeTree = function(nodetree, functions) {
             );
             break;
           case "int":
-            console.log(x);
             $("#" + nodetree.nodes[i].id + x).val(
               nodetree.nodes[i].settings[x]
             );
             break;
           case "str":
-            console.log(nodetree.nodes[i].settings[x]);
             $("#" + nodetree.nodes[i].id + x).val(
               nodetree.nodes[i].settings[x]
             );

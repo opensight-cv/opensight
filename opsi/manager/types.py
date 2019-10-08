@@ -50,6 +50,11 @@ class RangeType:
         return {key: getattr(self, key) for key in self.__slots__}
 
 
+# backend implementation identical
+class Slide(RangeType):
+    pass
+
+
 # There's a reason why I'm declaring classes here and not doing simply
 # `Mat = ndarray` or `Mat = NewType("Mat", ndarray)`
 # ndarray doesn't allow me to differentiate between Mat and MatBW

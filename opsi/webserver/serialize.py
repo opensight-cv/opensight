@@ -26,6 +26,13 @@ def _rangetype_serialize(type):
     return InputOutputF(type="range", params=type.serialize())
 
 
+def _slide_serialize(type):
+    if not isinstance(type, Slide):
+        return None
+
+    return InputOutputF(type="slide", params=type.serialize())
+
+
 def _tuple_serialize(type):
     if not isinstance(type, tuple):
         return None
@@ -45,6 +52,7 @@ _normal_types = {int, str, Mat}
 # Each item in _abnormal_types takes in a type and returns InputOutputF if the
 # parser supports the type, or None if it does not
 _abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
+    _slide_serialize,
     _rangetype_serialize,
     _tuple_serialize,
 ]  # add new type parsers here

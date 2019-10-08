@@ -7,7 +7,7 @@ import numpy as np
 import opsi.manager.cvwrapper as cvw
 import opsi.modules.fps as fps
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Contours, Mat, MatBW, RangeType
+from opsi.manager.types import Contours, Mat, MatBW, RangeType, Slide
 
 OPENCV3 = False
 
