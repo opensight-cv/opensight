@@ -102,7 +102,7 @@ def get_settings_types(types):
     pruned_types = []
     # if none, just don't show it
     for _type in types:
-        if _type.type is not type(None):
+        if type(_type.type) is not type(None):
             pruned_types.append(_type)
     return {field.name: get_field_type(field) for field in pruned_types}
 
