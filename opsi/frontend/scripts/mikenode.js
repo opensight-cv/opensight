@@ -259,9 +259,22 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
           nodeTree.nodes.splice(i, 1);
         }
       }
+      for (let i = 0; i < nodeTree.nodes.length; i++) {
+
+        for(let j = 0; j < Object.keys(nodeTree.nodes[0].inputs).length; j++){
+
+          if (nodeTree.nodes[i].inputs[Object.keys(nodeTree.nodes[i].inputs)[j]].id == uuid) {
+            delete nodeTree.nodes[i].inputs[Object.keys(nodeTree.nodes[i].inputs)[j]];
+            j--
+          }
+        }
+      }
       postRequest();
+
     });
     settingsGo(this.settings);
+    postRequest();
+
   };
 };
 
