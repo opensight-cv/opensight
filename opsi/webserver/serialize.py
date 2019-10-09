@@ -1,6 +1,6 @@
 import logging
 import uuid
-from dataclasses import asdict, fields, _MISSING_TYPE
+from dataclasses import _MISSING_TYPE, asdict, fields
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
 from ..manager.link import NodeLink

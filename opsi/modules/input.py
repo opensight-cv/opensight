@@ -180,7 +180,6 @@ def create_capture(settings):
 
 class CameraInput(Function):
     def on_start(self):
-        print(self.settings)
         self.cap = create_capture(self.settings)
 
     @dataclass

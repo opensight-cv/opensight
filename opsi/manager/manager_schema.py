@@ -1,4 +1,4 @@
-from dataclasses import dataclass, is_dataclass, fields
+from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, Callable, Dict, FrozenSet, NamedTuple, Type, get_type_hints
 
 
