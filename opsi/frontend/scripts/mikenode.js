@@ -239,8 +239,6 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
         settingsLoop(this.settings, uuid) +
         "</div>"
     );
-    $("#" + this.uuid).offset().left = this.pos[0];
-    $("#" + this.uuid).offset().top = this.pos[1];
     $("#" + this.uuid).draggable({
       cancel: ".clicker, input, select",
       stop: function(event, ui){
@@ -251,6 +249,8 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
         }
       }
     });
+    $("#" + this.uuid).offset().left = this.pos[0];
+    $("#" + this.uuid).offset().top = this.pos[1];
     
     $("#x" + this.uuid).on("click", function() {
       killLoop(uuid);
