@@ -181,6 +181,7 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
                 type=node.func_type.type,
                 id=id,
                 settings=_serialize_settings(node.settings),
+                pos=node.pos,
                 inputs={
                     name: (
                         _serialize_link(link)
@@ -265,7 +266,7 @@ def _process_node_settings(program, node: NodeN):
         raise NodeTreeImportError(node, "Cannot have None value in settings")
 
     real_node = program.pipeline.nodes[node.id]
-
+    real_node.pos = node.pos
     try:
         settings = real_node.func_type.Settings(**node.settings)
         real_node.settings = settings

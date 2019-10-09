@@ -30,6 +30,7 @@ class NodeN(BaseModel):
         inputs: Dict[str, Optional[LinkN]] = {}
     else:
         inputs: Dict[str, InputN] = {}
+    pos: list = []
 
 
 class NodeTreeN(BaseModel):
