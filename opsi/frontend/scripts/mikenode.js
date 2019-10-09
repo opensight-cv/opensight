@@ -221,7 +221,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
   this.create = function() {
     numNode++
     $("#container").append(
-      '<div class="node" style="left: '+ this.pos[0] +'px; top:'+this.pos[1]+'px;" id="' +
+      '<div class="node" style="left: '+ pos[0] +'px; top:'+pos[1]+'px;" id="' +
         this.uuid +
         '">' +
         "<h1>" +
