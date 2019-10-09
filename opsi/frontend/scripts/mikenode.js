@@ -207,6 +207,7 @@ function update() {
     $(".input").css("cursor", "not-allowed");
   }
 }
+numNode = 0;
 // class declarations
 const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
   this.uuid = uuid;
@@ -218,8 +219,9 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
   this.id = id;
   this.pos = pos;
   this.create = function() {
+    numNode++
     $("#container").append(
-      '<div class="node" id="' +
+      '<div class="node" style="left: '+ this.pos[0] +'px; top:'+this.pos[1]+'px;" id="' +
         this.uuid +
         '">' +
         "<h1>" +
@@ -242,17 +244,13 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
     $("#" + this.uuid).draggable({
       cancel: ".clicker, input, select",
       stop: function(event, ui){
-        for (let i = 0; i < nodeTree.nodes.length; i++) {
-          if (nodeTree.nodes[i].id == this.id.substring(1)) {
-            nodetree[i].pos = [$("#" + this.uuid).offset().left,$("#" + this.uuid).offset().top]
-          }
-        }
+        findNodeTreeSpot(uuid).pos = [$(this).offset().left,$(this).offset().top];
+        postRequest();
       }
     });
-    $("#" + this.uuid).offset().left = this.pos[0];
-    $("#" + this.uuid).offset().top = this.pos[1];
-    
+
     $("#x" + this.uuid).on("click", function() {
+      numNode--;
       killLoop(uuid);
       $("#" + this.id.substring(1)).remove();
 
@@ -970,7 +968,7 @@ const functions = function(jsonData) {
     }
   };
 
-  this.recreate = function(type, uuid) {
+  this.recreate = function(type, uuid, pos) {
     for (let i = 0; i < this.rawArr.length; i++) {
       if (this.rawArr[i][1] === type) {
         functionNode = new Node(
@@ -980,7 +978,7 @@ const functions = function(jsonData) {
           this.inputs[i],
           this.outputs[i],
           this.name[i],
-          this.pos[i]
+          pos
         );
         nodeTree.nodes.push({
           type: type,
@@ -1050,7 +1048,7 @@ const importNodeTree = function(nodetree, functions) {
   this.go = function() {
     for (let i = 0; i < nodetree.nodes.length; i++) {
       //nodes
-      functions.recreate(nodetree.nodes[i].type, nodetree.nodes[i].id);
+      functions.recreate(nodetree.nodes[i].type, nodetree.nodes[i].id, nodetree.nodes[i].pos);
       //inputs
       if (Object.keys(nodetree.nodes[i].inputs).length != 0) {
         for (x in nodetree.nodes[i].inputs) {

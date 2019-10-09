@@ -7,7 +7,7 @@
                 "val": 23
             },
             "inputs": {},
-            "pos": [0,0]
+            "pos": [50,68]
         },
         {
             "type": "demo.six/Number",
@@ -16,7 +16,7 @@
                 "val": 55
             },
             "inputs": {},
-            "pos": [0,0]
+            "pos": [158,503]
         },
         {
             "type": "demo.six/Add",
@@ -42,7 +42,7 @@
                     "name": "val"
                 }
             },
-            "pos": [0,0]
+            "pos": [430,151]
         },
         {
             "type": "demo.six/Divide",
@@ -58,7 +58,7 @@
                     "name": "sum"
                 }
             },
-            "pos": [0,0]
+            "pos": [692,415]
         }
     ]
 }
