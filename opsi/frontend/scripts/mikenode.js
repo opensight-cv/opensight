@@ -1001,7 +1001,8 @@ const functions = function(jsonData) {
           set[i],
           inp[i],
           out[i],
-          name[i]
+          name[i],
+          [0,0]
         );
         nodeTree.nodes.push({
           type: type,
