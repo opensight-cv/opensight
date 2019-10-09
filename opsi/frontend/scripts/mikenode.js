@@ -208,7 +208,7 @@ function update() {
   }
 }
 // class declarations
-const Node = function(id, uuid, settings, inputs, outputs, name) {
+const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
   this.uuid = uuid;
   this.name = name;
 
@@ -216,6 +216,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
   this.inputs = inputs;
   this.outputs = outputs;
   this.id = id;
+  this.pos = pos;
   this.create = function() {
     $("#container").append(
       '<div class="node" id="' +
@@ -238,9 +239,19 @@ const Node = function(id, uuid, settings, inputs, outputs, name) {
         settingsLoop(this.settings, uuid) +
         "</div>"
     );
+    $("#" + this.uuid).offset().left = this.pos[0];
+    $("#" + this.uuid).offset().top = this.pos[1];
     $("#" + this.uuid).draggable({
-      cancel: ".clicker, input, select"
+      cancel: ".clicker, input, select",
+      stop: function(event, ui){
+        for (let i = 0; i < nodeTree.nodes.length; i++) {
+          if (nodeTree.nodes[i].id == this.id.substring(1)) {
+            nodetree[i].pos = [$("#" + this.uuid).offset().left,$("#" + this.uuid).offset().top]
+          }
+        }
+      }
     });
+    
     $("#x" + this.uuid).on("click", function() {
       killLoop(uuid);
       $("#" + this.id.substring(1)).remove();
@@ -968,7 +979,8 @@ const functions = function(jsonData) {
           this.settings[i],
           this.inputs[i],
           this.outputs[i],
-          this.name[i]
+          this.name[i],
+          this.pos[i]
         );
         nodeTree.nodes.push({
           type: type,

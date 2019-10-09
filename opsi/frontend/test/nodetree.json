@@ -6,7 +6,8 @@
             "settings": {
                 "val": 23
             },
-            "inputs": {}
+            "inputs": {},
+            "pos": [0,0]
         },
         {
             "type": "demo.six/Number",
@@ -14,7 +15,8 @@
             "settings": {
                 "val": 55
             },
-            "inputs": {}
+            "inputs": {},
+            "pos": [0,0]
         },
         {
             "type": "demo.six/Add",
@@ -39,7 +41,8 @@
                     "id": "de99a2ad-2133-4933-a378-1f84829c8423",
                     "name": "val"
                 }
-            }
+            },
+            "pos": [0,0]
         },
         {
             "type": "demo.six/Divide",
@@ -54,7 +57,8 @@
                     "id": "8c0fcdc5-9f7a-4d7a-863a-d7c914541a7e",
                     "name": "sum"
                 }
-            }
+            },
+            "pos": [0,0]
         }
     ]
 }
