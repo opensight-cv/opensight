@@ -60,6 +60,20 @@ class Function:
             if field not in cls.InputTypes:
                 error(f"field '{field}'")
 
+        # Inject code that runs before the overridable methods
+        # This patching is necessary to keep the api the same
+
+        for func in ("run", "dispose"):
+            # Do not change these constants, unless you change the private functions defined below
+            original = func
+            renamed = "_" + func
+            private = "_private_" + func
+
+            # copy original cls.func to cls._func
+            setattr(cls, renamed, getattr(cls, original))
+            # override original cls.func with our cls._private_func
+            setattr(cls, original, getattr(cls, private))
+
         super().__init_subclass__(*args, **kargs)
 
     # Any of these dataclasses can be ommited to use the default
@@ -79,10 +93,6 @@ class Function:
     # These are the main implementation methods that would
     # be defined in a concrete Function
 
-    def __init__(self, settings: Settings):
-        self.settings = settings
-        self.on_start()
-
     def dispose(self):
         pass
 
@@ -91,6 +101,22 @@ class Function:
 
     def on_start(self):
         pass
+
+    # Private, do not override
+
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        self.alive = True
+        self.on_start()
+
+    def _private_dispose(self):
+        self._dispose()
+        self.alive = False
+
+    def _private_run(self, inputs) -> Outputs:
+        if not self.alive:
+            raise ValueError("Attempted to call function when already disposed")
+        return self._run(inputs)
 
 
 def isfunction(func):

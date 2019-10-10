@@ -69,12 +69,14 @@ class Persistence:
             self._nodetree = NodeTreeN.parse_file(self.nodetree_path)
             return self._nodetree
         except (ValidationError, JSONDecodeError, ValueError) as e:
-            LOGGER.warning("Nodetree persistence invalid, creating new NodeTree")
+            LOGGER.warning("Nodetree persistence invalid")
             LOGGER.debug(e, exc_info=True)
-            return NodeTreeN()
         except OSError:
             LOGGER.exception("Failed to read from nodetree persistence")
-        return None
+
+        LOGGER.warning("Creating new NodeTree")
+        self._nodetree = NodeTreeN()
+        return self._nodetree
 
     @nodetree.setter
     def nodetree(self, nodetree: NodeTreeN):
@@ -94,16 +96,14 @@ class Persistence:
             self._prefs = Preferences.parse_file(self.base_path / "preferences.json")
             return self.prefs
         except (ValidationError, JSONDecodeError, ValueError) as e:
-            LOGGER.warning(
-                "Preferences persistence invalid. Creating new preferences file."
-            )
+            LOGGER.warning("Preferences persistence invalid")
             LOGGER.debug(e, exc_info=True)
-            # set default preferences here
-            self._prefs = Preferences(profile=0)
-            return Preferences(profile=0)
         except OSError:
             LOGGER.exception("Failed to read from preferences persistence")
-        return None
+
+        LOGGER.warning("Creating new preferences file.")
+        self._prefs = Preferences(profile=0)  # set default preferences here
+        return self._prefs
 
     @prefs.setter
     def prefs(self, prefs: Preferences):
@@ -135,3 +135,12 @@ class Persistence:
         self.prefs.profile = value
         self.prefs = self.prefs  # write to file
         LOGGER.info(f"Switching to profile {value}")
+
+
+class NullPersistence(Persistence):
+    # Disable saving anything to disk
+    # Should not cause errors outside this file
+
+    def _get_path(self):
+        LOGGER.debug("Null persistence")
+        return PosixPath("/dev/null")

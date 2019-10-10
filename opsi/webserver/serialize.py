@@ -64,7 +64,7 @@ _abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
 
 
 def get_type(_type: Type) -> InputOutputF:
-    if _type is type(None):
+    if (_type is None) or (_type == type(None)):
         return None
 
     if _type in _type_name:

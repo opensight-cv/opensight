@@ -15,13 +15,11 @@ from .api import Api
 from .test import WebserverTest
 
 LOGGER = logging.getLogger(__name__)
-PROGRAM = None
 
 
 class WebServer:
     def __init__(self, program, frontend: str, port: int = None):
         self.program = program
-        PROGRAM = program
 
         self.app = Starlette()
         self.app.debug = True
