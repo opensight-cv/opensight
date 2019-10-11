@@ -450,7 +450,7 @@ const booleanInput = function(name, def) {
           .attr("id")
       ).settings[name] = false;
     }
-    postRequest();
+    // postRequest();
     $("#" + this.id + name).on("change", function() {
       if (this.checked) {
         findNodeTreeSpot(
@@ -974,8 +974,6 @@ const functions = function(jsonData) {
   this.findSettingType = function(name, parentType) {
     for (let i = 0; i < this.rawArr.length; i++) {
       if (this.rawArr[i][1] == parentType) {
-          console.log(name);
-          console.log(this.rawArr[i][2]);
         return this.rawArr[i][2][name].type;
       }
     }
@@ -1026,7 +1024,7 @@ const functions = function(jsonData) {
         functionNode.create();
       }
     }
-    postRequest();
+    // postRequest();
   };
 
   this.ui = function() {
@@ -1108,7 +1106,7 @@ const importNodeTree = function(nodetree, functions) {
             );
             break;
           case "boolean":
-            if (nodetree.nodes[i].settings[x] == "true") {
+            if (nodetree.nodes[i].settings[x]) {
               $("#" + nodetree.nodes[i].id + x).prop("checked", true);
             } else {
               $("#" + nodetree.nodes[i].id + x).prop("checked", false);
@@ -1144,7 +1142,6 @@ const importNodeTree = function(nodetree, functions) {
             );
             break;
         }
-        // console.log('#' + nodetree.nodes[i].id + x);
       }
     }
     nodeTree.nodes = nodetree.nodes;
