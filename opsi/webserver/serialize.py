@@ -141,11 +141,20 @@ def export_manager(manager: Manager) -> SchemaF:
 # ---------------------------------------------------------
 
 
+# removes all Nones from dict
+def _prune_factory(inp):
+    pruned = {}
+    for i in inp:
+        if i[1] is not None:
+            pruned[i[0]] = i[1]
+    return pruned
+
+
 def _serialize_settings(settings) -> Dict[str, Any]:
     if settings is None:
         return {}
 
-    return asdict(settings)
+    return asdict(settings, dict_factory=_prune_factory)
 
 
 def _serialize_link(link: Optional[Link]) -> Optional[LinkN]:

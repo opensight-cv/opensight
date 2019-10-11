@@ -273,7 +273,6 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
 
     });
     settingsGo(this.settings);
-    postRequest();
 
   };
 };
@@ -623,7 +622,6 @@ const box = function(options, name, def) {
         .parent()
         .attr("id")
     ).settings[name] = def;
-    postRequest();
     $("#" + this.id + name).on("change", function() {
       findNodeTreeSpot(
         $(this)
@@ -976,6 +974,8 @@ const functions = function(jsonData) {
   this.findSettingType = function(name, parentType) {
     for (let i = 0; i < this.rawArr.length; i++) {
       if (this.rawArr[i][1] == parentType) {
+          console.log(name);
+          console.log(this.rawArr[i][2]);
         return this.rawArr[i][2][name].type;
       }
     }
@@ -1148,7 +1148,6 @@ const importNodeTree = function(nodetree, functions) {
       }
     }
     nodeTree.nodes = nodetree.nodes;
-    postRequest();
   };
 };
 // const node = function(id, uuid, settings, inputs, outputs, name) {
