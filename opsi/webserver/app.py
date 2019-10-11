@@ -25,15 +25,17 @@ class WebServer:
         self.app.debug = True
 
         self.port = self.__check_port__(port or 80)
+        self.templates = Jinja2Templates(directory=join(__file__, "templates"))
 
-        self.app.router.add_route("/", self.NodetreePage)
+        self.app.router.add_route("/", self._template("nodetree.html"))
         self.app.router.add_route(
             "/settings",
-            functools.partial(self.SettingsPage, persist=self.program.lifespan.persist),
+            self._template("settings.html", persist=self.program.lifespan.persist),
         )
 
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
+        self.make_hooks()
 
         self.app.mount("/", StaticFiles(directory=frontend))
 
@@ -47,6 +49,30 @@ class WebServer:
                 LOGGER.debug(f"Binding to port {port} instead")
         return port
 
+    def _template(self, page, **kwargs):
+        def endpoint(request):
+            return self.templates.TemplateResponse(page, {"request": request, **kwargs})
+
+        return endpoint
+
+    def make_hooks(self):
+        PREFIX = "/hooks"
+        HOOKS = self.program.manager.hooks  # {package: app}
+
+        self.app.add_route(
+            PREFIX, self._template("hooks.html", prefix=PREFIX, packages=HOOKS.keys())
+        )
+
+        # This is required because "/hooks/package/{path}"" and "/hooks/package/"" trigger the mounted app,
+        # but "/hooks/package" doesn't
+        self.app.add_route(PREFIX + "/{path}", self.trailingslash_redirect)
+
+        for package, hook in HOOKS.items():
+            self.app.mount(PREFIX + "/" + package, hook.app)
+
+    def trailingslash_redirect(self, request):
+        return RedirectResponse(request.url.path + "/")
+
     # These test functions go through the entire http pipeline
     def get_funcs(self) -> str:
         return self.testclient.get("/api/funcs")
@@ -56,34 +82,3 @@ class WebServer:
 
     def set_nodes(self, data: str) -> str:
         return self.testclient.post("/api/nodes", data)
-
-    class TemplatePage(HTTPEndpoint):
-        def __init__(self, scope, recieve, send):
-            # opsi/webserver/templates
-            self.page = self.set_page()
-            self.templates = Jinja2Templates(directory=join(__file__, "templates"))
-            super().__init__(scope, recieve, send)
-
-        @abstractmethod
-        def set_page(self):
-            pass
-
-        async def get(self, request):
-            return self.templates.TemplateResponse(self.page, {"request": request})
-
-    class NodetreePage(TemplatePage):
-        def set_page(self):
-            return "nodetree.html"
-
-    class SettingsPage(TemplatePage):
-        def __init__(self, scope, recieve, send, persist=None):
-            self.persist = persist
-            super().__init__(scope, recieve, send)
-
-        def set_page(self):
-            return "settings.html"
-
-        async def get(self, request):
-            return self.templates.TemplateResponse(
-                self.page, {"request": request, "profile": self.persist.profile}
-            )

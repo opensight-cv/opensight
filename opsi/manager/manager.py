@@ -5,7 +5,15 @@ import os.path
 import sys
 from typing import Dict, List, Tuple, Type
 
-from .manager_schema import Function, ModuleInfo, ModuleItem, ModulePath, isfunction
+from .manager_schema import (
+    Function,
+    Hook,
+    ModuleInfo,
+    ModuleItem,
+    ModulePath,
+    isfunction,
+    ishook,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +53,7 @@ class Manager:
     def __init__(self):
         self.modules: Dict[str, ModuleItem] = {}
         self.funcs: Dict[str, Type[Function]] = {}
+        self.hooks: Dict[str, Hook] = {}
 
     @classmethod
     def is_valid_function(cls, module):
@@ -73,13 +82,20 @@ class Manager:
         module = import_module(path)
         info = Manager.get_module_info(module)
 
+        hooks_tuple = inspect.getmembers(module, ishook)
+
+        if len(hooks_tuple) == 1:
+            hook = hooks_tuple[0][1]
+            self.hooks[info.package] = hook
+        elif len(hooks_tuple) > 1:
+            logger.error(f"Only one Hook per module allowed: {info.package}")
+            return
+
         funcs_tuple: List[Tuple[str, Type[Function]]]
         funcs_tuple = inspect.getmembers(module, Manager.is_valid_function(module))
 
-        if len(funcs_tuple) == 0:
-            # Todo: error, return value?
-            logger.debug("No Functions found in module %s", path)
-            return
+        # Since modules can have hooks now, the module should be registered even
+        # if it does not have any Functions, because it could have a Hook.
 
         funcs: Dict[str, Type[Function]] = {}
 

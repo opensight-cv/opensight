@@ -1,6 +1,8 @@
 from dataclasses import dataclass, fields, is_dataclass
 from typing import Any, Callable, Dict, FrozenSet, NamedTuple, Type, get_type_hints
 
+from starlette.routing import Router
+
 
 def isinstance_partial(type: Type) -> Callable[[Any], bool]:
     def partial(obj) -> bool:
@@ -124,6 +126,16 @@ def isfunction(func):
         return issubclass(func, Function)
     except TypeError:  # func is not a type
         return False
+
+
+class Hook:
+    def __init__(self):
+        # self.app can be any ASGI app, but it must exist
+        self.app = Router()
+
+
+def ishook(hook):
+    return isinstance(hook, Hook)
 
 
 class ModulePath(NamedTuple):

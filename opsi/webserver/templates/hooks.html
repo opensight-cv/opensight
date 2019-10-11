@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block content %}
+<div id="prefs-container">
+    <div id="preference">
+        <h1>Hooks: {{ packages|length }}</h1>
+        <ul style="list-style-position: inside;">
+        {% for package in packages %}
+            <li><a href="{{ prefix }}/{{ package }}/">{{ package }}</a></li>
+        {% else %}
+            <li>None</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

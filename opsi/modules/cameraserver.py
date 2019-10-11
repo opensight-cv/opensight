@@ -1,16 +1,14 @@
 import asyncio
-import threading
 from dataclasses import dataclass
 from time import sleep
-from typing import AsyncGenerator, Dict, List, Tuple
 
 import cv2
-import uvicorn
-import uvloop
+import jinja2
 from starlette.applications import Starlette
-from starlette.responses import HTMLResponse
+from starlette.routing import Route, Router
+from starlette.templating import _TemplateResponse
 
-from opsi.manager.manager_schema import Function
+from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.types import Mat
 
 __package__ = "demo.server"
@@ -186,55 +184,64 @@ class MjpegResponse:
 # -----------------------------------------------------------------------------
 
 
-class WebServer:
-    IMAGE_URL = "/image.mjpeg"
+# Returns a unique string for each CameraServer instance
+def func_id(func):
+    return str(func.settings.name)
 
-    def __init__(self, cam, port):
-        self.cam = cam
 
-        self.app = Starlette()
-        self.app.debug = True
+class Hook(Hook):
+    TEMPLATE = jinja2.Template("""
+<html>
+    <head>
+        <title>CameraServer: {{ funcs|length }}</title>
+    </head>
+    <body>
+        <h1>CameraServer</h1>
+        <ul>
+        {% for func in funcs %}
+            <li><a href="./{{ func }}.mjpg">{{ func }}</a></li>
+        {% else %}
+            <li>None</li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>
+""")
 
-        self.app.route(self.IMAGE_URL)(self.image)
-        self.app.route("/")(self.index)
+    def __init__(self):
+        self.app = Router()
+        self.index_route = [Route("/", self.index)]
+        self.funcs = {}  # {name: route}
 
-        self.config = uvicorn.Config(self.app, host="0.0.0.0", port=port)
-        self.server = uvicorn.Server(config=self.config)
+        self._update()
 
-    def set_image(self, image):
-        self.cam.set_image(image)
-
-    def image(self, request):
-        return MjpegResponse(self.cam)
+    def _update(self):
+        self.app.routes = self.index_route + list(self.funcs.values())
 
     def index(self, request):
-        return HTMLResponse(
-            f"""<html><title>Hello</title><body><h1>Hello</h1><br/><img src="{self.IMAGE_URL}"/></body></html>"""
+        return _TemplateResponse(
+            self.TEMPLATE, {"request": request, "funcs": self.funcs.keys()}
         )
 
-    async def run(self):
-        if not self.config.loaded:
-            self.config.load()
-        self.server.logger = self.config.logger_instance
-        self.server.lifespan = self.config.lifespan_class(self.config)
-        self.server.logger.info(
-            "Started self.server process"
-        )  # [{}]".format(process_id))
-        await self.server.startup()
-        if self.server.should_exit:
-            return
-        await self.server.main_loop()
-        self.server.logger.info(
-            "Finished self.server process"
-        )  # [{}]".format(process_id))
+    def endpoint(self, func):
+        def image(request):
+            return MjpegResponse(func.src)
+
+        return image
+
+    def register(self, func):
+        # The url "camera.mjpe?g" matches both "camera.mjpg" and "camera.mjpeg"
+        self.funcs[func_id(func)] = Route(
+            "/" + func_id(func) + ".mjpe?g", self.endpoint(func)
+        )
+        self._update()
+
+    def unregister(self, func):
+        del self.funcs[func_id(func)]
+        self._update()
 
 
-def create_threaded_loop():
-    loop = uvloop.new_event_loop()
-    t = threading.Thread(target=loop.run_forever)
-    t.daemon = True
-    t.start()
-    return loop, t
+HookInstance = Hook()
 
 
 class CameraSource:
@@ -253,28 +260,19 @@ class CameraServer(Function):
 
     def on_start(self):
         self.src = CameraSource()
-        self.ws = WebServer(self.src, self.settings.port)
-        self.loop, self.thread = create_threaded_loop()
-        asyncio.run_coroutine_threadsafe(self.ws.run(), self.loop)
+        HookInstance.register(self)
 
     @dataclass
     class Settings:
-        port: int = 8080
+        name: str = "camera"
 
     @dataclass
     class Inputs:
         img: Mat
 
     def run(self, inputs):
-        self.ws.set_image(inputs.img)
+        self.src.set_image(inputs.img)
         return self.Outputs()
 
     def dispose(self):
-        try:
-            self.ws.server.force_exit = True
-            asyncio.run_coroutine_threadsafe(self.ws.server.shutdown(), self.loop)
-            asyncio.run_coroutine_threadsafe(
-                self.ws.server.lifespan.shutdown(), self.loop
-            )
-        except AttributeError:
-            pass
+        HookInstance.unregister(self)
