@@ -23,7 +23,10 @@ class ThreadedWebserver:
         self.server.logger.info("Started server process")
         await self.server.startup()
         await self.server.main_loop()
+
         await self.server.shutdown()
+        await self.server.lifespan.shutdown()
+
         self.event.set()
         self.server.logger.info("Finished server process")
 
@@ -35,8 +38,10 @@ class ThreadedWebserver:
         while not self.parent_event.is_set():
             await asyncio.sleep(0.1)
 
-        # wait until server stops gracefully before stopping loop
+        # semi-gracefully shut down server
+        # close all connections, however make sure that everything like lifespan is gracefully shutdown
         self.server.should_exit = True
+        self.server.force_exit = True
         while not self.event.is_set():
             await asyncio.sleep(0.1)
         asyncio.get_event_loop().stop()

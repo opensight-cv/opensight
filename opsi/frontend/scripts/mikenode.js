@@ -450,7 +450,6 @@ const booleanInput = function(name, def) {
           .attr("id")
       ).settings[name] = false;
     }
-    // postRequest();
     $("#" + this.id + name).on("change", function() {
       if (this.checked) {
         findNodeTreeSpot(
@@ -567,7 +566,6 @@ const slide = function(min, max, name, def) {
         .parent()
         .attr("id")
     ).settings[name] = parseFloat(def);
-    postRequest();
     $("#" + this.id + name).slider({
       range: false,
       min: this.min,
@@ -1024,7 +1022,6 @@ const functions = function(jsonData) {
         functionNode.create();
       }
     }
-    // postRequest();
   };
 
   this.ui = function() {

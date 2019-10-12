@@ -49,7 +49,7 @@ class Lifespan:
             # queue import_nodetree to run at start of mainloop
             threading.Thread(target=import_nodetree, args=(program, nodetree)).start()
 
-    def __create_threaded_loop__(self):
+    def __create_threaded_loop__(self, name=None):
         loop = uvloop.new_event_loop()
         thread = threading.Thread(target=loop.run_forever)
         thread.daemon = True
@@ -70,14 +70,17 @@ class Lifespan:
         path = opsi.__file__
         register_modules(program, path)
 
-        if self.persist:
-            self.load_persistence(program)
         self.__create_thread__(program.mainloop)
 
-        ws = WebServer(program, join(path, "frontend"), self.args.port)
-        webserver = ThreadedWebserver(self.event, ws.app, host="0.0.0.0", port=ws.port)
+        webserver = WebServer(program, join(path, "frontend"), self.args.port)
+        ws_thread = ThreadedWebserver(
+            self.event, webserver.app, host="0.0.0.0", port=webserver.port
+        )
         ws_loop = self.__create_threaded_loop__()
-        asyncio.run_coroutine_threadsafe(webserver.run(), ws_loop)
+        asyncio.run_coroutine_threadsafe(ws_thread.run(), ws_loop)
+
+        if self.persist:
+            self.load_persistence(program)
 
     def main_loop(self):
         while self.restart:

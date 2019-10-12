@@ -1,6 +1,11 @@
 import asyncio
+import threading
+
+import datetime
+
+import numpy as np
+
 from dataclasses import dataclass
-from time import sleep
 
 import cv2
 import jinja2
@@ -8,11 +13,12 @@ from starlette.applications import Starlette
 from starlette.routing import Route, Router
 
 from opsi.manager.manager_schema import Function, Hook
-from opsi.manager.types import Mat
+from opsi.manager.types import Mat, Slide
 from opsi.util.templating import LiteralTemplate
 
 __package__ = "demo.server"
 __version__ = "0.123"
+
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
@@ -172,13 +178,12 @@ class MjpegResponse:
     async def __call__(self, scope, receive, send):
         async with ASGIStreamer(receive, send) as app:
             while True:
-                img = self.src.get_image()
-                if img is None:
-                    return
-                if app.end:
-                    return
-                await app.send(self.HEADERS + self.src.get_image())
-                await asyncio.sleep(0.015)
+                async for img in self.src.get_img():
+                    if img is None:
+                        return
+                    if app.end:
+                        return
+                    await app.send(self.HEADERS + img)
 
 
 # -----------------------------------------------------------------------------
@@ -244,34 +249,70 @@ HookInstance = Hook()
 
 
 class CameraSource:
-    def __init__(self):
-        self.image = None
+    def __init__(self, quality, fps_limit):
+        self.event = threading.Event()
+        self._img = None
+        self.mat = None
+        self._shutdown = False
 
-    def get_image(self):
-        return self.image
+        self.fps_limit = fps_limit
 
-    def set_image(self, mat):
-        self.image = cv2.imencode(".jpg", mat)[1].tobytes()
+        self.quality = quality
+
+    @property
+    def quality(self):
+        return self._quality
+
+    @quality.setter
+    def quality(self, quality):
+        self._quality = quality
+
+    @property
+    def img(self):
+        return self._img
+
+    @img.setter
+    def img(self, mat):
+        if not np.array_equal(self.mat, mat):
+            self.mat = mat
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), self.quality]
+            self._img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
+            self.event.set()
+
+    async def get_img(self):
+        old = None
+        while True:
+            img = self.img
+            if not np.array_equal(img, old):
+                yield img
+            old = img
+            await asyncio.sleep(1 / self.fps_limit)
+
+    def shutdown(self):
+        self._shutdown = True
 
 
 class CameraServer(Function):
     has_sideeffect = True
 
     def on_start(self):
-        self.src = CameraSource()
+        self.src = CameraSource(self.settings.quality, self.settings.fps_limit)
         HookInstance.register(self)
 
     @dataclass
     class Settings:
         name: str = "camera"
+        quality: Slide(0, 100) = 100
+        fps_limit: int = 90
 
     @dataclass
     class Inputs:
         img: Mat
 
     def run(self, inputs):
-        self.src.set_image(inputs.img)
+        self.src.img = inputs.img
         return self.Outputs()
 
     def dispose(self):
+        self.src.shutdown()
         HookInstance.unregister(self)
