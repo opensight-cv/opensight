@@ -6,10 +6,10 @@ import cv2
 import jinja2
 from starlette.applications import Starlette
 from starlette.routing import Route, Router
-from starlette.templating import _TemplateResponse
 
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.types import Mat
+from opsi.util.templating import LiteralTemplate
 
 __package__ = "demo.server"
 __version__ = "0.123"
@@ -190,7 +190,8 @@ def func_id(func):
 
 
 class Hook(Hook):
-    TEMPLATE = jinja2.Template("""
+    TEMPLATE = jinja2.Template(
+        """
 <html>
     <head>
         <title>CameraServer: {{ funcs|length }}</title>
@@ -206,22 +207,20 @@ class Hook(Hook):
         </ul>
     </body>
 </html>
-""")
+"""
+    )
 
     def __init__(self):
         self.app = Router()
-        self.index_route = [Route("/", self.index)]
         self.funcs = {}  # {name: route}
+        self.index_route = [
+            Route("/", LiteralTemplate(self.TEMPLATE, funcs=self.funcs.keys()))
+        ]
 
         self._update()
 
     def _update(self):
         self.app.routes = self.index_route + list(self.funcs.values())
-
-    def index(self, request):
-        return _TemplateResponse(
-            self.TEMPLATE, {"request": request, "funcs": self.funcs.keys()}
-        )
 
     def endpoint(self, func):
         def image(request):

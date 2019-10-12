@@ -7,9 +7,9 @@ from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
 
 from opsi.util.path import join
+from opsi.util.templating import TemplateFolder
 
 from .api import Api
 from .test import WebserverTest
@@ -25,12 +25,12 @@ class WebServer:
         self.app.debug = True
 
         self.port = self.__check_port__(port or 80)
-        self.templates = Jinja2Templates(directory=join(__file__, "templates"))
+        self.template = TemplateFolder(join(__file__, "templates"))
 
-        self.app.router.add_route("/", self._template("nodetree.html"))
+        self.app.router.add_route("/", self.template("nodetree.html"))
         self.app.router.add_route(
             "/settings",
-            self._template("settings.html", persist=self.program.lifespan.persist),
+            self.template("settings.html", persist=self.program.lifespan.persist),
         )
 
         self.testclient = WebserverTest(self.app)
@@ -49,18 +49,12 @@ class WebServer:
                 LOGGER.debug(f"Binding to port {port} instead")
         return port
 
-    def _template(self, page, **kwargs):
-        def endpoint(request):
-            return self.templates.TemplateResponse(page, {"request": request, **kwargs})
-
-        return endpoint
-
     def make_hooks(self):
         PREFIX = "/hooks"
         HOOKS = self.program.manager.hooks  # {package: app}
 
         self.app.add_route(
-            PREFIX, self._template("hooks.html", prefix=PREFIX, packages=HOOKS.keys())
+            PREFIX, self.template("hooks.html", prefix=PREFIX, packages=HOOKS.keys())
         )
 
         # This is required because "/hooks/package/{path}"" and "/hooks/package/"" trigger the mounted app,
