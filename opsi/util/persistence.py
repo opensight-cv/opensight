@@ -4,7 +4,7 @@ from pathlib import PosixPath
 
 from pydantic import ValidationError
 
-from ..webserver.schema import NodeTreeN, Preferences
+from opsi.webserver.schema import NodeTreeN, Preferences
 
 LOGGER = logging.getLogger(__name__)
 

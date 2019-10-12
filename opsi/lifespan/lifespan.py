@@ -14,8 +14,8 @@ from opsi.manager.manager_schema import ModulePath
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
+from opsi.webserver.serialize import import_nodetree
 
-from ..webserver.serialize import import_nodetree
 from .threadserver import ThreadedWebserver
 
 LOGGER = logging.getLogger(__name__)

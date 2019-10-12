@@ -27,8 +27,8 @@ class WebServer:
         self.port = self.__check_port__(port or 80)
         self.template = TemplateFolder(join(__file__, "templates"))
 
-        self.app.router.add_route("/", self.template("nodetree.html"))
-        self.app.router.add_route(
+        self.app.add_route("/", self.template("nodetree.html"))
+        self.app.add_route(
             "/settings",
             self.template("settings.html", persist=self.program.lifespan.persist),
         )

@@ -4,7 +4,8 @@ import threading
 from threading import Thread
 from uuid import UUID, uuid4
 
-from ..webserver.schema import NodeTreeN
+from opsi.webserver.schema import NodeTreeN
+
 from .manager import Manager
 from .pipeline import Node, Pipeline
 

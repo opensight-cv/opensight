@@ -3,12 +3,13 @@ import uuid
 from dataclasses import _MISSING_TYPE, asdict, fields
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
-from ..manager.link import NodeLink
-from ..manager.manager import Manager
-from ..manager.manager_schema import Function, ModuleItem
-from ..manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
-from ..manager.types import *
-from ..util.concurrency import FifoLock
+from opsi.manager.link import NodeLink
+from opsi.manager.manager import Manager
+from opsi.manager.manager_schema import Function, ModuleItem
+from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
+from opsi.manager.types import *
+from opsi.util.concurrency import FifoLock
+
 from .schema import *
 
 __all__ = (

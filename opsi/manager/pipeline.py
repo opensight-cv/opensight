@@ -5,9 +5,9 @@ from uuid import UUID
 
 from toposort import toposort
 
-from opsi.manager.link import Link, NodeLink, StaticLink
+from opsi.util.concurrency import FifoLock
 
-from ..util.concurrency import FifoLock
+from .link import Link, NodeLink, StaticLink
 from .manager_schema import Function
 
 logger = logging.getLogger(__name__)

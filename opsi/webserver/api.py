@@ -5,8 +5,9 @@ import threading
 from fastapi import FastAPI, File, UploadFile
 from starlette.responses import JSONResponse
 
-from ..backend.upgrade import upgrade_opsi
-from ..util.concurrency import FifoLock
+from opsi.backend.upgrade import upgrade_opsi
+from opsi.util.concurrency import FifoLock
+
 from .schema import NodeTreeN, SchemaF
 from .serialize import *
 
