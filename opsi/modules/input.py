@@ -38,10 +38,14 @@ def get_codec(v4l2_out):
     for i in codecs:
         # [digit] '<CODEC NAME>' (<CODEC DESCRIPTION>)
         # ex. [1]: 'MJPG' (Motion-JPEG, compressed)
-        pattern = fr"\[\d+\]: '{i[0]}' \({i[1]}\) (.+)(\[\d+\]?|$)"
-        lines = re.search(pattern, v4l2_out)
-        if lines is not None:
-            return (cv2.VideoWriter_fourcc(*i[2]), lines.group(1))
+        pattern1 = fr"\[\d+\]: '{i[0]}' \({i[1]}\) (.+)(\[\d+\].+)"
+        lines1 = re.search(pattern1, v4l2_out)
+        if lines1 is not None:
+            return (cv2.VideoWriter_fourcc(*i[2]), lines1.group(1))
+        pattern2 = fr"\[\d+\]: '{i[0]}' \({i[1]}\) (.+)($)"
+        lines2 = re.search(pattern2, v4l2_out)
+        if lines2 is not None:
+            return (cv2.VideoWriter_fourcc(*i[2]), lines2.group(1))
     return None
 
 
