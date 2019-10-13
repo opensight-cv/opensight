@@ -19,7 +19,7 @@ __all__ = (
     "NodeTreeImportError",
 )
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------
@@ -219,7 +219,7 @@ class NodeTreeImportError(ValueError):
             super().__init__(f"Node '{self.node.id}' of type '{node.type}' {msg}")
 
         # since exc_info == True, this class must not be instantiated outside an `except:` clause
-        logger.debug(f"Error during nodetree import: {self.args[0]}", exc_info=True)
+        LOGGER.debug(f"Error during nodetree import: {self.args[0]}", exc_info=True)
 
 
 def _process_node_links(program, node: NodeN) -> List[str]:

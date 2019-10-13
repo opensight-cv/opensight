@@ -15,7 +15,7 @@ from .manager_schema import (
     ishook,
 )
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def import_module(path: ModulePath):
@@ -88,7 +88,7 @@ class Manager:
             hook = hooks_tuple[0][1]
             self.hooks[info.package] = hook
         elif len(hooks_tuple) > 1:
-            logger.error(f"Only one Hook per module allowed: {info.package}")
+            LOGGER.error(f"Only one Hook per module allowed: {info.package}")
             return
 
         funcs_tuple: List[Tuple[str, Type[Function]]]

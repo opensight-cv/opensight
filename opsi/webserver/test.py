@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class WebserverTest:
@@ -17,7 +17,7 @@ class WebserverTest:
             try:
                 from starlette.testclient import TestClient
             except ModuleNotFoundError:
-                logger.exception("Requests module needed for WebserverTest")
+                LOGGER.exception("Requests module needed for WebserverTest")
                 raise
 
             self.client = TestClient(self.app)

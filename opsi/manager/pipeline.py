@@ -10,7 +10,7 @@ from opsi.util.concurrency import FifoLock
 from .link import Link, NodeLink, StaticLink
 from .manager_schema import Function
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 # Map inputname -> (output_node, output_name)
@@ -98,11 +98,11 @@ class Pipeline:
                 with self.lock:
                     self.run()
             except (TypeError, AttributeError):
-                logger.debug(
+                LOGGER.debug(
                     "(Harmless?) Error during pipeline mainloop", exc_info=True
                 )
             except:  # todo: wildcard except
-                logger.exception("Error during pipeline mainloop")
+                LOGGER.exception("Error during pipeline mainloop")
 
     def create_node(self, func: Type[Function], uuid: UUID):
         """
