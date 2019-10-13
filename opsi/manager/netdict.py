@@ -108,6 +108,22 @@ class NetworkDict:
                 "Existing type {} does not match: {}".format(entry.type, type(value))
             )
 
+    @classmethod
+    def _delete_table(cls, nttable):
+        for key in nttable.getKeys():
+            nttable.delete(key)
+
+        for subtable in nttable.getSubTables():
+            ntsubtable = nttable.getSubTable(subtable)
+            cls._delete_table(ntsubtable)
+
+    # Dangerous: recursive
+    def delete_table(self, table):
+        table = self.path + self._cleanup_path(table)
+        nttable = self.networktable.getTable(table)
+
+        self._delete_table(nttable)
+
     def delete(self, name: str) -> None:
         entry = self._get_entry(name)
 

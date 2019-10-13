@@ -11,6 +11,7 @@ import uvloop
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
+from opsi.util.networking import choose_port
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
@@ -30,12 +31,14 @@ def register_modules(program, module_path):
 
 
 class Lifespan:
-    def __init__(self, args, catch_signal=False, load_persist=True):
+    PORTS = (80, 8000)
+
+    def __init__(self, args, *, catch_signal=False, load_persist=True):
         self.event = threading.Event()
         self.threads = []
         self.restart = True
 
-        self.args = args
+        self.ports = args.port or self.PORTS
         self.persist = Persistence(path=args.persist) if load_persist else None
 
         if catch_signal:
@@ -72,9 +75,19 @@ class Lifespan:
 
         self.__create_thread__(program.mainloop)
 
-        webserver = WebServer(program, join(path, "frontend"), self.args.port)
+        port = choose_port(self.ports)
+        if not port:
+            if isinstance(self.ports, tuple):
+                msg = f"Unable to bind to any of ports {self.ports}"
+            else:
+                msg = f"Unable to bind to port {self.ports}"
+            LOGGER.critical(msg)
+            self.shutdown()
+            return
+
+        webserver = WebServer(program, join(path, "frontend"), port)
         ws_thread = ThreadedWebserver(
-            self.event, webserver.app, host="0.0.0.0", port=webserver.port
+            self.event, webserver.app, host="0.0.0.0", port=port
         )
         ws_loop = self.__create_threaded_loop__()
         asyncio.run_coroutine_threadsafe(ws_thread.run(), ws_loop)

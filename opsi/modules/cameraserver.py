@@ -1,18 +1,16 @@
 import asyncio
-import threading
-
 import datetime
-
-import numpy as np
-
+import threading
 from dataclasses import dataclass
 
 import cv2
 import jinja2
+import numpy as np
 from starlette.applications import Starlette
 from starlette.routing import Route, Router
 
 from opsi.manager.manager_schema import Function, Hook
+from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import Mat, Slide
 from opsi.util.templating import LiteralTemplate
 
@@ -189,12 +187,11 @@ class MjpegResponse:
 # -----------------------------------------------------------------------------
 
 
-# Returns a unique string for each CameraServer instance
-def func_id(func):
-    return str(func.settings.name)
-
-
 class Hook(Hook):
+    # Matches both "camera.mjpg" and "camera.mjpeg"
+    ROUTE_URL = "/{func}.mjpe?g"  # Route to bind to
+    STREAM_URL = "/{func}.mjpeg"  # Canonical path
+
     TEMPLATE = jinja2.Template(
         """
 <html>
@@ -205,18 +202,24 @@ class Hook(Hook):
         <h1>CameraServer</h1>
         <ul>
         {% for func in funcs %}
-            <li><a href="./{{ func }}.mjpg">{{ func }}</a></li>
+            <li><a href=".URL">{{ func }}</a></li>
         {% else %}
             <li>None</li>
         {% endfor %}
         </ul>
     </body>
 </html>
-"""
+""".replace(
+            "URL", STREAM_URL.replace("{", "{{ ").replace("}", " }}")
+        )  # {func} --> {{ func }}
     )
+
+    CAMERA_NAME = "OpenSight: {func}"
+    CAMERA_URL = f"mjpeg:{{url}}{STREAM_URL}?"
 
     def __init__(self):
         self.app = Router()
+        self.netdict = NetworkDict("/CameraPublisher")
         self.funcs = {}  # {name: route}
         self.index_route = [
             Route("/", LiteralTemplate(self.TEMPLATE, funcs=self.funcs.keys()))
@@ -234,14 +237,22 @@ class Hook(Hook):
         return image
 
     def register(self, func):
-        # The url "camera.mjpe?g" matches both "camera.mjpg" and "camera.mjpeg"
-        self.funcs[func_id(func)] = Route(
-            "/" + func_id(func) + ".mjpe?g", self.endpoint(func)
+        self.funcs[func.id] = Route(
+            self.ROUTE_URL.format(func=func.id), self.endpoint(func)
         )
         self._update()
 
+        # https://github.com/wpilibsuite/allwpilib/blob/ec9738245d86ec5a535a7d9eb22eadc78dee88b4/wpilibj/src/main/java/edu/wpi/first/wpilibj/CameraServer.java#L313
+        ntdict = self.netdict.get_subtable(self.CAMERA_NAME.format(func=func.id))
+        ntdict["streams"] = [self.CAMERA_URL.format(url=self.url, func=func.id)]
+
     def unregister(self, func):
-        del self.funcs[func_id(func)]
+        try:
+            del self.funcs[func.id]
+        except KeyError:
+            pass
+
+        self.netdict.delete_table(self.CAMERA_NAME.format(func=func.id))
         self._update()
 
 
@@ -316,3 +327,8 @@ class CameraServer(Function):
     def dispose(self):
         self.src.shutdown()
         HookInstance.unregister(self)
+
+    # Returns a unique string for each CameraServer instance
+    @property
+    def id(self):
+        return self.settings.name

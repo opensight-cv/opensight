@@ -132,6 +132,7 @@ class Hook:
     def __init__(self):
         # self.app can be any ASGI app, but it must exist
         self.app = Router()
+        self.url = ""  # will be replaced during webserver init
 
 
 def ishook(hook):

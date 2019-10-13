@@ -8,6 +8,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
+from opsi.util.networking import get_server_url
 from opsi.util.path import join
 from opsi.util.templating import TemplateFolder
 
@@ -18,13 +19,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WebServer:
-    def __init__(self, program, frontend: str, port: int = None):
+    def __init__(self, program, frontend: str, port: int = 80, prefix="/"):
         self.program = program
 
-        self.app = Starlette()
-        self.app.debug = True
+        self.app = Starlette(debug=True)
 
-        self.port = self.__check_port__(port or 80)
+        self.url = get_server_url(port, prefix)
         self.template = TemplateFolder(join(__file__, "templates"))
 
         self.app.add_route("/", self.template("nodetree.html"))
@@ -62,7 +62,10 @@ class WebServer:
         self.app.add_route(PREFIX + "/{path}", self.trailingslash_redirect)
 
         for package, hook in HOOKS.items():
-            self.app.mount(PREFIX + "/" + package, hook.app)
+            path = PREFIX + "/" + package
+
+            hook.url = self.url + path.lstrip("/")
+            self.app.mount(path, hook.app)
 
     def trailingslash_redirect(self, request):
         return RedirectResponse(request.url.path + "/")
