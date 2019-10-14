@@ -1,5 +1,6 @@
 aiofiles
 fastapi
+Jinja2
 numpy
 pynetworktables
 python-multipart
@@ -9,4 +10,3 @@ uvicorn
 black
 isort
 requests
-Jinja2

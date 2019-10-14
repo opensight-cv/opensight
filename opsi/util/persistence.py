@@ -102,7 +102,7 @@ class Persistence:
             LOGGER.exception("Failed to read from preferences persistence")
 
         LOGGER.warning("Creating new preferences file.")
-        self._prefs = Preferences(profile=0)  # set default preferences here
+        self.prefs = Preferences(profile=0)  # set default preferences here
         return self._prefs
 
     @prefs.setter
