@@ -2,7 +2,6 @@ import glob
 import logging
 import re
 import subprocess
-from collections import OrderedDict
 from dataclasses import dataclass
 
 import cv2

@@ -7,6 +7,19 @@ __package__ = "demo.six"
 __version__ = "0.123"
 
 
+class Boolean(Function):
+    @dataclass
+    class Settings:
+        val: bool
+
+    @dataclass
+    class Outputs:
+        val: bool
+
+    def run(self, inputs):
+        return self.Outputs(val=self.settings.val)
+
+
 class Number(Function):
     @dataclass
     class Settings:

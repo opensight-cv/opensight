@@ -294,5 +294,4 @@ class DrawFPS(Function):
             (255, 255, 255),
             lineType=cv2.LINE_AA,
         )
-        print(fps_str)
         return self.Outputs(imgFPS=text)

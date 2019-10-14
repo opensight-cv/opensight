@@ -1,7 +1,6 @@
 import logging
-import uuid
-from dataclasses import _MISSING_TYPE, asdict, fields
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
+from dataclasses import _MISSING_TYPE, asdict
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager

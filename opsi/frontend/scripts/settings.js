@@ -1,11 +1,12 @@
 // im sorry
 $(document).ready(function() {
-    $("#upload-button").click(function(event) {
+    $("#update-button").click(function(event) {
         event.preventDefault();
-        var form = $("#upload-form")[0];
+        var form = $("#update-form")[0];
         var data = new FormData();
+        console.log(form);
         data.append("file", form[0].files[0]);
-        $("#upload-button").prop("disabled", true);
+        $("#update-button").prop("disabled", true);
         $.ajax({
             type: "POST",
             enctype: "multipart/form-data",
@@ -15,10 +16,10 @@ $(document).ready(function() {
             contentType: false,
             cache: false,
             success: function(data) {
-                $("#upload-button").prop("disabled", false);
+                $("#update-button").prop("disabled", false);
             },
             error: function(e) {
-                $("#upload-button").prop("disabled", false);
+                $("#update-button").prop("disabled", false);
             }
         });
     });

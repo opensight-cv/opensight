@@ -1,7 +1,6 @@
 import logging
 import queue
 import threading
-from threading import Thread
 from uuid import UUID, uuid4
 
 from opsi.webserver.schema import NodeTreeN

@@ -18,7 +18,10 @@ def ensure_apt():
             stderr=subprocess.DEVNULL,
         )
     except subprocess.CalledProcessError:
-        LOGGER.info("Only Debian derivatives may be upgraded", exc_info=True)
+        LOGGER.info(
+            "Only Debian derivatives may be upgraded. If you are using a Debian derivative and recieving this error, please make a bug report.",
+            exc_info=True,
+        )
         return False
     return True
 

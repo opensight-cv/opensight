@@ -2,7 +2,6 @@ import asyncio
 import logging
 import signal
 import threading
-import time
 from os import listdir
 from os.path import isdir, isfile, splitext
 

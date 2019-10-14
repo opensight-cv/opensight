@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Union
+from typing import Callable, List, Union
 
 from networktables.instance import NetworkTablesInstance
 from networktables.networktables import NetworkTables

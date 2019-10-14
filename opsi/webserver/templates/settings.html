@@ -14,10 +14,10 @@
             <a href="https://github.com/opensight-cv/packages/releases">here</a>.
         </p>
         <p>Updating from web-ui only works on Raspbian</p>
-        <form id="update-form" enctype="multipart/form-data" method="post" name="upload-form">
+        <form id="update-form" enctype="multipart/form-data" method="post" name="update-form">
             <input type="file" class="bfi" required />
         </form>
-        <input class="update-button" id="upload-button" type="button" value="Update"/>
+        <input class="update-button" id="update-button" type="button" value="Update"/>
     </div>
     <div id="preference">
         <h1>Actions</h1>
@@ -26,7 +26,7 @@
     </div>
     <div id="preference">
         <h1>Profiles</h1>
-        <p>Current profile: {{profile}}</p>
+        <p>Current profile: {{persist.profile}}</p>
         <input id="profile-button" type="button" value="0"/>
         <input id="profile-button" type="button" value="1"/>
         <input id="profile-button" type="button" value="2"/>
