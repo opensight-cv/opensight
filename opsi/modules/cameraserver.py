@@ -1,7 +1,6 @@
 import asyncio
 import threading
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 
 import re
 import cv2
@@ -287,6 +286,12 @@ class CameraSource:
         for e in self.events:
             e.set()
 
+    async def wait(self, event):
+        while not event.is_set():
+            if self._shutdown:
+                return False
+        return True
+
     async def get_img(self, quality: int, fps_limit: int, resolution=None):
         event = threading.Event()
         self.events.append(event)
@@ -300,23 +305,20 @@ class CameraSource:
                 LOGGER.debug("Invalid resolution", exc_info=True)
 
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-        time = datetime.now()
         while True:
-            await asyncio.get_event_loop().run_in_executor(None, event.wait)
-            # if fps is greater than fps limit wait until next frame
-            if (time - datetime.now()) >= timedelta((1 / fps_limit)):
-                continue
+            await self.wait(event)
 
             mat = self.img
             if mat is None:
                 break
+
             if res:
                 mat = cv2.resize(mat, res)
             img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
 
-            time = datetime.now()
             yield img
             event.clear()
+            await asyncio.sleep(1 / (fps_limit + 0.1))
 
         yield None  # send a final None image on shutdown
 
