@@ -1,6 +1,7 @@
 import asyncio
 import threading
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 import re
 import cv2
@@ -282,39 +283,46 @@ class CameraSource:
 
     @img.setter
     def img(self, img):
-        if not np.array_equal(self._img, img):
-            self._img = img
-            for e in self.events:
-                e.set()
+        self._img = img
+        for e in self.events:
+            e.set()
 
     async def get_img(self, quality: int, fps_limit: int, resolution=None):
         event = threading.Event()
         self.events.append(event)
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+
         res = None
         if resolution:
             m = re.search("(\d+)x(\d+)", resolution)
             try:
                 res = (int(m.group(1)), int(m.group(2)))
-            except TypeError:
-                LOGGER.debug("Invalid resolution")
-        while not self._shutdown:
-            event.wait()
+            except (TypeError, AttributeError):
+                LOGGER.debug("Invalid resolution", exc_info=True)
+
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        time = datetime.now()
+        while True:
+            await asyncio.get_event_loop().run_in_executor(None, event.wait)
+            # if fps is greater than fps limit wait until next frame
+            if (time - datetime.now()) >= timedelta((1 / fps_limit)):
+                continue
+
             mat = self.img
             if mat is None:
                 break
             if res:
                 mat = cv2.resize(mat, res)
             img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
+
+            time = datetime.now()
             yield img
             event.clear()
-            await asyncio.sleep(1 / fps_limit)
+
         yield None  # send a final None image on shutdown
 
     def shutdown(self):
         self._shutdown = True
-        for e in self.events:
-            e.set()
+        self.img = None
 
 
 class CameraServer(Function):
