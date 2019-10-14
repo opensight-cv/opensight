@@ -30,6 +30,12 @@ $(document).ready(function() {
     $("#restart").click(function(event) {
         $.post("/api/restart");
     });
+    $("#shutdown-host").click(function(event) {
+        $.post("/api/shutdown-host");
+    });
+    $("#restart-host").click(function(event) {
+        $.post("/api/restart-host");
+    });
     $("#import-button").click(function(event) {
         event.preventDefault();
         var form = $("#import-form")[0];

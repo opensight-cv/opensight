@@ -28,7 +28,11 @@ class WebServer:
         self.app.add_route("/", self.template("nodetree.html"))
         self.app.add_route(
             "/settings",
-            self.template("settings.html", persist=self.program.lifespan.persist),
+            self.template(
+                "settings.html",
+                persist=self.program.lifespan.persist,
+                daemon=self.program.lifespan.using_systemd,
+            ),
         )
 
         self.testclient = WebserverTest(self.app)

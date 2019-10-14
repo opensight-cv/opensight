@@ -4,6 +4,7 @@ import signal
 import threading
 from os import listdir
 from os.path import isdir, isfile, splitext
+from pystemd.systemd1 import Unit
 
 import uvloop
 
@@ -37,6 +38,8 @@ class Lifespan:
         self.threads = []
         self.restart = True
 
+        self._systemd = None
+
         self.ports = args.port or self.PORTS
         self.persist = Persistence(path=args.persist) if load_persist else None
 
@@ -50,6 +53,14 @@ class Lifespan:
         if nodetree is not None:
             # queue import_nodetree to run at start of mainloop
             threading.Thread(target=import_nodetree, args=(program, nodetree)).start()
+
+    @property
+    def using_systemd(self):
+        if self._systemd:
+            return self._systemd
+        unit = Unit(b"opensight.service", _autoload=True)
+        self._systemd = unit.Unit.ActiveState == b"active"
+        return self._systemd
 
     def __create_threaded_loop__(self, name=None):
         loop = uvloop.new_event_loop()

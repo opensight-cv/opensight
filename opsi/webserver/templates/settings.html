@@ -21,8 +21,14 @@
     </div>
     <div id="preference">
         <h1>Actions</h1>
+        {% if daemon %}
         <input id="restart" type="button" value="Restart OpenSight"/>
-        <input id="shutdown" type="button" value="Shutdown OpenSight"/>
+        <input id="restart-host" type="button" value="Restart System"/>
+        <input id="shutdown-host" type="button" value="Shutdown System"/>
+        {% else %}
+        <input id="restart" type="button" value="Restart OpenSight"/>
+        <input id="shutdown" type="button" value="Stop OpenSight"/>
+        {% endif %}
     </div>
     <div id="preference">
         <h1>Profiles</h1>

@@ -1,3 +1,6 @@
+import logging
+import subprocess
+
 from fastapi import FastAPI, File, UploadFile
 from starlette.responses import JSONResponse
 
@@ -6,6 +9,8 @@ from opsi.util.concurrency import FifoLock
 
 from .schema import NodeTreeN, SchemaF
 from .serialize import *
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Api:
@@ -22,6 +27,8 @@ class Api:
         self.app.post("/upgrade")(self.upgrade)
         self.app.post("/shutdown")(self.shutdown)
         self.app.post("/restart")(self.restart)
+        self.app.post("/shutdown-host")(self.shutdown_host)
+        self.app.post("/restart-host")(self.restart_host)
         self.app.post("/profile")(self.profile)
 
         parent_app.mount(prefix, self.app)
@@ -56,7 +63,15 @@ class Api:
         self.program.lifespan.shutdown()
 
     def restart(self):
+        if self.program.lifespan.using_systemd:
+            self.program.lifespan.shutdown(restart=False)
         self.program.lifespan.shutdown(restart=True)
+
+    def shutdown_host(self):
+        subprocess.Popen("shutdown now".split(), shell=True)
+
+    def restart_host(self):
+        subprocess.Popen("reboot", shell=True)
 
     def profile(self, profile: int):
         if profile >= 10:
