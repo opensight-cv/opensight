@@ -9,10 +9,10 @@ class InitializeNT(Function):
     @dataclass
     class Settings:
         teamnum: int
-        client: bool
         staticIP: bool
+        client: bool = True
 
-    def run(self, inputs):
+    def on_start(self):
         if not self.settings.client:
             NetworkTables.initialize()
         else:
@@ -23,6 +23,9 @@ class InitializeNT(Function):
                 NetworkTables.initialize(server=static)
             else:
                 NetworkTables.initialize(server=mDNS)
+
+    def dispose(self):
+        NetworkTables.shutdown()
 
 
 class PutInteger(Function):

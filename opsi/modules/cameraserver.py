@@ -2,6 +2,7 @@ import asyncio
 import threading
 from dataclasses import dataclass
 
+import re
 import cv2
 import jinja2
 import numpy as np
@@ -169,18 +170,21 @@ class ASGIStreamer(ASGIApplication):
 class MjpegResponse:
     HEADERS = ASGIApplication._encode_bytes("Content-Type: image/jpeg\r\n\r\n")
 
-    def __init__(self, src):
+    def __init__(self, request, src):
+        self.request = request
         self.src = src
 
     async def __call__(self, scope, receive, send):
         async with ASGIStreamer(receive, send) as app:
-            while True:
-                async for img in self.src.get_img():
-                    if img is None:
-                        return
-                    if app.end:
-                        return
-                    await app.send(self.HEADERS + img)
+            quality = 100 - int(self.request.query_params.get("compression", 0))
+            fps = int(self.request.query_params.get("fps", 90))
+            resolution = self.request.query_params.get("resolution")
+            async for img in self.src.get_img(quality, fps, resolution):
+                if img is None:
+                    return
+                if app.end:
+                    return
+                await app.send(self.HEADERS + img)
 
 
 # -----------------------------------------------------------------------------
@@ -231,7 +235,7 @@ class Hook(Hook):
 
     def endpoint(self, func):
         def image(request):
-            return MjpegResponse(func.src)
+            return MjpegResponse(request, func.src)
 
         return image
 
@@ -259,15 +263,10 @@ HookInstance = Hook()
 
 
 class CameraSource:
-    def __init__(self, quality, fps_limit):
-        self.event = threading.Event()
+    def __init__(self):
+        self.events = []
         self._img = None
-        self.mat = None
         self._shutdown = False
-
-        self.fps_limit = fps_limit
-
-        self.quality = quality
 
     @property
     def quality(self):
@@ -282,38 +281,52 @@ class CameraSource:
         return self._img
 
     @img.setter
-    def img(self, mat):
-        if not np.array_equal(self.mat, mat):
-            self.mat = mat
-            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), self.quality]
-            self._img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
-            self.event.set()
+    def img(self, img):
+        if not np.array_equal(self._img, img):
+            self._img = img
+            for e in self.events:
+                e.set()
 
-    async def get_img(self):
-        old = None
-        while True:
-            img = self.img
-            if not np.array_equal(img, old):
-                yield img
-            old = img
-            await asyncio.sleep(1 / self.fps_limit)
+    async def get_img(self, quality: int, fps_limit: int, resolution=None):
+        event = threading.Event()
+        self.events.append(event)
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        res = None
+        if resolution:
+            m = re.search("(\d+)x(\d+)", resolution)
+            try:
+                res = (int(m.group(1)), int(m.group(2)))
+            except TypeError:
+                LOGGER.debug("Invalid resolution")
+        while not self._shutdown:
+            event.wait()
+            mat = self.img
+            if mat is None:
+                break
+            if res:
+                mat = cv2.resize(mat, res)
+            img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
+            yield img
+            event.clear()
+            await asyncio.sleep(1 / fps_limit)
+        yield None  # send a final None image on shutdown
 
     def shutdown(self):
         self._shutdown = True
+        for e in self.events:
+            e.set()
 
 
 class CameraServer(Function):
     has_sideeffect = True
 
     def on_start(self):
-        self.src = CameraSource(self.settings.quality, self.settings.fps_limit)
+        self.src = CameraSource()
         HookInstance.register(self)
 
     @dataclass
     class Settings:
         name: str = "camera"
-        quality: Slide(0, 100) = 100
-        fps_limit: int = 90
 
     @dataclass
     class Inputs:

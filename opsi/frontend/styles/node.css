@@ -33,6 +33,9 @@ h3,
 h4 {
   font-weight: bold;
 }
+h1 {
+  padding: 3px;
+}
 a {
   color: #551a8b;
   outline: 0;
@@ -152,7 +155,8 @@ input[type="button"]:active {
   user-select: none;
 }
 .node {
-  width: 250px;
+  width: auto;
+  min-width: 220px;
   height: auto;
   background-color: #cccccc;
   border: 10px solid #7f7f7f;

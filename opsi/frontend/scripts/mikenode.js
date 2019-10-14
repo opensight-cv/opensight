@@ -409,7 +409,7 @@ const booleanInput = function(name, def) {
   this.id = "";
   this.create = function(uuid) {
     this.id = uuid;
-    if (def == "true") {
+    if (def == true) {
       return (
         '<label class="switch">' +
         '<input checked type="checkbox" id="' +
@@ -433,7 +433,7 @@ const booleanInput = function(name, def) {
   };
   this.go = function() {
     let id = this.id;
-    if (def == "true") {
+    if (def == true) {
       findNodeTreeSpot(
         $("#" + this.id + name)
           .parent()

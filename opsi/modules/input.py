@@ -188,10 +188,10 @@ class CameraInput(Function):
     @dataclass
     class Settings:
         mode: get_modes()
-        brightness: int = 0
-        contrast: int = 0
-        saturation: int = 0
-        exposure: int = 0
+        brightness: int = 50
+        contrast: int = 50
+        saturation: int = 50
+        exposure: int = 50
         width: controls() = None
         height: controls() = None
         fps: controls(True) = None

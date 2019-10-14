@@ -1,4 +1,6 @@
 import logging
+
+from dataclasses import fields
 from itertools import chain
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
@@ -67,9 +69,14 @@ class Node:
 
         self.ensure_init()
 
+        fieldCount = len(fields(self.func_type.Inputs))
         inputs = {name: link.get() for name, link in self.inputLinks.items()}
-        inputs = self.func_type.Inputs(**inputs)
+        if fieldCount > len(inputs):
+            self.results = None
+            self.has_run = True
+            return
 
+        inputs = self.func_type.Inputs(**inputs)
         self.results = self.func.run(inputs)
         self.has_run = True
 
