@@ -307,31 +307,22 @@ class CameraSource:
     @img.setter
     def img(self, img):
         self._img = img
+        if self._shutdown:
+            for i in self.events:
+                i[0].set()
+            return
         self.thread.run_coro(self.notify_generators())
 
-    # return true if no time was spent waiting
-    async def event_wait(self, event):
-        while not event.is_set():
-            if self._shutdown:
-                return
-            await asyncio.sleep(0.01)
-        return
-
-    async def event_clear_wait(self, event):
-        while event.is_set():
-            if self._shutdown:
-                return
-            await asyncio.sleep(0.01)
-        return
-
     async def notify_generators(self):
-        for e in self.events:
-            e.set()
-            await self.event_clear_wait(e)
+        for i in self.events:
+            i[0].set()
+            await i[1].wait()
+            i[1].clear()
 
     async def get_img(self, app, quality: int, fps_limit: int, resolution=None):
-        event = threading.Event()
-        self.events.append(event)
+        block_event = asyncio.Event()
+        return_event = asyncio.Event()
+        self.events.append((block_event, return_event))
 
         res = None
         if resolution:
@@ -344,7 +335,7 @@ class CameraSource:
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
         time = datetime.now()
         while True:
-            await self.event_wait(event)
+            await block_event.wait()
 
             # if not enough time has passed since last frame, wait until it has
             delay = 1 / fps_limit
@@ -358,7 +349,7 @@ class CameraSource:
             if mat is None:
                 break
 
-            if app.end:
+            if app.end or self._shutdown:
                 break
 
             if res:
@@ -366,8 +357,9 @@ class CameraSource:
             img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
 
             yield img
-            event.clear()
-        self.events.remove(event)
+            block_event.clear()
+            return_event.set()
+        self.events.remove((block_event, return_event))
 
     def shutdown(self):
         self._shutdown = True
