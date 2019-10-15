@@ -3,6 +3,7 @@ fastapi
 Jinja2
 numpy
 pynetworktables
+pystemd
 python-multipart
 toposort
 uvicorn
@@ -10,4 +11,3 @@ uvicorn
 black
 isort
 requests
-pystemd
