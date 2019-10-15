@@ -1,11 +1,11 @@
-import queue
 import asyncio
 import logging
+import queue
+import re
 import threading
 from dataclasses import dataclass
 from datetime import datetime
 
-import re
 import cv2
 import jinja2
 import numpy as np
@@ -15,8 +15,8 @@ from starlette.routing import Route, Router
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import Mat, Slide
-from opsi.util.templating import LiteralTemplate
 from opsi.util.concurrency import AsyncThread, ShutdownThread
+from opsi.util.templating import LiteralTemplate
 
 __package__ = "demo.server"
 __version__ = "0.123"

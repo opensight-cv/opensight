@@ -4,17 +4,17 @@ import signal
 import threading
 from os import listdir
 from os.path import isdir, isfile, splitext
-from pystemd.systemd1 import Unit
 
 import uvloop
+from pystemd.systemd1 import Unit
 
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
+from opsi.util.concurrency import AsyncThread, ShutdownThread
 from opsi.util.networking import choose_port
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
-from opsi.util.concurrency import ShutdownThread, AsyncThread
 from opsi.webserver import WebServer
 from opsi.webserver.serialize import import_nodetree
 

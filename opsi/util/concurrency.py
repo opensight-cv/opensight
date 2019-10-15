@@ -1,8 +1,9 @@
-import threading
 import asyncio
 import logging
-import uvloop
+import threading
 import time
+
+import uvloop
 
 LOGGER = logging.getLogger(__name__)
 
