@@ -1,5 +1,5 @@
 import logging
-from dataclasses import _MISSING_TYPE, asdict
+from dataclasses import _MISSING_TYPE, asdict, fields
 from typing import Any, Callable, Dict, List, Optional, Type
 
 from opsi.manager.link import NodeLink
@@ -185,6 +185,12 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
     nodes: List[NodeN] = []
 
     for id, node in pipeline.nodes.items():
+        # allow importing legacy nodetrees
+        try:
+            node.pos = [] if node.pos is None else node.pos
+        except AttributeError:
+            node.pos = []
+            LOGGER.debug("Initalized default value for node", exc_info=True)
         nodes.append(
             NodeN(
                 type=node.func_type.type,
@@ -280,7 +286,20 @@ def _process_node_settings(program, node: NodeN):
         settings = real_node.func_type.Settings(**node.settings)
         real_node.settings = settings
     except TypeError as e:
-        raise NodeTreeImportError(node, "Missing key in settings") from e
+        # intialize node with default settings
+        default_fields = {}
+        dc_fields = fields(real_node.func_type.Settings)
+        for field in dc_fields:
+            if type(field.default) is _MISSING_TYPE:
+                # create a defaultly initalized class if default not defined
+                default_fields[field.name] = field.type.__class__()
+            else:
+                default_fields[field.name] = field.default
+        real_node.settings = real_node.func_type.Settings(**default_fields)
+        # TODO: (ASAP) re-enable this. it's a bit buggy when this is disabled (nodetree gets continually imported??)
+        # raise NodeTreeImportError(
+        #     node, "Missing key in settings. Default initalizing..."
+        # ) from e
 
 
 def import_nodetree(program, nodetree: NodeTreeN):
