@@ -14,10 +14,11 @@ from opsi.manager.manager_schema import ModulePath
 from opsi.util.networking import choose_port
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
+from opsi.util.concurrency import ShutdownThread, AsyncThread
 from opsi.webserver import WebServer
 from opsi.webserver.serialize import import_nodetree
 
-from .threadserver import ThreadedWebserver
+from .webserverthread import WebserverThread
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,28 +63,16 @@ class Lifespan:
         self._systemd = unit.Unit.ActiveState == b"active"
         return self._systemd
 
-    def __create_threaded_loop__(self, name=None):
-        loop = uvloop.new_event_loop()
-        thread = threading.Thread(target=loop.run_forever)
-        thread.daemon = True
-        thread.start()
-        self.threads.append(thread)
-        return loop
-
-    def __create_thread__(self, target):
-        thread = threading.Thread(target=target)
-        thread.daemon = True
-        thread.start()
-        self.threads.append(thread)
-        return thread
-
     def make_threads(self):
         program = Program(self)
 
         path = opsi.__file__
         register_modules(program, path)
 
-        self.__create_thread__(program.mainloop)
+        # self.__create_thread__(program.mainloop)
+        self.threads.append(
+            ShutdownThread(program.mainloop, name="Program thread", autostart=True)
+        )
 
         port = choose_port(self.ports)
         if not port:
@@ -96,11 +85,7 @@ class Lifespan:
             return
 
         webserver = WebServer(program, join(path, "frontend"), port)
-        ws_thread = ThreadedWebserver(
-            self.event, webserver.app, host="0.0.0.0", port=port
-        )
-        ws_loop = self.__create_threaded_loop__()
-        asyncio.run_coroutine_threadsafe(ws_thread.run(), ws_loop)
+        self.threads.append(WebserverThread(webserver.app, host="0.0.0.0", port=port))
 
         if self.persist:
             self.load_persistence(program)
@@ -112,7 +97,8 @@ class Lifespan:
             self.make_threads()
             self.event.wait()
             for thread in self.threads:
-                thread.join()
+                LOGGER.debug("Shutting down %s", thread.name)
+                thread.shutdown()
             LOGGER.info("OpenSight successfully shutdown.")
 
     def catch_signal(self, signum, frame):

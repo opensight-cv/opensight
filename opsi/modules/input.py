@@ -33,6 +33,7 @@ def get_codec(v4l2_out):
         ("H264", "H.264, compressed", "X264"),
         ("MJPG", "Motion-JPEG, compressed", "MJPG"),
         ("YUYV", r"YUYV \d:\d:\d", "YUYV"),
+        ("YU12", r"Planar YUV \d:\d:\d", "YU12"),
     ]
     for i in codecs:
         # [digit] '<CODEC NAME>' (<CODEC DESCRIPTION>)

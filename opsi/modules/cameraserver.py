@@ -1,6 +1,9 @@
+import queue
 import asyncio
+import logging
 import threading
 from dataclasses import dataclass
+from datetime import datetime
 
 import re
 import cv2
@@ -13,10 +16,12 @@ from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import Mat, Slide
 from opsi.util.templating import LiteralTemplate
+from opsi.util.concurrency import AsyncThread, ShutdownThread
 
 __package__ = "demo.server"
 __version__ = "0.123"
 
+LOGGER = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
@@ -174,17 +179,34 @@ class MjpegResponse:
         self.request = request
         self.src = src
 
-    async def __call__(self, scope, receive, send):
-        async with ASGIStreamer(receive, send) as app:
+    async def send_images(self, app, quality, fps, resolution):
+        async for img in self.src.get_img(app, quality, fps, resolution):
+            if img is None:
+                break
+            await app.send(self.HEADERS + img)
+
+    def get_values(self):
+        quality = 100
+        fps = 90
+        resolution = None
+        try:
             quality = 100 - int(self.request.query_params.get("compression", 0))
             fps = int(self.request.query_params.get("fps", 90))
             resolution = self.request.query_params.get("resolution")
-            async for img in self.src.get_img(quality, fps, resolution):
-                if img is None:
-                    return
+        except (TypeError, ValueError):
+            LOGGER.error("Failed to parse URL parameters", exc_info=True)
+        return quality, fps, resolution
+
+    async def __call__(self, scope, receive, send):
+        async with ASGIStreamer(receive, send) as app:
+            quality, fps, resolution = self.get_values()
+            self.src.thread.run_coro(self.send_images(app, quality, fps, resolution))
+            while True:
                 if app.end:
                     return
-                await app.send(self.HEADERS + img)
+                if self.src._shutdown:
+                    return
+                await asyncio.sleep(0.1)
 
 
 # -----------------------------------------------------------------------------
@@ -264,6 +286,8 @@ HookInstance = Hook()
 
 class CameraSource:
     def __init__(self):
+        self.queue = queue.Queue()
+        self.thread = AsyncThread(timeout=0.5, name="CameraSource")
         self.events = []
         self._img = None
         self._shutdown = False
@@ -283,16 +307,29 @@ class CameraSource:
     @img.setter
     def img(self, img):
         self._img = img
-        for e in self.events:
-            e.set()
+        self.thread.run_coro(self.notify_generators())
 
-    async def wait(self, event):
+    # return true if no time was spent waiting
+    async def event_wait(self, event):
         while not event.is_set():
             if self._shutdown:
-                return False
-        return True
+                return
+            await asyncio.sleep(0.01)
+        return
 
-    async def get_img(self, quality: int, fps_limit: int, resolution=None):
+    async def event_clear_wait(self, event):
+        while event.is_set():
+            if self._shutdown:
+                return
+            await asyncio.sleep(0.01)
+        return
+
+    async def notify_generators(self):
+        for e in self.events:
+            e.set()
+            await self.event_clear_wait(e)
+
+    async def get_img(self, app, quality: int, fps_limit: int, resolution=None):
         event = threading.Event()
         self.events.append(event)
 
@@ -305,11 +342,23 @@ class CameraSource:
                 LOGGER.debug("Invalid resolution", exc_info=True)
 
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        time = datetime.now()
         while True:
-            await self.wait(event)
+            await self.event_wait(event)
+
+            # if not enough time has passed since last frame, wait until it has
+            delay = 1 / fps_limit
+            passed = (datetime.now() - time).total_seconds()
+            if delay > passed:
+                await asyncio.sleep(delay - passed)
+                continue
+            time = datetime.now()
 
             mat = self.img
             if mat is None:
+                break
+
+            if app.end:
                 break
 
             if res:
@@ -318,13 +367,12 @@ class CameraSource:
 
             yield img
             event.clear()
-            await asyncio.sleep(1 / (fps_limit + 0.1))
-
-        yield None  # send a final None image on shutdown
+        self.events.remove(event)
 
     def shutdown(self):
         self._shutdown = True
         self.img = None
+        self.thread.shutdown()
 
 
 class CameraServer(Function):

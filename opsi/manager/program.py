@@ -29,15 +29,18 @@ class Program:
 
         return self.pipeline.create_node(func, uuid)
 
-    def mainloop(self):
+    def mainloop(self, shutdown):
+        self.shutdown = shutdown
+
         self.p_thread = threading.Thread(target=self.pipeline.mainloop)
         self.p_thread.name = "Pipeline Mainloop"
         self.p_thread.daemon = True
 
         self.p_thread.start()
 
-        while not self.lifespan.event.is_set():
+        while not self.shutdown.is_set():
             task = self.queue.get()  # todo: blocking & timeout?
             task.run()  # won't send exceptions because runs in seperate thead
         LOGGER.info("Program main loop is shutting down...")
         self.pipeline.dispose_all()
+        self.shutdown.clear()
