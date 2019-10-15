@@ -37,6 +37,27 @@ class FifoLock:
             self.condition.wait()
 
 
+class Snippet:
+    def __init__(self):
+        self.__start__ = asyncio.Event()
+        self.__end__ = asyncio.Event()
+
+    async def run(self):
+        self.__start__.set()
+        await self.__end__.wait()
+        self.__end__.clear()
+
+    async def start(self):
+        await self.__start__.wait()
+        self.__start__.clear()
+
+    def run_abandon(self):
+        self.__start__.set()
+
+    def done(self):
+        self.__end__.set()
+
+
 class ThreadBase:
     def __init__(self, target, args=(), name="(unnamed)", autostart=False, **kwargs):
         self.name = name

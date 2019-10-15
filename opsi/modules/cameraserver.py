@@ -11,11 +11,12 @@ import jinja2
 import numpy as np
 from starlette.applications import Starlette
 from starlette.routing import Route, Router
+from async_timeout import timeout
 
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import Mat, Slide
-from opsi.util.concurrency import AsyncThread, ShutdownThread
+from opsi.util.concurrency import AsyncThread, ShutdownThread, Snippet
 from opsi.util.templating import LiteralTemplate
 
 __package__ = "demo.server"
@@ -288,7 +289,7 @@ class CameraSource:
     def __init__(self):
         self.queue = queue.Queue()
         self.thread = AsyncThread(timeout=0.5, name="CameraSource")
-        self.events = []
+        self.snippets = []
         self._img = None
         self._shutdown = False
 
@@ -308,21 +309,18 @@ class CameraSource:
     def img(self, img):
         self._img = img
         if self._shutdown:
-            for i in self.events:
-                i[0].set()
+            for snip in self.snippets:
+                snip.run_abandon()  # run each snippet one last time to close request
             return
         self.thread.run_coro(self.notify_generators())
 
     async def notify_generators(self):
-        for i in self.events:
-            i[0].set()
-            await i[1].wait()
-            i[1].clear()
+        for snip in self.snippets:
+            await snip.run()
 
     async def get_img(self, app, quality: int, fps_limit: int, resolution=None):
-        block_event = asyncio.Event()
-        return_event = asyncio.Event()
-        self.events.append((block_event, return_event))
+        snippet = Snippet()
+        self.snippets.append(snippet)
 
         res = None
         if resolution:
@@ -335,7 +333,8 @@ class CameraSource:
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
         time = datetime.now()
         while True:
-            await block_event.wait()
+
+            await snippet.start()
 
             # if not enough time has passed since last frame, wait until it has
             delay = 1 / fps_limit
@@ -357,9 +356,11 @@ class CameraSource:
             img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
 
             yield img
-            block_event.clear()
-            return_event.set()
-        self.events.remove((block_event, return_event))
+
+            snippet.done()
+        snippet.done()
+
+        self.snippets.remove(snippet)
 
     def shutdown(self):
         self._shutdown = True
