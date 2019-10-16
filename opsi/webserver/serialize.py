@@ -51,6 +51,7 @@ _type_name: Dict[Type, str] = {
     MatBW: "mbw",
     Contour: "cnt",
     Contours: "cts",
+    AnyType: "any",
 }
 _normal_types = {int, str, Mat}
 

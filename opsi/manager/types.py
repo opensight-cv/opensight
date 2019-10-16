@@ -12,6 +12,10 @@ except ModuleNotFoundError:
     ndarray = object  # for the custom type declarations
 
 
+class AnyType:
+    pass
+
+
 class _RangeBaseType:
     __slots__ = ("min", "max", "decimal")
 

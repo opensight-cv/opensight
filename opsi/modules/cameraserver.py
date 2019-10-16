@@ -11,7 +11,6 @@ import jinja2
 import numpy as np
 from starlette.applications import Starlette
 from starlette.routing import Route, Router
-from async_timeout import timeout
 
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict

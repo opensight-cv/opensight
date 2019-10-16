@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
+from opsi.manager.types import AnyType
 
 __package__ = "demo.six"
 __version__ = "0.123"
@@ -143,9 +144,9 @@ class Print(Function):
 
     @dataclass
     class Inputs:
-        val: str
+        val: AnyType
 
     def run(self, inputs):
-        print(f"Print node: {inputs.val}")
+        print(f"Print node: {str(inputs.val)}")
 
         return self.Outputs()
