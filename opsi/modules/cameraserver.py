@@ -183,7 +183,7 @@ class MjpegResponse:
         async for img in self.src.get_img(app, quality, fps, resolution):
             if img is None:
                 break
-            await app.send(self.HEADERS + img)
+            asyncio.create_task(app.send(self.HEADERS + img))
 
     def get_values(self):
         quality = 100
