@@ -86,8 +86,8 @@ $(document).ready(function() {
     $(document).on("click", "#network-button", function(event) {
         var form = $("#network-form")[0];
         var data = {
-            "team": form[0].valueAsNumber, 
-            "static": form[1].checked, 
+            "team": form[0].valueAsNumber,
+            "static": form[1].checked,
             "enabled": form[2].checked,
             "client": form[3].checked
         }
