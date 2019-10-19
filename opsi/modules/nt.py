@@ -2,28 +2,10 @@ from dataclasses import dataclass
 
 from networktables import NetworkTables
 
-from opsi.manager.manager_schema import Function, Hook
+from opsi.manager.manager_schema import Function
 
 __package__ = "demo.nt"
 __version__ = "0.123"
-HookInstance = Hook()
-
-
-class InitializeNT(Function):
-    @dataclass
-    class Settings:
-        client: bool = True
-
-    def on_start(self):
-        if not self.settings.client:
-            NetworkTables.initialize()
-        else:
-            pass
-            # lol
-            NetworkTables.initialize(server=HookInstance.rio_url)
-
-    def dispose(self):
-        NetworkTables.shutdown()
 
 
 class PutInteger(Function):

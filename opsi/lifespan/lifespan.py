@@ -7,12 +7,13 @@ from os.path import isdir, isfile, splitext
 
 import uvloop
 from pystemd.systemd1 import Unit
+from networktables import NetworkTables
 
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.util.concurrency import AsyncThread, ShutdownThread
-from opsi.util.networking import choose_port
+from opsi.util.networking import choose_port, get_roborio_url
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
@@ -31,6 +32,14 @@ def register_modules(program, module_path):
             program.manager.register_module(ModulePath(moddir, path))
 
 
+def init_networktables(network):
+    if network["nt-client"]:
+        addr = get_roborio_url(network)
+        NetworkTables.initialize(server=addr)
+    else:
+        NetworkTables.initialize()
+
+
 class Lifespan:
     PORTS = (80, 8000)
 
@@ -47,6 +56,9 @@ class Lifespan:
         if catch_signal:
             signal.signal(signal.SIGINT, self.catch_signal)
             signal.signal(signal.SIGTERM, self.catch_signal)
+
+        if self.persist.network["nt-enabled"]:
+            init_networktables(self.persist.network)
 
     def load_persistence(self, program):
         nodetree = self.persist.nodetree
@@ -105,6 +117,8 @@ class Lifespan:
         self.shutdown()
 
     def shutdown(self, restart=False):
+        if self.persist.network["nt-enabled"]:
+            NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()
         self.restart = restart

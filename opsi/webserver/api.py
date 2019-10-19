@@ -82,8 +82,13 @@ class Api:
         import_nodetree(self.program, self.program.lifespan.persist.nodetree)
         return profile
 
-    def network(self, team: int, static: bool):
-        self.program.lifespan.persist.network = {"team": team, "static": static}
+    def network(self, team: int, static: bool, enabled: bool, client: bool):
+        self.program.lifespan.persist.network = {
+            "team": team,
+            "static": static,
+            "nt-enabled": enabled,
+            "nt-client": client,
+        }
         self.program.lifespan.persist.update_nodetree()
         self.program.lifespan.shutdown(restart=True)
         return {"team": team, "static": static}

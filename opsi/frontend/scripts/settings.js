@@ -85,14 +85,22 @@ $(document).ready(function() {
     });
     $(document).on("click", "#network-button", function(event) {
         var form = $("#network-form")[0];
-        let team = form[0].valueAsNumber;
-        let static = form[1].checked;
+        var data = {
+            "team": form[0].valueAsNumber, 
+            "static": form[1].checked, 
+            "enabled": form[2].checked,
+            "client": form[3].checked
+        }
+        var urlString = "/api/network?";
+        for (var key in data) {
+            urlString += key + "=" + data[key] + "&";
+        }
         $.ajax({
             type: "POST",
-            url: "/api/network?static=" + static + "&team=" + team,
+            url: urlString,
             contentType: "application/json",
             success: function(data) {
-                sleep(500).then(() => {
+                sleep(1500).then(() => {
                     location.reload();
                 });
             },

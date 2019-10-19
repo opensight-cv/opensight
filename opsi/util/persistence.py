@@ -105,7 +105,8 @@ class Persistence:
 
         LOGGER.warning("Creating new preferences file.")
         self.prefs = Preferences(
-            profile=0, network={"team": 0, "static": True}
+            profile=0,
+            network={"team": 0, "static": False, "nt-enabled": True, "nt-client": True},
         )  # set default preferences here
         return self._prefs
 
@@ -142,10 +143,7 @@ class Persistence:
 
     @property
     def network(self):
-        return {
-            "team": self.prefs.network["team"],
-            "static": self.prefs.network["static"],
-        }
+        return self.prefs.network
 
     @network.setter
     def network(self, value):

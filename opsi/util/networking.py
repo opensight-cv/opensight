@@ -17,6 +17,15 @@ def is_port_open(port):
             return False
 
 
+def get_static_hostname(prefix):
+    for interface in netifaces.interfaces():
+        for addrList in netifaces.ifaddresses(interface).values():
+            for addrDict in addrList:
+                addr = addrDict.get("addr")
+                if prefix in addr:
+                    return addr
+
+
 def get_server_url(network, port=80, prefix="/"):
     assert prefix.endswith("/")
 
@@ -28,12 +37,10 @@ def get_server_url(network, port=80, prefix="/"):
     hostname = f"{socket.gethostname()}.local"
     if network["static"]:
         host_prefix = f"10.{teamStr[:2]}.{teamStr[2:]}"
-        # TODO: Make work for more than eth0
-        # also todo cleanup
-        for i in netifaces.ifaddresses("eth0").values():
-            for x in i:
-                if host_prefix in str(x.get("addr")):
-                    hostname = x.get("addr")
+        static = get_static_hostname(host_prefix)
+        hostname = static if static else hostname  # ensure static isn't None
+    if network["nt-enabled"] and not network["nt-client"]:
+        hostname = "localhost"
 
     return f"http://{hostname}{port_str}{prefix}"
 
