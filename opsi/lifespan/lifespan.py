@@ -13,7 +13,7 @@ import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.util.concurrency import AsyncThread, ShutdownThread
-from opsi.util.networking import choose_port, get_roborio_url
+from opsi.util.networking import choose_port, get_nt_server
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
@@ -34,7 +34,7 @@ def register_modules(program, module_path):
 
 def init_networktables(network):
     if network["nt-client"]:
-        addr = get_roborio_url(network)
+        addr = get_nt_server(network)
         NetworkTables.initialize(server=addr)
     else:
         NetworkTables.initialize()

@@ -45,7 +45,7 @@ def get_server_url(network, port=80, prefix="/"):
     return f"http://{hostname}{port_str}{prefix}"
 
 
-def get_roborio_url(network):
+def get_nt_server(network):
     teamStr = f"{network['team']:04d}"
     if network["static"]:
         hostname = f"10.{teamStr[:2]}.{teamStr[2:]}.2"
