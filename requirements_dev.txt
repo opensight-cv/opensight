@@ -1,6 +1,7 @@
 aiofiles
 fastapi
 Jinja2
+netifaces
 numpy
 pynetworktables
 pystemd
@@ -11,4 +12,3 @@ uvicorn
 black
 isort
 requests
-netifaces

@@ -4,7 +4,6 @@ from networktables import NetworkTables
 
 from opsi.manager.manager_schema import Function, Hook
 
-
 __package__ = "demo.nt"
 __version__ = "0.123"
 HookInstance = Hook()

@@ -6,7 +6,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from opsi.util.networking import get_server_url, get_roborio_url
+from opsi.util.networking import get_roborio_url, get_server_url
 from opsi.util.path import join
 from opsi.util.templating import TemplateFolder
 

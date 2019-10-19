@@ -1,5 +1,6 @@
 import logging
 import socket
+
 import netifaces
 
 LOGGER = logging.getLogger(__name__)
