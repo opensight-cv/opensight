@@ -31,9 +31,8 @@ def get_server_url(network, port=80, prefix="/"):
 
     port_str = "" if port == 80 else f":{port}"
 
-    teamStr = f"{network['team']:04d}"
-
     # default to mdns in case static fails for some reason
+    teamStr = network["team"]
     hostname = f"{socket.gethostname()}.local"
     if network["static"]:
         host_prefix = f"10.{teamStr[:2]}.{teamStr[2:]}"
@@ -46,7 +45,7 @@ def get_server_url(network, port=80, prefix="/"):
 
 
 def get_nt_server(network):
-    teamStr = f"{network['team']:04d}"
+    teamStr = network["team"]
     if network["static"]:
         hostname = f"10.{teamStr[:2]}.{teamStr[2:]}.2"
     else:

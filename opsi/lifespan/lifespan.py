@@ -57,9 +57,6 @@ class Lifespan:
             signal.signal(signal.SIGINT, self.catch_signal)
             signal.signal(signal.SIGTERM, self.catch_signal)
 
-        if self.persist.network["nt-enabled"]:
-            init_networktables(self.persist.network)
-
     def load_persistence(self, program):
         nodetree = self.persist.nodetree
 
@@ -76,6 +73,9 @@ class Lifespan:
         return self._systemd
 
     def make_threads(self):
+        if self.persist.network["nt-enabled"]:
+            init_networktables(self.persist.network)
+
         program = Program(self)
 
         path = opsi.__file__
