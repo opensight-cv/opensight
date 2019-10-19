@@ -25,7 +25,10 @@ class Program:
         if uuid is None:
             uuid = uuid4()
 
-        func = self.manager.funcs[func_type]
+        try:
+            func = self.manager.funcs[func_type]
+        except KeyError:
+            LOGGER.error("Function not found! %s", func_type)
 
         return self.pipeline.create_node(func, uuid)
 

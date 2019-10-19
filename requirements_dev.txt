@@ -11,3 +11,4 @@ uvicorn
 black
 isort
 requests
+netifaces

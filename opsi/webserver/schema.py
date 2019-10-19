@@ -71,3 +71,4 @@ class SchemaF(BaseModel):
 
 class Preferences(BaseModel):
     profile: int
+    network: Dict[str, Any]

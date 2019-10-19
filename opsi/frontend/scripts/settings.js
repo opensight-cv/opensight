@@ -1,4 +1,7 @@
 // im sorry
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
 $(document).ready(function() {
     $("#update-button").click(function(event) {
         event.preventDefault();
@@ -78,6 +81,24 @@ $(document).ready(function() {
             error: function(e) {
                 location.reload();
             }
+        });
+    });
+    $(document).on("click", "#network-button", function(event) {
+        var form = $("#network-form")[0];
+        let team = form[0].valueAsNumber;
+        let static = form[1].checked;
+        $.ajax({
+            type: "POST",
+            url: "/api/network?static=" + static + "&team=" + team,
+            contentType: "application/json",
+            success: function(data) {
+                sleep(500).then(() => {
+                    location.reload();
+                });
+            },
+            error: function(e) {
+                console.log("Failed to update network config");
+            },
         });
     });
 });

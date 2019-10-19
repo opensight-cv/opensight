@@ -18,6 +18,7 @@ class Persistence:
 
         self._prefs = None
         self._profile = None
+        self._network = None
 
         self.paths = self.PATHS
         if path:
@@ -27,6 +28,7 @@ class Persistence:
 
         # handle all preferences here
         self._profile = self.prefs.profile
+        self._network = self.prefs.network
         self.nodetree_path = self._get_nt_path()
 
     def _get_nt_path(self):
@@ -102,7 +104,9 @@ class Persistence:
             LOGGER.exception("Failed to read from preferences persistence")
 
         LOGGER.warning("Creating new preferences file.")
-        self.prefs = Preferences(profile=0)  # set default preferences here
+        self.prefs = Preferences(
+            profile=0, network={"team": 0, "static": True}
+        )  # set default preferences here
         return self._prefs
 
     @prefs.setter
@@ -135,6 +139,24 @@ class Persistence:
         self.prefs.profile = value
         self.prefs = self.prefs  # write to file
         LOGGER.info(f"Switching to profile {value}")
+
+    @property
+    def network(self):
+        return {
+            "team": self.prefs.network["team"],
+            "static": self.prefs.network["static"],
+        }
+
+    @network.setter
+    def network(self, value):
+        if len(str(value["team"])) != 4:  # aka, teamnum has >4 digits
+            raise ValueError(f"Invalid team number")
+
+        self._team = value["team"]
+        self._static = value["static"]
+        self.nodetree_path = self._get_nt_path()
+        self.prefs.network = value
+        self.prefs = self.prefs  # write to file
 
 
 class NullPersistence(Persistence):

@@ -30,6 +30,7 @@ class Api:
         self.app.post("/shutdown-host")(self.shutdown_host)
         self.app.post("/restart-host")(self.restart_host)
         self.app.post("/profile")(self.profile)
+        self.app.post("/network")(self.network)
 
         parent_app.mount(prefix, self.app)
 
@@ -80,3 +81,9 @@ class Api:
         self.program.lifespan.persist.update_nodetree()
         import_nodetree(self.program, self.program.lifespan.persist.nodetree)
         return profile
+
+    def network(self, team: int, static: bool):
+        self.program.lifespan.persist.network = {"team": team, "static": static}
+        self.program.lifespan.persist.update_nodetree()
+        self.program.lifespan.shutdown(restart=True)
+        return {"team": team, "static": static}

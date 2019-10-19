@@ -6,7 +6,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from opsi.util.networking import get_server_url
+from opsi.util.networking import get_server_url, get_roborio_url
 from opsi.util.path import join
 from opsi.util.templating import TemplateFolder
 
@@ -22,7 +22,8 @@ class WebServer:
 
         self.app = Starlette(debug=True)
 
-        self.url = get_server_url(port, prefix)
+        self.url = get_server_url(program.lifespan.persist.network, port, prefix)
+        self.rio_url = get_roborio_url(program.lifespan.persist.network)
         self.template = TemplateFolder(join(__file__, "templates"))
 
         self.app.add_route("/", self.template("nodetree.html"))
@@ -67,6 +68,7 @@ class WebServer:
             path = PREFIX + "/" + package
 
             hook.url = self.url + path.lstrip("/")
+            hook.rio_url = self.rio_url
             self.app.mount(path, hook.app)
 
     def trailingslash_redirect(self, request):

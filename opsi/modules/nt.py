@@ -2,27 +2,26 @@ from dataclasses import dataclass
 
 from networktables import NetworkTables
 
-from opsi.manager.manager_schema import Function
+from opsi.manager.manager_schema import Function, Hook
+
+
+__package__ = "demo.nt"
+__version__ = "0.123"
+HookInstance = Hook()
 
 
 class InitializeNT(Function):
     @dataclass
     class Settings:
-        teamnum: int
-        staticIP: bool
         client: bool = True
 
     def on_start(self):
         if not self.settings.client:
             NetworkTables.initialize()
         else:
-            teamStr = str(self.settings.teamnum)
-            static = f"10.{teamStr[:2]}.{teamStr[:-2]}.2"
-            mDNS = f"roboRIO-{self.settings.teamnum}-FRC.local"
-            if self.settings.staticIP:
-                NetworkTables.initialize(server=static)
-            else:
-                NetworkTables.initialize(server=mDNS)
+            pass
+            # lol
+            NetworkTables.initialize(server=HookInstance.rio_url)
 
     def dispose(self):
         NetworkTables.shutdown()

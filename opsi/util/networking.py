@@ -1,5 +1,6 @@
 import logging
 import socket
+import netifaces
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,13 +16,34 @@ def is_port_open(port):
             return False
 
 
-def get_server_url(port=80, prefix="/"):
+def get_server_url(network, port=80, prefix="/"):
     assert prefix.endswith("/")
 
     port_str = "" if port == 80 else f":{port}"
-    hostname = socket.gethostname()
 
-    return f"http://{hostname}.local{port_str}{prefix}"
+    teamStr = f"{network['team']:04d}"
+
+    # default to mdns in case static fails for some reason
+    hostname = f"{socket.gethostname()}.local"
+    if network["static"]:
+        host_prefix = f"10.{teamStr[:2]}.{teamStr[2:]}"
+        # TODO: Make work for more than eth0
+        # also todo cleanup
+        for i in netifaces.ifaddresses("eth0").values():
+            for x in i:
+                if host_prefix in str(x.get("addr")):
+                    hostname = x.get("addr")
+
+    return f"http://{hostname}{port_str}{prefix}"
+
+
+def get_roborio_url(network):
+    teamStr = f"{network['team']:04d}"
+    if network["static"]:
+        hostname = f"10.{teamStr[:2]}.{teamStr[2:]}.2"
+    else:
+        hostname = f"roboRIO-{teamStr}-FRC.local"
+    return hostname
 
 
 def choose_port(ports):
