@@ -69,10 +69,10 @@ class Api:
         self.program.lifespan.shutdown(restart=True)
 
     def shutdown_host(self):
-        subprocess.Popen("shutdown now".split(), shell=True)
+        self.program.lifespan.shutdown(host=True)
 
     def restart_host(self):
-        subprocess.Popen("reboot", shell=True)
+        self.program.lifespan.shutdown(host=True, restart=True)
 
     def profile(self, profile: int):
         if profile >= 10:

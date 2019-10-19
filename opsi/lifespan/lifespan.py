@@ -116,9 +116,15 @@ class Lifespan:
     def catch_signal(self, signum, frame):
         self.shutdown()
 
-    def shutdown(self, restart=False):
+    def shutdown(self, restart=False, host=False):
         if self.persist.network["nt-enabled"]:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()
         self.restart = restart
+        if host:
+            self.restart = False
+            if restart:
+                subprocess.Popen("reboot", shell=True)
+            else:
+                subprocess.Popen("shutdown now".split(), shell=True)
