@@ -83,6 +83,7 @@ class Api:
         return profile
 
     def network(self, team: int, static: bool, enabled: bool, client: bool):
+        print(client)
         self.program.lifespan.persist.network = {
             "team": team,
             "static": static,

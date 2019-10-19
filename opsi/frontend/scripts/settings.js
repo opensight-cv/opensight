@@ -85,11 +85,12 @@ $(document).ready(function() {
     });
     $(document).on("click", "#network-button", function(event) {
         var form = $("#network-form")[0];
+        console.log(form);
         var data = {
             "team": form[0].valueAsNumber,
             "static": form[1].checked,
             "enabled": form[2].checked,
-            "client": form[3].checked
+            "client": (form[3].value == "client")
         }
         var urlString = "/api/network?";
         for (var key in data) {

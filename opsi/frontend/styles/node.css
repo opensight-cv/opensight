@@ -61,6 +61,10 @@ p {
   display: block;
   margin: 5px auto;
 }
+#network-form input {
+  display: inline;
+  max-width: 3vw;
+}
 #preference #profile-button {
   display: inline;
   margin: 0px;

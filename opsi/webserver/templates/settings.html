@@ -57,15 +57,20 @@
         <h1>Network Config</h1>
         <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
             <h3>General</h3>
-            <p>Team Number</p>
+            <label for="team-number">Team Number:</label>
             <input id="team-number" type="number" value="{{persist.network["team"]}}"/>
-            <p>Use Static IP</p>
+            <br>
+            <label for="nt-enabled">Use Static IP:</label>
             <input id="static" type="checkbox" {{"checked" if persist.network["static"]}}/>
             <h3>NetworkTables</h3>
-            <p>Enabled</p>
+            <label for="nt-enabled">Enabled:</label>
             <input id="nt-enabled" type="checkbox" {{"checked" if persist.network["nt-enabled"]}}/>
-            <p>Client</p>
-            <input id="nt-client" type="checkbox" {{"checked" if persist.network["nt-client"]}}/>
+            <br>
+            <label for="nt-mode">Mode:</label>
+            <select id="nt-mode">
+                <option value="client" {{"selected" if persist.network["nt-client"]}}>Client</option>
+                <option value="server" {{"selected" if not persist.network["nt-client"]}}>Server</option>
+            </select>
         </form>
         <input id="network-button" type="button" value="Submit"/>
     </div>
