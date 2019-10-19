@@ -63,7 +63,7 @@ p {
 }
 #network-form input {
   display: inline;
-  max-width: 3vw;
+  max-width: 18%;
 }
 #preference #profile-button {
   display: inline;
@@ -134,16 +134,17 @@ input[type="button"]:active {
   background: linear-gradient(0deg, #ddd 0, #eee 75%);
   animation: file_grow 0.25s ease;
   width: 100%;
-  min-width: 15vw;
-  max-width: 15vw;
+  min-width: 90%;
+  max-width: 90%;
 }
 .bfi-container {
   margin-left: auto !important;
   margin-right: auto !important;
   padding: 10px;
-  min-width: 15vw;
-  max-width: 15vw;
+  min-width: 90%;
+  max-width: 90%;
 }
+
 .bfi-file .bfi-clear {
   display: block;
   padding-left: 5px;
