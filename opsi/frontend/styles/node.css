@@ -47,6 +47,14 @@ a {
 p {
   padding-bottom: 5px;
 }
+#prefs-table {
+  display: block;
+}
+#prefs-table td {
+  display: inline-block;
+  vertical-align: top;
+  border: none;
+}
 #preference {
   float: left;
   z-index: 7;
@@ -86,6 +94,7 @@ p {
   width: 96%;
   text-align: center;
   padding-left: 60px;
+  display: inline;
 }
 #upload-form {
   margin: 10px;

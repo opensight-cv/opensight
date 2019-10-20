@@ -7,72 +7,86 @@
 
 {% block content %}
 <div id="prefs-container">
-    <div id="preference">
-        <h1>Update</h1>
-        <p>
-            You can get the latest version of OpenSight
-            <a href="https://github.com/opensight-cv/packages/releases">here</a>.
-        </p>
-        <p>Updating from web-ui only works on Raspbian</p>
-        <form id="update-form" enctype="multipart/form-data" method="post" name="update-form">
-            <input type="file" class="bfi" required />
-        </form>
-        <input class="update-button" id="update-button" type="button" value="Update"/>
-    </div>
-    <div id="preference">
-        <h1>Actions</h1>
-        {% if daemon %}
-        <input id="restart" type="button" value="Restart OpenSight"/>
-        <input id="restart-host" type="button" value="Restart System"/>
-        <input id="shutdown-host" type="button" value="Shutdown System"/>
-        {% else %}
-        <input id="restart" type="button" value="Restart OpenSight"/>
-        <input id="shutdown" type="button" value="Stop OpenSight"/>
-        {% endif %}
-    </div>
-    <div id="preference">
-        <h1>Profiles</h1>
-        <p>Current profile: {{persist.profile}}</p>
-        <input id="profile-button" type="button" value="0"/>
-        <input id="profile-button" type="button" value="1"/>
-        <input id="profile-button" type="button" value="2"/>
-        <input id="profile-button" type="button" value="3"/>
-        <input id="profile-button" type="button" value="4"/>
-        <br>
-        <input id="profile-button" type="button" value="5"/>
-        <input id="profile-button" type="button" value="6"/>
-        <input id="profile-button" type="button" value="7"/>
-        <input id="profile-button" type="button" value="8"/>
-        <input id="profile-button" type="button" value="9"/>
-    </div>
-    <div id="preference">
-        <h1>Import/Export</h1>
-        <form id="import-form" enctype="multipart/form-data" method="post" name="import-form">
-            <input type="file" class="bfi" required />
-        </form>
-        <input id="import-button" type="button" value="Import"/>
-        <input id="export-button" type="button" value="Export"/>
-    </div>
-    <div id="preference">
-        <h1>Network Config</h1>
-        <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
-            <h3>General</h3>
-            <label for="team-number">Team Number:</label>
-            <input id="team-number" type="number" value="{{persist.network["team"]}}"/>
-            <br>
-            <label for="nt-enabled">Use Static IP:</label>
-            <input id="static" type="checkbox" {{"checked" if persist.network["static"]}}/>
-            <h3>NetworkTables</h3>
-            <label for="nt-enabled">Enabled:</label>
-            <input id="nt-enabled" type="checkbox" {{"checked" if persist.network["nt-enabled"]}}/>
-            <br>
-            <label for="nt-mode">Mode:</label>
-            <select id="nt-mode">
-                <option value="client" {{"selected" if persist.network["nt-client"]}}>Client</option>
-                <option value="server" {{"selected" if not persist.network["nt-client"]}}>Server</option>
-            </select>
-        </form>
-        <input id="network-button" type="button" value="Submit"/>
-    </div>
+    <table id="prefs-table">
+        <tr>
+            <td>
+                <div id="preference">
+                    <h1>Update</h1>
+                    <p>
+                        You can get the latest version of OpenSight
+                        <a href="https://github.com/opensight-cv/packages/releases">here</a>.
+                    </p>
+                    <p>Updating from web-ui only works on Raspbian</p>
+                    <form id="update-form" enctype="multipart/form-data" method="post" name="update-form">
+                        <input type="file" class="bfi" required />
+                    </form>
+                    <input class="update-button" id="update-button" type="button" value="Update"/>
+                </div>
+            </td>
+            <td>
+                <div id="preference">
+                    <h1>Actions</h1>
+                    {% if daemon %}
+                    <input id="restart" type="button" value="Restart OpenSight"/>
+                    <input id="restart-host" type="button" value="Restart System"/>
+                    <input id="shutdown-host" type="button" value="Shutdown System"/>
+                    {% else %}
+                    <input id="restart" type="button" value="Restart OpenSight"/>
+                    <input id="shutdown" type="button" value="Stop OpenSight"/>
+                    {% endif %}
+                </div>
+            </td>
+            <td>
+                <div id="preference">
+                    <h1>Profiles</h1>
+                    <p>Current profile: {{persist.profile}}</p>
+                    <input id="profile-button" type="button" value="0"/>
+                    <input id="profile-button" type="button" value="1"/>
+                    <input id="profile-button" type="button" value="2"/>
+                    <input id="profile-button" type="button" value="3"/>
+                    <input id="profile-button" type="button" value="4"/>
+                    <br>
+                    <input id="profile-button" type="button" value="5"/>
+                    <input id="profile-button" type="button" value="6"/>
+                    <input id="profile-button" type="button" value="7"/>
+                    <input id="profile-button" type="button" value="8"/>
+                    <input id="profile-button" type="button" value="9"/>
+                </div>
+            </td>
+            <td>
+                <div id="preference">
+                    <h1>Import/Export</h1>
+                    <form id="import-form" enctype="multipart/form-data" method="post" name="import-form">
+                        <input type="file" class="bfi" required />
+                    </form>
+                    <input id="import-button" type="button" value="Import"/>
+                    <input id="export-button" type="button" value="Export"/>
+                </div>
+            </td>
+            <td>
+                <div id="preference">
+                    <h1>Network Config</h1>
+                    <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
+                        <h3>General</h3>
+                        <label for="team-number">Team Number:</label>
+                        <input id="team-number" type="number" value="{{persist.network["team"]}}"/>
+                        <br>
+                        <label for="nt-enabled">Use Static IP:</label>
+                        <input id="static" type="checkbox" {{"checked" if persist.network["static"]}}/>
+                        <h3>NetworkTables</h3>
+                        <label for="nt-enabled">Enabled:</label>
+                        <input id="nt-enabled" type="checkbox" {{"checked" if persist.network["nt-enabled"]}}/>
+                        <br>
+                        <label for="nt-mode">Mode:</label>
+                        <select id="nt-mode">
+                            <option value="client" {{"selected" if persist.network["nt-client"]}}>Client</option>
+                            <option value="server" {{"selected" if not persist.network["nt-client"]}}>Server</option>
+                        </select>
+                    </form>
+                    <input id="network-button" type="button" value="Submit"/>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
 {% endblock %}
