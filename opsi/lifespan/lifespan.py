@@ -47,9 +47,10 @@ class Lifespan:
     def __init__(self, args, *, catch_signal=False, load_persist=True):
         self.event = threading.Event()
         self.threads = []
-        self.restart = True
+        self._restart = True
 
         self._systemd = None
+        self._unit = None
 
         self.ports = args.port or self.PORTS
         self.persist = Persistence(path=args.persist) if load_persist else None
@@ -69,8 +70,8 @@ class Lifespan:
     def using_systemd(self):
         if self._systemd:
             return self._systemd
-        unit = Unit(b"opensight.service", _autoload=True)
-        self._systemd = unit.Unit.ActiveState == b"active"
+        self._unit = Unit(b"opensight.service", _autoload=True)
+        self._systemd = self._unit.Unit.ActiveState == b"active"
         return self._systemd
 
     def make_threads(self):
@@ -104,7 +105,7 @@ class Lifespan:
             self.load_persistence(program)
 
     def main_loop(self):
-        while self.restart:
+        while self._restart:
             LOGGER.info("OpenSight starting...")
             self.event.clear()
             self.make_threads()
@@ -117,15 +118,30 @@ class Lifespan:
     def catch_signal(self, signum, frame):
         self.shutdown()
 
-    def shutdown(self, restart=False, host=False):
+    def shutdown_threads(self):
         if self.persist.network.nt_enabled:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()
-        self.restart = restart
+
+    def restart(self, host=False):
         if host:
-            self.restart = False
-            if restart:
-                subprocess.Popen("reboot", shell=True)
-            else:
-                subprocess.Popen("shutdown now".split(), shell=True)
+            self._restart = False
+            self.shutdown_threads()
+            subprocess.Popen("reboot", shell=True)
+            return
+        if self.using_systemd:
+            self._restart = False
+            self.shutdown_threads()
+            return
+        self._restart = True
+
+    def shutdown(self, host=False):
+        self._restart = False
+        self.shutdown_threads()
+        if host:
+            subprocess.Popen("shutdown now", shell=True)
+            return
+        if self.using_systemd:
+            self._unit.Stop(b"replace")
+            return

@@ -64,15 +64,13 @@ class Api:
         self.program.lifespan.shutdown()
 
     def restart(self):
-        if self.program.lifespan.using_systemd:
-            self.program.lifespan.shutdown(restart=False)
-        self.program.lifespan.shutdown(restart=True)
+        self.program.lifespan.restart()
 
     def shutdown_host(self):
         self.program.lifespan.shutdown(host=True)
 
     def restart_host(self):
-        self.program.lifespan.shutdown(host=True, restart=True)
+        self.program.lifespan.restart(host=True)
 
     def profile(self, profile: int):
         if profile >= 10:
