@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 # N = NodeTree = often save
 # F = Function = initial load
@@ -69,6 +69,25 @@ class SchemaF(BaseModel):
 # --------------------------------
 
 
+class Network(BaseModel):
+    team: str = 9999
+    static: bool = False
+    nt_enabled: bool = True
+    nt_client: bool = True
+
+    @validator("team", always=True)
+    def team_str_formatter(cls, team):
+        team = int(team)
+
+        if not 1 <= team <= 9999:
+            raise ValueError("Team number must be between 1 and 9999")
+
+        team_str = f"{team:04d}"
+        assert 1 <= len(team_str) <= 4
+
+        return team_str
+
+
 class Preferences(BaseModel):
-    profile: int
-    network: Dict[str, Any]
+    profile: int = 0
+    network: Network = Network()

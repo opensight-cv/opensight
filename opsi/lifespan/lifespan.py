@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import signal
+import subprocess
 import threading
 from os import listdir
 from os.path import isdir, isfile, splitext
@@ -33,11 +34,11 @@ def register_modules(program, module_path):
 
 
 def init_networktables(network):
-    if network["nt-client"]:
+    if network.nt_client:
         addr = get_nt_server(network)
-        NetworkTables.initialize(server=addr)
+        NetworkTables.startClient(addr)
     else:
-        NetworkTables.initialize()
+        NetworkTables.startServer()
 
 
 class Lifespan:
@@ -73,7 +74,7 @@ class Lifespan:
         return self._systemd
 
     def make_threads(self):
-        if self.persist.network["nt-enabled"]:
+        if self.persist.network.nt_enabled:
             init_networktables(self.persist.network)
 
         program = Program(self)
@@ -117,7 +118,7 @@ class Lifespan:
         self.shutdown()
 
     def shutdown(self, restart=False, host=False):
-        if self.persist.network["nt-enabled"]:
+        if self.persist.network.nt_enabled:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()

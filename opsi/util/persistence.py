@@ -104,15 +104,7 @@ class Persistence:
             LOGGER.exception("Failed to read from preferences persistence")
 
         LOGGER.warning("Creating new preferences file.")
-        self.prefs = Preferences(
-            profile=0,
-            network={
-                "team": "0000",
-                "static": False,
-                "nt-enabled": True,
-                "nt-client": True,
-            },
-        )  # set default preferences here
+        self.prefs = Preferences()  # set default preferences in schema.py
         return self._prefs
 
     @prefs.setter
@@ -152,12 +144,6 @@ class Persistence:
 
     @network.setter
     def network(self, value):
-        teamNum = value["team"]
-        teamStr = f"{teamNum:04d}"
-        if len(teamStr) != 4:  # aka, teamnum has >4 digits
-            raise ValueError(f"Invalid team number")
-        value["team"] = teamStr
-
         self.nodetree_path = self._get_nt_path()
         self.prefs.network = value
         self.prefs = self.prefs  # write to file

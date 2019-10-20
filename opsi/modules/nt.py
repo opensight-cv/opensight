@@ -1,60 +1,41 @@
 from dataclasses import dataclass
 
-from networktables import NetworkTables
-
 from opsi.manager.manager_schema import Function
+from opsi.manager.netdict import NetworkDict
+from opsi.manager.types import AnyType
 
 __package__ = "demo.nt"
 __version__ = "0.123"
 
 
-class PutInteger(Function):
+class PutNT(Function):
     def on_start(self):
-        self.table = NetworkTables.getTable("SmartDashboard")
+        self.table = NetworkDict(self.settings.path)
 
     @dataclass
     class Settings:
-        key: str
+        path: str = "/OpenSight"
+        key: str = ""
 
     @dataclass
     class Inputs:
-        val: int
+        val: AnyType
 
     def run(self, inputs):
-        self.table.putNumber(self.settings.key, inputs.val)
+        self.table[self.settings.key] = inputs.val
+
+        return self.Outputs()
 
 
-class PutString(Function):
-    def on_start(self):
-        self.table = NetworkTables.getTable("SmartDashboard")
-
-    @dataclass
-    class Settings:
-        key: str
-
+class PutCoordinate(PutNT):
     @dataclass
     class Inputs:
-        val: int
+        val: tuple()
 
     def run(self, inputs):
-        self.table.putString(self.settings.key, inputs.val)
+        x, y, *_ = inputs.val
 
+        self.table[f"{self.settings.key}-x"] = x
+        self.table[f"{self.settings.key}-y"] = y
 
-class PutCoordinate(Function):
-    def on_start(self):
-        self.table = NetworkTables.getTable("SmartDashboard")
-
-    @dataclass
-    class Settings:
-        key: str
-
-    @dataclass
-    class Inputs:
-        val: ()
-
-    def run(self, inputs):
-        xkey = self.settings.key + "-x"
-        ykey = self.settings.key + "-y"
-        x, y = inputs.val[0], inputs.val[1]
-        self.table.putNumber(xkey, x)
-        self.table.putNumber(ykey, y)
+        return self.Outputs()

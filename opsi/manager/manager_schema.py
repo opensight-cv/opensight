@@ -71,6 +71,11 @@ class Function:
             renamed = "_" + func
             private = "_private_" + func
 
+            # fix inheriting from Function
+            # only override if it hasn't been already overwritten
+            if getattr(cls, original) == getattr(cls, private):
+                continue
+
             # copy original cls.func to cls._func
             setattr(cls, renamed, getattr(cls, original))
             # override original cls.func with our cls._private_func

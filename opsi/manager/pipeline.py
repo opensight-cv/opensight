@@ -77,6 +77,15 @@ class Node:
 
         inputs = self.func_type.Inputs(**inputs)
         self.results = self.func.run(inputs)
+
+        if self.results is None:
+            try:
+                self.results = self.func.Outputs()
+            except TypeError:  # Outputs has some fields which do not have defaults
+                LOGGER.error(
+                    f"Function {self.func_type.type} cannot return None if there is no default Output"
+                )
+
         self.has_run = True
 
         return self.results

@@ -77,7 +77,7 @@ class NetworkDict:
         return entry.value
 
     # Only allows you to set value of existing type
-    def set(self, name: str, value: NT_TYPES) -> None:
+    def set_safe(self, name: str, value: NT_TYPES) -> None:
         entry = self._get_entry(name)
 
         # Calculated using Python type (bool, str, float)
@@ -107,6 +107,17 @@ class NetworkDict:
             raise TypeError(
                 "Existing type {} does not match: {}".format(entry.type, type(value))
             )
+
+    def set(self, name: str, value: NT_TYPES) -> None:
+        # Calculated using Python type (bool, str, float)
+        try:
+            create_value_func: Callable[..., Value] = Value.getFactory(value)
+        except ValueError as e:  # getFactory raises ValueError when it should be raising TypeError
+            raise TypeError(*e.args)
+
+        nt_value: Value = create_value_func(value)
+
+        self.api.setEntryValue(self._get_path(name), nt_value)
 
     @classmethod
     def _delete_table(cls, nttable):

@@ -7,7 +7,6 @@ $(document).ready(function() {
         event.preventDefault();
         var form = $("#update-form")[0];
         var data = new FormData();
-        console.log(form);
         data.append("file", form[0].files[0]);
         $("#update-button").prop("disabled", true);
         $.ajax({
@@ -45,7 +44,6 @@ $(document).ready(function() {
         var fileReader = new FileReader();
         var nodetree;
         var success = function ( content ) {
-            console.log(content);
             $.post(
                 "/api/nodes",
                 content,
@@ -85,20 +83,16 @@ $(document).ready(function() {
     });
     $(document).on("click", "#network-button", function(event) {
         var form = $("#network-form")[0];
-        console.log(form);
         var data = {
-            "team": form[0].valueAsNumber,
+            "team": parseInt(form[0].valueAsNumber),
             "static": form[1].checked,
-            "enabled": form[2].checked,
-            "client": (form[3].value == "client")
-        }
-        var urlString = "/api/network?";
-        for (var key in data) {
-            urlString += key + "=" + data[key] + "&";
+            "nt_enabled": form[2].checked,
+            "nt_client": (form[3].value == "client")
         }
         $.ajax({
             type: "POST",
-            url: urlString,
+            url: "/api/network",
+            data: JSON.stringify(data),
             contentType: "application/json",
             success: function(data) {
                 sleep(1500).then(() => {

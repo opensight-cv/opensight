@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
 
-from .schema import NodeTreeN, SchemaF
+from .schema import Network, NodeTreeN, SchemaF
 from .serialize import *
 
 LOGGER = logging.getLogger(__name__)
@@ -82,13 +82,8 @@ class Api:
         import_nodetree(self.program, self.program.lifespan.persist.nodetree)
         return profile
 
-    def network(self, team: int, static: bool, enabled: bool, client: bool):
-        self.program.lifespan.persist.network = {
-            "team": team,
-            "static": static,
-            "nt-enabled": enabled,
-            "nt-client": client,
-        }
+    def network(self, *, network: Network):
+        self.program.lifespan.persist.network = network
         self.program.lifespan.persist.update_nodetree()
         self.program.lifespan.shutdown(restart=True)
-        return {"team": team, "static": static}
+        return {"team": network.team, "static": network.static}
