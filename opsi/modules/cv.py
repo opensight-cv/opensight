@@ -23,7 +23,7 @@ ERODE_DILATE_CONSTS = {
 
 FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_LIST, "method": cv2.CHAIN_APPROX_SIMPLE}
 
-__package__ = "demo.cv"
+__package__ = "opsi.cv"
 __version__ = "0.123"
 
 

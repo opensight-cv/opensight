@@ -4,7 +4,7 @@ from opsi.manager.manager_schema import Function
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import AnyType
 
-__package__ = "demo.nt"
+__package__ = "opsi.nt"
 __version__ = "0.123"
 
 

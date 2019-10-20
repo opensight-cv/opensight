@@ -18,7 +18,7 @@ from opsi.manager.types import Mat, Slide
 from opsi.util.concurrency import AsyncThread, ShutdownThread, Snippet
 from opsi.util.templating import LiteralTemplate
 
-__package__ = "demo.server"
+__package__ = "opsi.cameraserver"
 __version__ = "0.123"
 
 LOGGER = logging.getLogger(__name__)

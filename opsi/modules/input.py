@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 ENABLE_RES = False
 ENABLE_FPS = False
 
-__package__ = "demo.input"
+__package__ = "opsi.input"
 __version__ = "0.123"
 
 

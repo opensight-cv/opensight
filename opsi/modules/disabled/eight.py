@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Slide
 
+__package__ = "demo.eight"
+
 
 class TupleTest(Function):
     @dataclass

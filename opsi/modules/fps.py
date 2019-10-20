@@ -1,5 +1,7 @@
 import datetime
 
+__package__ = "opsi.fps"
+
 
 class FPS:
     def __init__(self):
