@@ -117,7 +117,7 @@ class NetworkDict:
 
         nt_value: Value = create_value_func(value)
 
-        self.api.setEntryValue(self._get_path(name), nt_value)
+        self.api.setEntryTypeValue(self._get_path(name), nt_value)
 
     @classmethod
     def _delete_table(cls, nttable):
