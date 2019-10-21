@@ -287,20 +287,7 @@ def _process_node_settings(program, node: NodeN):
         settings = real_node.func_type.Settings(**node.settings)
         real_node.settings = settings
     except TypeError as e:
-        # intialize node with default settings
-        default_fields = {}
-        dc_fields = fields(real_node.func_type.Settings)
-        for field in dc_fields:
-            if type(field.default) is _MISSING_TYPE:
-                # create a defaultly initalized class if default not defined
-                default_fields[field.name] = field.type.__class__()
-            else:
-                default_fields[field.name] = field.default
-        real_node.settings = real_node.func_type.Settings(**default_fields)
-        # TODO: (ASAP) re-enable this. it's a bit buggy when this is disabled (nodetree gets continually imported??)
-        # raise NodeTreeImportError(
-        #     node, "Missing key in settings. Default initalizing..."
-        # ) from e
+        raise NodeTreeImportError(node, "Missing key in settings") from e
 
 
 def import_nodetree(program, nodetree: NodeTreeN):
@@ -319,3 +306,9 @@ def import_nodetree(program, nodetree: NodeTreeN):
                 _process_node_links(program, node)
             else:
                 _process_node_inputs(program, node)
+
+            try:
+                program.pipeline.nodes[node.id].ensure_init()
+            except Exception as e:
+                del program.pipeline.nodes[node.id]
+                raise NodeTreeImportError(node, "Error creating Function") from e

@@ -35,6 +35,8 @@ class Api:
         parent_app.mount(prefix, self.app)
 
     def importerror_handler(self, request, exc):
+        self.program.pipeline.clear()
+
         return JSONResponse(
             status_code=400,
             content={

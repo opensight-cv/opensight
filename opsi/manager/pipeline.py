@@ -52,8 +52,13 @@ class Node:
         if self.func is None:
             return
 
-        self.func.dispose()
-        self.func = None
+        try:
+            self.func.dispose()
+        except:
+            msg = f"Error while disposing node f{self.func_type.type}"
+            LOGGER.error(msg, exc_info=True)
+        finally:
+            self.func = None
 
     def set_static_link(self, key: str, item: Any):
         self.inputLinks[key] = StaticLink(item)
@@ -143,26 +148,22 @@ class Pipeline:
 
             input_node.inputLinks[input_name] = NodeLink(output_node, conn.name)
 
-    def dispose_all(self):
+    def clear(self):
+        self.adjList.clear()
+        self.run_order.clear()
+
         for node in self.nodes.values():
             node.reset_links()
-            if node.func is not None:
-                node.func.dispose()
-            node.func = None
+            node.dispose()
+
+        self.nodes.clear()
 
     def prune_nodetree(self, new_node_ids):
         old_node_ids = set(self.nodes.keys())
         new_node_ids = set(new_node_ids)
         removed = old_node_ids - new_node_ids
 
-        for node in self.nodes.values():
-            node.reset_links()
-            if node.func is not None:
-                node.func.dispose()
-            node.func = None
-            if node.id in removed:
-                self.run_order.clear()
-                del self.adjList[node]
+        self.clear()  # TODO: Find way to remove this for optimization
 
         # remove deleted nodes
         for uuid in removed:
