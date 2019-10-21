@@ -262,6 +262,9 @@ class Hook(Hook):
         return image
 
     def register(self, func):
+        if func.id in self.funcs:
+            raise ValueError("Cannot have duplicate name")
+
         self.funcs[func.id] = Route(
             self.ROUTE_URL.format(func=func.id), self.endpoint(func)
         )
@@ -369,6 +372,12 @@ class CameraSource:
 
 class CameraServer(Function):
     has_sideeffect = True
+
+    @classmethod
+    def validate_settings(cls, settings):
+        settings.name = settings.name.strip()
+
+        return settings
 
     def on_start(self):
         self.src = CameraSource()

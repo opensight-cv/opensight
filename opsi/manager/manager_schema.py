@@ -109,6 +109,10 @@ class Function:
     def on_start(self):
         pass
 
+    @classmethod
+    def validate_settings(cls, settings):
+        return settings
+
     # Private, do not override
 
     def __init__(self, settings: Settings):

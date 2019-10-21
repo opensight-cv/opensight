@@ -8,8 +8,50 @@ __package__ = "opsi.nt"
 __version__ = "0.123"
 
 
+class Manager:
+    def __init__(self):
+        self.keys = set()
+
+    @classmethod
+    def make_path(cls, settings):
+        return settings.path + "/" + settings.key
+
+    def add(self, settings):
+        path = self.make_path(settings)
+
+        if path in self.keys:
+            raise ValueError("Cannot have duplicate path")
+
+        self.keys.add(path)
+
+    def discard(self, settings):
+        self.keys.discard(self.make_path(settings))
+
+
+ManagerInstance = Manager()
+
+
 class PutNT(Function):
+    has_sideeffect = True
+
+    @classmethod
+    def validate_settings(cls, settings):
+        settings.path = settings.path.strip()
+        settings.key = settings.path.key()
+
+        if not settings.path.startswith("/"):
+            raise ValueError("You must have an absolute that starts with '/'")
+
+        if not settings.key:
+            raise ValueError("Key cannot be empty")
+
+        if "/" in settings.key:
+            raise ValueError("Key cannot have '/' in it")
+
+        return settings
+
     def on_start(self):
+        ManagerInstance.add(self.settings)
         self.table = NetworkDict(self.settings.path)
 
     @dataclass
@@ -25,6 +67,9 @@ class PutNT(Function):
         self.table[self.settings.key] = inputs.val
 
         return self.Outputs()
+
+    def discard(self):
+        ManagerInstance.discard(self.settings)
 
 
 class PutCoordinate(PutNT):
