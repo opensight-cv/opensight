@@ -147,7 +147,7 @@ class DrawContours(Function):
         visual: Mat
 
     def run(self, inputs):
-        draw = inputs.img
+        draw = np.copy(inputs.img)
         cv2.drawContours(draw, inputs.conts, -1, (255, 255, 0), 3)
         return self.Outputs(visual=draw)
 
@@ -180,22 +180,24 @@ class FindCenter(Function):
                 cy = (y + (y + h)) // 2
                 midpoint = (cx, cy)
                 mids.append(midpoint)
+                draw = None
                 if self.settings.draw:
+                    draw = np.copy(inputs.img)
                     cv2.rectangle(
-                        inputs.img, (x, y), (x + w, y + h), (234, 234, 0), thickness=2
+                        draw, (x, y), (x + w, y + h), (234, 234, 0), thickness=2
                     )
-                    cv2.circle(inputs.img, midpoint, 10, (0, 0, 255), 3)
+                    cv2.circle(draw, midpoint, 10, (0, 0, 255), 3)
                     if len(mids) > 1:
                         mid1 = mids[0]
                         mid2 = mids[-1]
                         mx = (mid1[0] + mid2[0]) // 2
                         my = (mid1[1] + mid2[1]) // 2
                         truemid = (mx, my)
-                        cv2.circle(inputs.img, truemid, 15, (90, 255, 2), 3)
-                        cv2.line(inputs.img, mid1, mid2, (0, 255, 20), thickness=3)
+                        cv2.circle(draw, truemid, 15, (90, 255, 2), 3)
+                        cv2.line(draw, mid1, mid2, (0, 255, 20), thickness=3)
             else:
                 break
-        return self.Outputs(center=midpoint, visual=inputs.img)
+        return self.Outputs(center=midpoint, visual=(draw or inputs.img))
 
 
 class FindAngle(Function):
@@ -220,11 +222,13 @@ class FindAngle(Function):
         y = inputs.pnt[1]
         delta = (width - x, height - y)
         deg = math.degrees(math.atan2(delta[1], delta[0]))
+        draw = None
         if self.settings.draw:
-            line = cv2.line(inputs.img, (width, height), (x, y), (0, 255, 0), 2)
+            draw = np.copy(inputs.img)
+            line = cv2.line(draw, (width, height), (x, y), (0, 255, 0), 2)
             return self.Outputs(angle=deg, visual=line)
         else:
-            return self.Outputs(angle=deg, visual=inputs.img)
+            return self.Outputs(angle=deg, visual=(draw or inputs.img))
 
 
 class BitwiseAND(Function):
