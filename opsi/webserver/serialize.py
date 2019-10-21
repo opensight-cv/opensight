@@ -1,4 +1,5 @@
 import logging
+import sys
 from dataclasses import _MISSING_TYPE, asdict, fields
 from typing import Any, Callable, Dict, List, Optional, Type
 
@@ -218,6 +219,7 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 class NodeTreeImportError(ValueError):
     def __init__(self, node: NodeN = None, msg=""):
         self.node = node
+        msg += ": " + str(sys.exc_info()[1].args[0])
 
         if not self.node:
             super().__init__(msg)
@@ -283,11 +285,18 @@ def _process_node_settings(program, node: NodeN):
 
     real_node = program.pipeline.nodes[node.id]
     real_node.pos = node.pos
+
     try:
         settings = real_node.func_type.Settings(**node.settings)
-        real_node.settings = settings
     except TypeError as e:
         raise NodeTreeImportError(node, "Missing key in settings") from e
+
+    try:
+        settings = real_node.func_type.validate_settings(settings)
+    except ValueError as e:
+        raise NodeTreeImportError(node, "Invalid settings") from e
+
+    real_node.settings = settings
 
 
 def import_nodetree(program, nodetree: NodeTreeN):

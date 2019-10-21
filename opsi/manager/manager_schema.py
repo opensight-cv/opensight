@@ -65,7 +65,7 @@ class Function:
         # Inject code that runs before the overridable methods
         # This patching is necessary to keep the api the same
 
-        for func in ("run", "dispose"):
+        for func in ("run", "dispose", "validate_settings"):
             # Do not change these constants, unless you change the private functions defined below
             original = func
             renamed = "_" + func
@@ -128,6 +128,17 @@ class Function:
         if not self.alive:
             raise ValueError("Attempted to call function when already disposed")
         return self._run(inputs)
+
+    @classmethod
+    def _private_validate_settings(cls, settings):
+        settings_new = cls._validate_settings(settings)
+
+        # function must return settings
+        if not isinstance(settings, cls.Settings):
+            # raise error?
+            settings_new = settings
+
+        return settings_new
 
 
 def isfunction(func):
