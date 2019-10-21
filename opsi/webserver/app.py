@@ -1,5 +1,6 @@
 import logging
 import socket
+from os.path import join
 
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
@@ -7,7 +8,6 @@ from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from opsi.util.networking import get_server_url
-from opsi.util.path import join
 from opsi.util.templating import TemplateFolder
 
 from .api import Api
@@ -23,7 +23,7 @@ class WebServer:
         self.app = Starlette(debug=True)
 
         self.url = get_server_url(program.lifespan.persist.network, port, prefix)
-        self.template = TemplateFolder(join(__file__, "templates"))
+        self.template = TemplateFolder(join(frontend, "templates"))
 
         self.app.add_route("/", self.template("nodetree.html"))
         self.app.add_route(
@@ -39,7 +39,7 @@ class WebServer:
         self.api = Api(self.app, self.program)
         self.make_hooks()
 
-        self.app.mount("/", StaticFiles(directory=frontend))
+        self.app.mount("/", StaticFiles(directory=join(frontend, "www")))
 
     def __check_port__(self, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
