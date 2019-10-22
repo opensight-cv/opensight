@@ -253,7 +253,7 @@ class ConvexHulls(Function):
 
     @dataclass
     class Outputs:
-        contours: Contours
+        contours_out: Contours
 
     def run(self, inputs):
         conts = [cv2.convexHull(contour) for contour in inputs.contours]
