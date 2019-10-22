@@ -11,7 +11,7 @@ var postRequest = function() {
         "/api/nodes",
         JSON.stringify(nodeTree),
         function() {
-            console.log("successful post request");
+            console.log("Successful post request");
         },
         "json"
     );
@@ -107,7 +107,6 @@ $(document).ready(function() {
             .attr("class") == "outputContainer"
         ) {
             nodes[list].push($(this).attr("id"));
-
             inHand = true;
         }
     });
@@ -176,9 +175,9 @@ function update() {
     for (let i = 0; i < nodes.length; i++) {
         if (nodes[i].length == 2) {
             //math to find points
-            var x1 = $("#" + nodes[i][0]).offset().left + boxCenterXOffset;
+            var x1 = $("[id=\"" + nodes[i][0] + "\"]").last().offset().left + boxCenterXOffset;
             var x2 = $("#" + nodes[i][1]).offset().left + boxCenterXOffset;
-            var y1 = $("#" + nodes[i][0]).offset().top + boxCenterYOffset;
+            var y1 = $("[id=\"" + nodes[i][0] + "\"]").last().offset().top + boxCenterYOffset;
             var y2 = $("#" + nodes[i][1]).offset().top + boxCenterYOffset;
 
             ctx.beginPath();
@@ -190,9 +189,9 @@ function update() {
     if (inHand) {
         $(".input").css("cursor", "crosshair");
 
-        var x1 = $("#" + nodes[list][0]).offset().left + boxCenterXOffset;
+        var x1 = $("[id=\"" + nodes[list][0] + "\"]").last().offset().left + boxCenterXOffset;
         var x2 = cursorX;
-        var y1 = $("#" + nodes[list][0]).offset().top + boxCenterYOffset;
+        var y1 = $("[id=\"" + nodes[list][0] + "\"]").last().offset().top + boxCenterYOffset;
         var y2 = cursorY;
 
         ctx.beginPath();
