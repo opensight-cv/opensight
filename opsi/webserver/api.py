@@ -35,8 +35,6 @@ class Api:
         parent_app.mount(prefix, self.app)
 
     def importerror_handler(self, request, exc):
-        self.program.pipeline.clear()
-
         return JSONResponse(
             status_code=400,
             content={
@@ -52,7 +50,12 @@ class Api:
 
     def read_nodes(self) -> NodeTreeN:
         with FifoLock(self.program.queue):
-            return export_nodetree(self.program.pipeline)
+            # Any successful modifications to program.pipeline are
+            # guaranteed to be saved in persistence, so there is no need
+            # to export the nodetree
+
+            # return export_nodetree(self.program.pipeline)
+            return self.program.lifespan.persist.nodetree
 
     def save_nodes(self, *, nodetree: NodeTreeN):
         import_nodetree(self.program, nodetree)

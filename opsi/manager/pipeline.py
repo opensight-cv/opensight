@@ -1,4 +1,5 @@
 import logging
+import time
 from dataclasses import fields
 from itertools import chain
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
@@ -103,8 +104,12 @@ class Pipeline:
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
         self.lock = FifoLock(self.program.queue)
+        self.broken = False
 
     def run(self):
+        if self.broken:
+            return
+
         if not self.run_order:
             self.run_order = list(chain.from_iterable(toposort(self.adjList)))
 
@@ -114,6 +119,7 @@ class Pipeline:
 
     def mainloop(self):
         while True:
+            had_problem = False
             try:
                 with self.lock:
                     self.run()
@@ -121,8 +127,14 @@ class Pipeline:
                 LOGGER.debug(
                     "(Harmless?) Error during pipeline mainloop", exc_info=True
                 )
+                had_problem = True
             except:  # todo: wildcard except
                 LOGGER.exception("Error during pipeline mainloop")
+                had_problem = True
+
+            if had_problem or self.broken:
+                # avoid clogging logs with errors
+                time.sleep(0.5)
 
     def create_node(self, func: Type[Function], uuid: UUID):
         """

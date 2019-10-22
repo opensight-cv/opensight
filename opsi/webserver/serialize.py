@@ -217,17 +217,28 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 
 
 class NodeTreeImportError(ValueError):
-    def __init__(self, node: NodeN = None, msg=""):
+    def __init__(self, program, node: NodeN = None, msg="", *, exc_info=True):
+        program.pipeline.clear()
+        program.pipeline.broken = True
+
         self.node = node
-        msg += ": " + str(sys.exc_info()[1].args[0])
 
-        if not self.node:
-            super().__init__(msg)
-        else:
-            super().__init__(f"Node '{self.node.id}' of type '{node.type}' {msg}")
+        # https://github.com/python/cpython/blob/10ecbadb799ddf3393d1fc80119a3db14724d381/Lib/logging/__init__.py#L1572
+        if exc_info:
+            if isinstance(exc_info, BaseException):
+                exc_info = (type(exc_info), exc_info, exc_info.__traceback__)
+            elif not isinstance(exc_info, tuple):
+                exc_info = sys.exc_info()
 
-        # since exc_info == True, this class must not be instantiated outside an `except:` clause
-        LOGGER.debug(f"Error during nodetree import: {self.args[0]}", exc_info=True)
+            msg += ": " + str(exc_info[1].args[0])
+
+        if self.node:
+            msg = f"Node '{self.node.id}' of type '{self.node.type}': {msg}"
+
+        super().__init__(msg)
+
+        # if exc_info == True, this class must not be instantiated outside an `except:` clause
+        LOGGER.debug(f"Error during nodetree import: {msg}", exc_info=exc_info)
 
 
 def _process_node_links(program, node: NodeN) -> List[str]:
@@ -235,21 +246,31 @@ def _process_node_links(program, node: NodeN) -> List[str]:
     empty_links: List[str] = []
 
     link: Optional[LinkN]
+    real_node = program.pipeline.nodes[node.id]
 
-    for name, input in node.inputs.items():
-        if LINKS_INSTEAD_OF_INPUTS:
-            link = input
-        else:
-            link = input.link
+    for name in real_node.func_type.InputTypes.keys():
+        input = node.inputs.get(name)
 
-        if link is None:
+        try:
+            if LINKS_INSTEAD_OF_INPUTS:
+                link = input
+            else:
+                link = input.link
+
+            links[name] = Connection(link.id, link.name)
+
+        except AttributeError:  # input or link was None, or key didn't exist
+            if LINKS_INSTEAD_OF_INPUTS:
+                # there is no input.value to fall back on -> missing link
+                raise NodeTreeImportError(
+                    program, node, f"Missing link '{name}'", exc_info=False
+                )
+
             empty_links.append(name)
-            continue
-
-        links[name] = Connection(link.id, link.name)
 
     program.pipeline.create_links(node.id, links)
 
+    # empty_links used by _process_node_inputs to select input.value
     return empty_links
 
 
@@ -276,12 +297,15 @@ def _process_node_inputs(program, node: NodeN):
 
     for name in empty_links:
         type = real_node.func.InputTypes[name]
+        # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
 
 
 def _process_node_settings(program, node: NodeN):
     if None in node.settings.values():
-        raise NodeTreeImportError(node, "Cannot have None value in settings")
+        raise NodeTreeImportError(
+            program, node, "Cannot have None value in settings", exc_info=False
+        )
 
     real_node = program.pipeline.nodes[node.id]
     real_node.pos = node.pos
@@ -289,12 +313,12 @@ def _process_node_settings(program, node: NodeN):
     try:
         settings = real_node.func_type.Settings(**node.settings)
     except TypeError as e:
-        raise NodeTreeImportError(node, "Missing key in settings") from e
+        raise NodeTreeImportError(program, node, "Missing key in settings") from e
 
     try:
         settings = real_node.func_type.validate_settings(settings)
     except ValueError as e:
-        raise NodeTreeImportError(node, "Invalid settings") from e
+        raise NodeTreeImportError(program, node, "Invalid settings") from e
 
     real_node.settings = settings
 
@@ -320,4 +344,8 @@ def import_nodetree(program, nodetree: NodeTreeN):
                 program.pipeline.nodes[node.id].ensure_init()
             except Exception as e:
                 del program.pipeline.nodes[node.id]
-                raise NodeTreeImportError(node, "Error creating Function") from e
+                raise NodeTreeImportError(
+                    program, node, "Error creating Function"
+                ) from e
+
+        program.pipeline.broken = False
