@@ -721,7 +721,7 @@ $("#" + nodes[list][1])
 var popLoop = function(loop, id) {
     for (let i = 0; i < loop.length; i++) {
         if (loop[i].indexOf(id) != -1) {
-            delete findNodeTreeSpot(
+            var x = findNodeTreeSpot(
                 $("#" + loop[i][1])
                 .parent()
                 .parent()
@@ -730,8 +730,22 @@ var popLoop = function(loop, id) {
                 .substring(0, 36)
             ).inputs[loop[i][1].substring(39)];
 
-            loop.splice(i, 1);
-            list--;
+            if (id.indexOf(x['id']) == -1) {
+                // certified redundant javascript moment
+                delete findNodeTreeSpot(
+                    $("#" + loop[i][1])
+                    .parent()
+                    .parent()
+                    .parent()
+                    .attr("id")
+                    .substring(0, 36)
+                ).inputs[loop[i][1].substring(39)];
+
+                loop.splice(i, 1);
+                list--;
+
+            }
+
         }
     }
 };
