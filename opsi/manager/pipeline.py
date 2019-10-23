@@ -179,5 +179,8 @@ class Pipeline:
 
         # remove deleted nodes
         for uuid in removed:
-            self.nodes[uuid].dispose()
-            del self.nodes[uuid]
+            try:
+                self.nodes[uuid].dispose()
+                del self.nodes[uuid]
+            except KeyError:
+                pass

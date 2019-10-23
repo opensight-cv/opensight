@@ -320,8 +320,10 @@ def _process_node_settings(program, node: NodeN):
                 continue
 
             # throws KeyError on missing, ValueError on invalid
-            settings[field.name] = _process_widget(field.type, node.settings[field.name])
-        
+            settings[field.name] = _process_widget(
+                field.type, node.settings[field.name]
+            )
+
         # throws TypeError on missing
         settings = real_node.func_type.Settings(**settings)
 
@@ -330,7 +332,7 @@ def _process_node_settings(program, node: NodeN):
 
     except (KeyError, TypeError) as e:
         raise NodeTreeImportError(program, node, "Missing key in settings") from e
-    
+
     except ValueError as e:
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 

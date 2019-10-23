@@ -106,7 +106,7 @@ class Lifespan:
 
     def main_loop(self):
         while self._restart:
-            LOGGER.info("OpenSight starting...")
+            LOGGER.info(f"OpenSight starting... version {opsi.__version__}")
             self.event.clear()
             self.make_threads()
             self.event.wait()

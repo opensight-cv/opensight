@@ -1,4 +1,5 @@
 import logging
+
 from opsi.util.path import join
 
 # silence fastapi warning about email-validator

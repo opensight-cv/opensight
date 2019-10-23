@@ -47,7 +47,9 @@ class HSVRange(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        imgBW = cvw.hsv_threshold(inputs.img, self.settings.hue, self.settings.sat, self.settings.val)
+        imgBW = cvw.hsv_threshold(
+            inputs.img, self.settings.hue, self.settings.sat, self.settings.val
+        )
         return self.Outputs(imgBW=imgBW)
 
 
@@ -137,7 +139,8 @@ class FindCenter(Function):
         draw = None
         cnt = None
         mids = []
-        if len(inputs.contours) == 0: return self.Outputs(center=None, visual=inputs.img)
+        if len(inputs.contours) == 0:
+            return self.Outputs(center=None, visual=inputs.img)
         for i in range(len(inputs.contours)):
             cnt = inputs.contours[i]
             x, y, w, h = cv2.boundingRect(cnt)
@@ -148,9 +151,7 @@ class FindCenter(Function):
             draw = inputs.img
             if self.settings.draw:
                 draw = np.copy(inputs.img)
-                cv2.rectangle(
-                    draw, (x, y), (x + w, y + h), (234, 234, 0), thickness=2
-                )
+                cv2.rectangle(draw, (x, y), (x + w, y + h), (234, 234, 0), thickness=2)
                 cv2.circle(draw, midpoint, 10, (0, 0, 255), 3)
                 if len(mids) > 1:
                     mid1 = mids[0]
