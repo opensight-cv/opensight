@@ -24,7 +24,7 @@ class Manager:
 
         self.keys.add(path)
 
-    def discard(self, settings):
+    def dispose(self, settings):
         self.keys.discard(self.make_path(settings))
 
 
@@ -37,7 +37,7 @@ class PutNT(Function):
     @classmethod
     def validate_settings(cls, settings):
         settings.path = settings.path.strip()
-        settings.key = settings.path.key()
+        settings.key = settings.key.strip()
 
         if not settings.path.startswith("/"):
             raise ValueError("You must have an absolute that starts with '/'")
@@ -68,8 +68,8 @@ class PutNT(Function):
 
         return self.Outputs()
 
-    def discard(self):
-        ManagerInstance.discard(self.settings)
+    def dispose(self):
+        ManagerInstance.dispose(self.settings)
 
 
 class PutCoordinate(PutNT):
