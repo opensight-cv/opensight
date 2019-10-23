@@ -7,7 +7,7 @@ logging.getLogger("fastapi").setLevel(logging.ERROR)
 __version__ = "master"
 
 try:
-    with open(join(__file__), "version.py") as f:
+    with open(join(__file__, "version.py")) as f:
         __version__ = f.read().strip()
 except OSError:
     pass
