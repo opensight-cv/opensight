@@ -73,9 +73,7 @@ var nodes = [];
 var boxCenterXOffset = 10;
 var boxCenterYOffset = 10;
 
-setInterval(function() {
-    update();
-}, 30);
+update();
 
 var numOn = 0;
 var nodes = [
@@ -154,6 +152,9 @@ $(document).ready(function() {
 });
 
 function update() {
+    // Instead of setInterval: update at native fps
+    requestAnimationFrame(update);
+
     // don't produce a million errors
     // TODO: mike please fix this i have no idea what this is
     if (!c) {
