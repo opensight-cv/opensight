@@ -31,18 +31,18 @@ def blur(img: Mat, radius: int) -> Mat:
     # return cv2.bilateralFilter(img, -1, radius, radius)
 
 
-def hsl_threshold(img: Mat, hue: Range, sat: Range, lum: Range) -> MatBW:
+def hsv_threshold(img: Mat, hue: Range, sat: Range, lum: Range) -> MatBW:
     """
     Args:
         img: Mat
-        hue: Hue range (min, max) (0 - 180)
+        hue: Hue range (min, max) (0 - 179)
         sat: Saturation range (min, max) (0 - 255)
-        lum: Luminance range (min, max) (0 - 255)
+        lum: Value range (min, max) (0 - 255)
     Returns:
         Black+White Mat
     """
     ranges = tuple(zip(hue, lum, sat))
-    return cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HLS), *ranges)
+    return cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), *ranges)
 
 
 ERODE_DILATE_CONSTS = {

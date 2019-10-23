@@ -1,5 +1,5 @@
-from dataclasses import dataclass, fields, is_dataclass
-from typing import Any, Callable, Dict, FrozenSet, NamedTuple, Type, get_type_hints
+from dataclasses import dataclass, fields, is_dataclass, Field
+from typing import Any, Callable, Dict, FrozenSet, NamedTuple, Type, get_type_hints, List
 
 from starlette.routing import Router
 
@@ -25,7 +25,7 @@ class Function:
     require_restart: FrozenSet[str] = frozenset()
     disabled = False
 
-    SettingTypes: Dict[str, Type]
+    SettingTypes: List[Field]
     InputTypes: Dict[str, Type]
     OutputTypes: Dict[str, Type]
 

@@ -9,20 +9,6 @@ import opsi.modules.fps as fps
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW, RangeType, Slide
 
-OPENCV3 = False
-
-if cv2.__version__[0] == "3":
-    OPENCV3 = True
-
-ERODE_DILATE_CONSTS = {
-    "kernel": None,
-    "anchor": (-1, -1),
-    "borderType": cv2.BORDER_CONSTANT,
-    "borderValue": -1,
-}
-
-FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_LIST, "method": cv2.CHAIN_APPROX_SIMPLE}
-
 __package__ = "opsi.cv"
 __version__ = "0.123"
 
@@ -38,19 +24,19 @@ class Blur(Function):
 
     @dataclass
     class Outputs:
-        blurred: Mat
+        img: Mat
 
     def run(self, inputs):
-        blurredImg = cvw.blur(inputs.img, self.settings.radius)
-        return self.Outputs(blurred=blurredImg)
+        img = cvw.blur(inputs.img, self.settings.radius)
+        return self.Outputs(img=img)
 
 
 class HSVRange(Function):
     @dataclass
     class Settings:
-        hue: RangeType(0, 255)
-        sat: RangeType(0, 255)
-        val: RangeType(0, 255)
+        hue: RangeType(0, 179, decimal=True)
+        sat: RangeType(0, 255, decimal=True)
+        val: RangeType(0, 255, decimal=True)
 
     @dataclass
     class Inputs:
@@ -58,25 +44,11 @@ class HSVRange(Function):
 
     @dataclass
     class Outputs:
-        masked: MatBW
+        imgBW: MatBW
 
     def run(self, inputs):
-        lower = np.array(
-            [
-                self.settings.hue["min"],
-                self.settings.sat["min"],
-                self.settings.val["min"],
-            ]
-        )
-        upper = np.array(
-            [
-                self.settings.hue["max"],
-                self.settings.sat["max"],
-                self.settings.val["max"],
-            ]
-        )
-        masked = cv2.inRange(inputs.img, lower, upper)
-        return self.Outputs(masked=masked)
+        imgBW = cvw.hsv_threshold(inputs.img, self.settings.hue, self.settings.sat, self.settings.val)
+        return self.Outputs(imgBW=imgBW)
 
 
 class Erode(Function):
@@ -84,72 +56,64 @@ class Erode(Function):
     class Settings:
         size: int
 
-    @dataclass
-    class Inputs:
-        img: MatBW
+    @classmethod
+    def validate_settings(cls, settings):
+        if settings.size < 0:
+            raise ValueError("Size cannot be negative")
 
-    @dataclass
-    class Outputs:
-        eroded: MatBW
-
-    def run(self, inputs):
-        eroded = cv2.erode(
-            inputs.img, iterations=round(self.settings.size), **ERODE_DILATE_CONSTS
-        )
-        return self.Outputs(eroded=eroded)
-
-
-class Dilate(Function):
-    @dataclass
-    class Settings:
-        size: int
+        return settings
 
     @dataclass
     class Inputs:
-        img: MatBW
+        imgBW: MatBW
 
     @dataclass
     class Outputs:
-        dilated: MatBW
+        imgBW: MatBW
+
+    @classmethod
+    def _impl(cls, imgBW, size):
+        return cvw.erode(imgBW, size)
 
     def run(self, inputs):
-        dilated = cv2.dilate(
-            inputs.img, iterations=round(self.settings.size), **ERODE_DILATE_CONSTS
-        )
-        return self.Outputs(dilated=dilated)
+        imgBW = self._impl(inputs.imgBW, self.settings.size)
+        return self.Outputs(imgBW=imgBW)
+
+
+class Dilate(Erode):
+    @classmethod
+    def _impl(cls, imgBW, size):
+        return cvw.dilate(imgBW, size)
 
 
 class FindContours(Function):
     @dataclass
     class Inputs:
-        img: MatBW
+        imgBW: MatBW
 
     @dataclass
     class Outputs:
         contours: Contours
 
     def run(self, inputs):
-        if OPENCV3:
-            vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)[1]
-        else:
-            vals = cv2.findContours(inputs.img, **FIND_CONTOURS_CONSTS)[0]
-        return self.Outputs(contours=vals)
+        contours = cvw.find_contours(inputs.imgBW)
+        return self.Outputs(contours=contours)
 
 
 class DrawContours(Function):
     @dataclass
     class Inputs:
-        conts: Contours
+        contours: Contours
         img: Mat
 
     @dataclass
     class Outputs:
-        visual: Mat
+        img: Mat
 
     def run(self, inputs):
         draw = np.copy(inputs.img)
-        cv2.drawContours(draw, inputs.conts, -1, (255, 255, 0), 3)
-        return self.Outputs(visual=draw)
+        cv2.drawContours(draw, inputs.contours, -1, (255, 255, 0), 3)
+        return self.Outputs(img=draw)
 
 
 class FindCenter(Function):
@@ -202,6 +166,8 @@ class FindCenter(Function):
 
 
 class FindAngle(Function):
+    disabled = True
+
     @dataclass
     class Settings:
         draw: bool
@@ -240,11 +206,11 @@ class BitwiseAND(Function):
 
     @dataclass
     class Outputs:
-        result: Mat
+        img: Mat
 
     def run(self, inputs):
-        res = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask)
-        return self.Outputs(result=res)
+        img = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask)
+        return self.Outputs(img=img)
 
 
 class ConvexHulls(Function):
@@ -254,24 +220,25 @@ class ConvexHulls(Function):
 
     @dataclass
     class Outputs:
-        contours_out: Contours
+        contours: Contours
 
     def run(self, inputs):
-        conts = [cv2.convexHull(contour) for contour in inputs.contours]
-        return self.Outputs(contours=conts)
+        contours = [cv2.convexHull(contour) for contour in inputs.contours]
+        return self.Outputs(contours=contours)
 
 
 class MatBWToMat(Function):
     @dataclass
     class Inputs:
-        bwMat: MatBW
+        imgBW: MatBW
 
     @dataclass
     class Outputs:
-        regMat: Mat
+        img: Mat
 
     def run(self, inputs):
-        return self.Outputs(regMat=cv2.cvtColor(inputs.bwMat, cv2.COLOR_GRAY2BGR))
+        img = cv2.cvtColor(inputs.imgBW, cv2.COLOR_GRAY2BGR)
+        return self.Outputs(img=img)
 
 
 class DrawFPS(Function):
@@ -285,12 +252,12 @@ class DrawFPS(Function):
 
     @dataclass
     class Outputs:
-        imgFPS: Mat
+        img: Mat
 
     def run(self, inputs):
         self.f.update()
         fps_str = str(round(self.f.fps(), 1))
-        text = cv2.putText(
+        img = cv2.putText(
             inputs.img,
             fps_str,
             (30, 30),
@@ -299,4 +266,4 @@ class DrawFPS(Function):
             (255, 255, 255),
             lineType=cv2.LINE_AA,
         )
-        return self.Outputs(imgFPS=text)
+        return self.Outputs(img=img)

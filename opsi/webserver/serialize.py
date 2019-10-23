@@ -8,6 +8,7 @@ from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
 from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
+from opsi.manager.types import _RangeBaseType
 from opsi.util.concurrency import FifoLock
 
 from .schema import *
@@ -281,7 +282,7 @@ def _process_widget(type: Type, val):
         #   Convert to Range
         # if type == Slide:
         #   Val needs to be validated
-        val = type.create(*val)
+        val = type.create(**val)
 
     return val
 
@@ -310,13 +311,26 @@ def _process_node_settings(program, node: NodeN):
     real_node = program.pipeline.nodes[node.id]
     real_node.pos = node.pos
 
-    try:
-        settings = real_node.func_type.Settings(**node.settings)
-    except TypeError as e:
-        raise NodeTreeImportError(program, node, "Missing key in settings") from e
+    settings = {}
 
     try:
+        for field in real_node.func_type.SettingTypes:
+            if field.type is None:
+                # field is disabled
+                continue
+
+            # throws KeyError on missing, ValueError on invalid
+            settings[field.name] = _process_widget(field.type, node.settings[field.name])
+        
+        # throws TypeError on missing
+        settings = real_node.func_type.Settings(**settings)
+
+        # throws ValueError on invalid
         settings = real_node.func_type.validate_settings(settings)
+
+    except (KeyError, TypeError) as e:
+        raise NodeTreeImportError(program, node, "Missing key in settings") from e
+    
     except ValueError as e:
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 
