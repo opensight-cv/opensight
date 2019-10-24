@@ -24,17 +24,20 @@ var postGo = function() {
 };
 
 function setIcons(icon) {
-    $("#status-spinner").css("display", (icon == "spinner") ? "block" : "none");
-    $("#status-cross").css("display", (icon == "cross") ? "block" : "none");
-    $("#status-check").css("display", (icon == "check") ? "block" : "none");
+    $("#status-indicator-spinner, #status-indicator-cross, #status-indicator-check").css("display", "none");
+    $("#status-indicator-" + icon).css("display", "block");
 }
 
-var timeout;
-var postRequest = function() {
-    clearTimeout(timeout);
-    timeout = setTimeout(postGo, 750);
+// https://stackoverflow.com/a/1909508
+function delay(fn, ms) {
+    let timer = 0
+    return function(...args) {
+        clearTimeout(timer)
+        timer = setTimeout(fn.bind(this, ...args), ms || 0)
+    }
 }
 
+var postRequest = delay(postGo, 750);
 
 var body = document.querySelector("body");
 // Listening for the mouse and touch events

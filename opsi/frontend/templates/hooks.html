@@ -7,7 +7,7 @@
 <div id="prefs-container">
     <div id="preference">
         <h1>Hooks: {{ packages|length }}</h1>
-        <ul style="list-style-position: inside;">
+        <ul style="list-style-position: inside; line-height: 2; margin: 10px;">
         {% for package in packages %}
             <li><a href="{{ prefix }}/{{ package }}/">{{ package }}</a></li>
         {% else %}
