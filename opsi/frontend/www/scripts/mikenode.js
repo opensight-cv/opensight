@@ -24,8 +24,8 @@ var postGo = function() {
 };
 
 function setIcons(icon) {
-    $("#status-indicator-spinner, #status-indicator-cross, #status-indicator-check").css("display", "none");
-    $("#status-indicator-" + icon).css("display", "block");
+    $(".status-indicator-icon").css("display", "none");
+    $(".status-indicator-" + icon).css("display", "block");
 }
 
 // https://stackoverflow.com/a/1909508
