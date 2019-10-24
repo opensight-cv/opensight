@@ -6,25 +6,35 @@ var nodeTree = {
     nodes: []
 };
 
-var postRequest = function() {
-    $.post(
-        "/api/nodes",
-        JSON.stringify(nodeTree),
-        function() {
-            console.log("Successful post request");
+// https://stackoverflow.com/a/1909508
+var postGo = function() {
+    setIcons("spinner");
+    $.ajax({
+        type: "POST",
+        url: "/api/nodes",
+        data: JSON.stringify(nodeTree),
+        success: function(data) {
+            setIcons("check");
         },
-        "json"
+        error: function(data) {
+            setIcons("cross");
+        }
+    }
     );
 };
 
-// https://stackoverflow.com/a/1909508
-function delay(fn, ms) {
-    let timer = 0
-    return function(...args) {
-        clearTimeout(timer)
-        timer = setTimeout(fn.bind(this, ...args), ms || 0)
-    }
+function setIcons(icon) {
+    $("#status-spinner").css("display", (icon == "spinner") ? "block" : "none");
+    $("#status-cross").css("display", (icon == "cross") ? "block" : "none");
+    $("#status-check").css("display", (icon == "check") ? "block" : "none");
 }
+
+var timeout;
+var postRequest = function() {
+    clearTimeout(timeout);
+    timeout = setTimeout(postGo, 750);
+}
+
 
 var body = document.querySelector("body");
 // Listening for the mouse and touch events
@@ -300,10 +310,10 @@ const intInput = function(name, def) {
             .attr("id")
         ).settings[name] = parseFloat($("#" + this.id + name).val());
         $("#" + this.id + name)
-            .on("keyup mouseup", delay(function(e) {
+            .on("keyup mouseup", function(e) {
                 if (e.which === 46) return false;
                 postRequest();
-            }, 750))
+            })
             .on("input", function() {
                 var self = this;
                 setTimeout(function() {
@@ -347,9 +357,9 @@ const decInput = function(name, def) {
             .attr("id")
         ).settings[name] = parseFloat($("#" + this.id + name).val());
         $("#" + this.id + name)
-            .on("keyup", delay(function(e) {
+            .on("keyup", function(e) {
                 postRequest();
-            }, 750))
+            })
 
         $("#" + this.id + name).on("input", function() {
             findNodeTreeSpot(
@@ -386,9 +396,9 @@ const strInput = function(name, def) {
             .attr("id")
         ).settings[name] = $("#" + this.id + name).val();
         $("#" + this.id + name)
-            .on("keyup", delay(function(e) {
+            .on("keyup", function(e) {
                 postRequest();
-            }, 750))
+            })
         $("#" + this.id + name).on("input", function() {
             findNodeTreeSpot(
                 $(this)
