@@ -22,7 +22,7 @@ def get_w(string):
     if len(camstring) >= 3:
         camtuple = parse_camstring(string)
         return camtuple[1] + camtuple[2]
-    return w + h
+    return 0
 
 
 def get_codec(v4l2_out):

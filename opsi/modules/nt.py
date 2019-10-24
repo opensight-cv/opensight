@@ -78,9 +78,10 @@ class PutCoordinate(PutNT):
         val: tuple()
 
     def run(self, inputs):
-        x, y, *_ = inputs.val
+        if inputs.val:
+            x, y, *_ = inputs.val
 
-        self.table[f"{self.settings.key}-x"] = x
-        self.table[f"{self.settings.key}-y"] = y
+            self.table[f"{self.settings.key}-x"] = x
+            self.table[f"{self.settings.key}-y"] = y
 
         return self.Outputs()

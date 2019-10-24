@@ -135,6 +135,7 @@ class Lifespan:
             self.shutdown_threads()
             return
         self._restart = True
+        self.shutdown_threads()
 
     def shutdown(self, host=False):
         self._restart = False

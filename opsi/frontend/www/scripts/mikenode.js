@@ -300,7 +300,7 @@ const intInput = function(name, def) {
             .attr("id")
         ).settings[name] = parseFloat($("#" + this.id + name).val());
         $("#" + this.id + name)
-            .on("keyup", delay(function(e) {
+            .on("keyup mouseup", delay(function(e) {
                 if (e.which === 46) return false;
                 postRequest();
             }, 750))

@@ -11,7 +11,7 @@
         <tr>
             <td>
                 <div id="preference">
-                    <h1>Update</h1>
+                    <h2>Update</h2>
                     <p>
                         You can get the latest version of OpenSight
                         <a href="https://github.com/opensight-cv/packages/releases">here</a>.
@@ -25,7 +25,7 @@
             </td>
             <td>
                 <div id="preference">
-                    <h1>Actions</h1>
+                    <h2>Actions</h2>
                     {% if daemon %}
                     <input id="restart" type="button" value="Restart OpenSight"/>
                     <input id="restart-host" type="button" value="Restart System"/>
@@ -38,7 +38,7 @@
             </td>
             <td>
                 <div id="preference">
-                    <h1>Profiles</h1>
+                    <h2>Profiles</h2>
                     <p>Current profile: {{persist.profile}}</p>
                     <input id="profile-button" type="button" value="0"/>
                     <input id="profile-button" type="button" value="1"/>
@@ -55,7 +55,7 @@
             </td>
             <td>
                 <div id="preference">
-                    <h1>Import/Export</h1>
+                    <h2>Import/Export</h2>
                     <form id="import-form" enctype="multipart/form-data" method="post" name="import-form">
                         <input type="file" class="bfi" required />
                     </form>
@@ -65,7 +65,7 @@
             </td>
             <td>
                 <div id="preference">
-                    <h1>Network Config</h1>
+                    <h2>Network Config</h2>
                     <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
                         <h3>General</h3>
                         <label for="team-number">Team Number:</label>

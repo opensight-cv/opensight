@@ -15,6 +15,9 @@
 html {
   height: 100%;
 }
+.clear {
+  clear: both;
+}
 /* just to be sure these are full screen*/
 canvas {
   display: block;
@@ -34,7 +37,14 @@ h4 {
   font-weight: bold;
 }
 h1 {
-  padding: 3px;
+  padding: 5px;
+  font-size: larger;
+  text-align: left;
+  margin-left: 2px;
+}
+h3 {
+  font-size: medium;
+  margin-bottom: 3px;
 }
 a {
   color: #551a8b;
@@ -106,7 +116,7 @@ input[type="button"] {
 
 .strInput {
   /* probably hacky */
-  max-width: 180px;
+  max-width: 130px;
 }
 input,
 button {
@@ -170,7 +180,7 @@ input[type="button"]:active {
 }
 .node {
   width: auto;
-  min-width: 220px;
+  min-width: 150px;
   height: auto;
   background-color: #cccccc;
   border: 10px solid #7f7f7f;
@@ -189,13 +199,13 @@ input[type="button"]:active {
 .x {
   border-radius: 9999px;
   border: 6px solid rgb(188, 45, 45);
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   background-color: #cccccc;
   font-weight: bold;
   color: rgb(188, 45, 45);
-  font-size: 40px;
-  line-height: 13px;
+  font-size: 30px;
+  line-height: 11px;
   position: absolute;
   right: -18px;
   top: -18px;
@@ -237,12 +247,14 @@ input[type="button"]:active {
 .input {
   width: 20px;
   height: 20px;
-  margin-bottom: 15px;
-  margin-top: 15px;
+  margin-bottom: 3px;
+  margin-top: 3px;
   background-color: #cccccc;
   border: 6px solid #2dbc4e;
   border-radius: 9999px;
   cursor: not-allowed;
+  position: relative;
+  right: 21px;
 }
 .output {
   width: 20px;
@@ -251,25 +263,27 @@ input[type="button"]:active {
   border: 6px solid #2dbc4e;
   border-radius: 9999px;
   cursor: crosshair;
+  left: 21px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  position: relative;
 }
 .inputContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
   left: -25px;
-  position: absolute;
   justify-content: space-evenly;
   align-items: center;
   height: auto;
 }
 .ioContainer {
-  height: 100px;
+  height: auto;
   position: relative;
 }
 .outputContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
   right: -25px;
-  position: absolute;
   justify-content: space-evenly;
   align-items: center;
   height: 100%;
@@ -284,6 +298,9 @@ input[type="button"]:active {
 }
 .dropdown {
   margin: auto;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-size: 12px;
   margin-top: 25px;
   padding: 5px;
 }
@@ -291,7 +308,8 @@ input[type="button"]:active {
   margin: auto;
   padding: 5px;
   width: 45px;
-  height: 30px;
+  height: 20px;
+  font-size: 14px;
 }
 .sliderOut3 {
   margin: auto;
@@ -302,7 +320,7 @@ input[type="button"]:active {
   text-align: center;
 }
 .itemContainer {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 .sliderOut {
   width: 10%;
@@ -328,12 +346,14 @@ td {
 .ui-slider {
   height: 6px;
   border: 0px;
+  min-width: 150px;
 }
 .ui-slider-range {
   background: #2dbc4e;
 }
 .ui-widget.ui-widget-content {
   border: 0px solid #c5c5c5;
+  border-radius: 10px;
 }
 .ui-state-default,
 .ui-widget-content .ui-state-default,
@@ -424,4 +444,16 @@ input:checked + .slidey:before {
 }
 .slidey.round:before {
   border-radius: 50%;
+}
+.outputDesc {
+    position: relative;
+    left: 80%;
+    text-align: right;
+    pointer-events: none;
+}
+.inputDesc {
+    position: relative;
+    right: 80%;
+    text-align: left;
+    pointer-events: none;
 }

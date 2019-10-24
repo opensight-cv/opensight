@@ -88,5 +88,5 @@ class Api:
     def network(self, *, network: Network):
         self.program.lifespan.persist.network = network
         self.program.lifespan.persist.update_nodetree()
-        self.program.lifespan.shutdown(restart=True)
+        self.program.lifespan.restart()
         return {"team": network.team, "static": network.static}
