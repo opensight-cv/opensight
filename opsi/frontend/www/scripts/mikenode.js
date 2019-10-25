@@ -6,6 +6,11 @@ var nodeTree = {
     nodes: []
 };
 
+$.ajaxSetup({
+    timeout: 10 * 1000,
+    dataType: "json"
+});
+
 // https://stackoverflow.com/a/1909508
 var postGo = function() {
     setIcons("spinner");
@@ -41,14 +46,14 @@ function delay(fn, ms) {
     }
 }
 
-var makePostRequestFunc = function(delay) {
-    var delayPost = delay(postGo, delay);
+var makePostRequestFunc = function(time) {
+    var delayPost = delay(postGo, time);
 
     return function() {
         setGreyscaleIcons();
         delayPost();
     };
-}();
+};
 
 var postRequest = makePostRequestFunc(750);
 var slowPostRequest = makePostRequestFunc(2000);
