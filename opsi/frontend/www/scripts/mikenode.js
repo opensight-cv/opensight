@@ -9,22 +9,26 @@ var nodeTree = {
 // https://stackoverflow.com/a/1909508
 var postGo = function() {
     setIcons("spinner");
-    $.ajax({
+    return $.ajax({
         type: "POST",
         url: "/api/nodes",
         data: JSON.stringify(nodeTree),
-        success: function(data) {
+        success: function() {
             setIcons("check");
         },
-        error: function(data) {
+        error: function() {
             setIcons("cross");
         }
-    }
-    );
+    });
 };
 
+function setGreyscaleIcons() {
+    $(".status-indicator-icon").addClass("status-indicator-greyscale");
+}
+
+// spinner, check, cross
 function setIcons(icon) {
-    $(".status-indicator-icon").css("display", "none");
+    $(".status-indicator-icon").css("display", "none").removeClass("status-indicator-greyscale");
     $(".status-indicator-" + icon).css("display", "block");
 }
 
@@ -37,7 +41,17 @@ function delay(fn, ms) {
     }
 }
 
-var postRequest = delay(postGo, 750);
+var makePostRequestFunc = function(delay) {
+    var delayPost = delay(postGo, delay);
+
+    return function() {
+        setGreyscaleIcons();
+        delayPost();
+    };
+}();
+
+var postRequest = makePostRequestFunc(750);
+var slowPostRequest = makePostRequestFunc(2000);
 
 var body = document.querySelector("body");
 // Listening for the mouse and touch events
@@ -254,7 +268,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
             cancel: ".clicker, input, select",
             stop: function(event, ui) {
                 findNodeTreeSpot(uuid).pos = [$(this).offset().left, $(this).offset().top];
-                postRequest();
+                slowPostRequest();
             }
         });
 
@@ -282,7 +296,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
 
         });
         settingsGo(this.settings);
-
+        slowPostRequest();        
     };
 };
 

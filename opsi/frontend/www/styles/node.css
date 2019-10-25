@@ -27,7 +27,8 @@ body {
   font-family: "DejaVu Sans", sans-serif;
   background-color: #cccccc;
   color: #474448;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 100%;
 }
 h1,
@@ -124,6 +125,15 @@ p {
   border-width: 2px;
   border-style: solid;
   background-color: #ccc;
+
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.status-indicator:hover {
+  background-color: #ddd;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
 }
 
 .status-indicator-icon {
@@ -131,8 +141,43 @@ p {
   height: 80%;
   margin: 10%;
   display: none;
+  overflow: hidden;
 }
 
+.status-indicator-greyscale {
+  filter: gray;
+  -webkit-filter: grayscale(1);
+  filter: grayscale(1);
+
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+.status-indicator-icon-enter {
+  display: block;
+  animation: status-indicator-icon-entering .5s cubic-bezier(0.02, 0.99, 0.76, 1.63);
+}
+
+@keyframes status-indicator-icon-entering {
+  0% { top: -50px; display: block; }
+  100% { top: 0px; display: block; }
+}
+
+.status-indicator-icon-leave {
+  display: block;
+  animation: status-indicator-icon-leaving .5s cubic-bezier(0.02, 0.99, 0.76, 1.63);
+}
+
+@keyframes status-indicator-icon-leaving {
+  0% { top: 0px; display: block; }
+  100% { top: 50px; display: none; }
+}
+
+/* Default icon */
+
+.status-indicator-spinner {
+  display: block;
+}
 
 /* Font Awesome */
 
