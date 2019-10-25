@@ -299,10 +299,10 @@ input[type="button"]:active {
   background-color: #cccccc;
   font-weight: bold;
   color: rgb(188, 45, 45);
-  font-size: 28px;
-  line-height: 17px;
+  font-size: 29px;
+  line-height: 16px;
   position: absolute;
-  right: -12px;
+  right: -17px;
   top: -12px;
 }
 .navItem {
@@ -335,8 +335,8 @@ input[type="button"]:active {
 } */
 .clicker {
   user-select: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   background-color: #cccccc;
   border: 4px solid #2dbc4e;
   margin: 3px 0px;
@@ -379,7 +379,7 @@ input[type="button"]:active {
   display: block;
 }
 .dropdown {
-  margin: auto 10px;
+  margin: 0 auto;
   font-size: 12px;
   padding: 5px;
 }
