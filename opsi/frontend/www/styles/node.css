@@ -127,7 +127,7 @@ p {
   padding: 10px;
   background-color: #ccc;
   bottom: 20px;
-  right: 10%;
+  right: 5%;
   z-index: 60;
 }
 
@@ -154,8 +154,8 @@ p {
   z-index: 10015;
 
   border-radius: 10px;
-  border-color: #7f7f7f;
-  border-width: 2px;
+  border-color: #454545;
+  border-width: 3px;
   border-style: solid;
   background-color: #ccc;
 
@@ -491,20 +491,19 @@ html .ui-button.ui-state-disabled:active {
   margin-right: 12px;
 }
 #menu-container {
-  width: 200px;
+  width: auto;
   position: absolute;
-  right: 50px;
-  top: 40px;
   z-index: 10010;
   background-color: #ccc;
-  border: 10px solid #454545;
-  border-radius: 20px;
-  padding: 25px;
-  font-size: 20px;
+  border: 4px solid #454545;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 16px;
 }
 #menu-container h1{
-  margin-bottom: 20px;
-  font-size: 35px;
+  margin-bottom: 5px;
+  font-size: 20px;
+  text-align: center;
 }
 .menu-division{
   margin-bottom: 8px;
@@ -514,14 +513,14 @@ html .ui-button.ui-state-disabled:active {
   cursor: pointer;
 }
 .menu-button {
-  border: 4px solid #2dbc4e;
-  background-color:#2dbc4e;
-  border-radius: 30px;
+  border: 3px solid #2dbc4e;
+  background-color:#ccc;
+  border-radius: 10px;
   text-align: center;
-  color: #fff;
-  margin: 12px;
+  margin: 5px;
   padding: 5px;
   cursor: pointer;
+  font-size: 18px;
 }
 .switch {
   position: relative;

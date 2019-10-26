@@ -21,21 +21,28 @@ var postGo = function() {
         success: function() {
             setIcons("check");
             setErrMessage(" ");
+            statusError = false;
         },
         error: function(xhr, status, error) {
             setIcons("cross");
-            setErrMessage(error);
+            json = xhr.responseJSON;
+            setErrMessage(json['message']);
+            statusError = true;
         }
     });
 };
 var statusError = false;
 
-$(".status-dropdown").hover(function(){
-    $("#status-content").css("display","block");
-}, function(){
-
-    $("#status-content").css("display","none");
-});
+$(".status-indicator").hover(
+    function() {
+        if (statusError) {
+            $("#status-content").css("display","block");
+        }
+    }, 
+    function() {
+        $("#status-content").css("display","none");
+    }
+);
 
 function setErrMessage(err){
     $("#status-content").text(err);
@@ -194,10 +201,10 @@ $(document).ready(function() {
                     .attr("id")
                 ).inputs[nodes[list][1].substring(39)] = {
                     id: $("#" + nodes[list][0])
-                        .parent()
-                        .parent()
-                        .parent()
-                        .attr("id"),
+                    .parent()
+                    .parent()
+                    .parent()
+                    .attr("id"),
                     name: nodes[list][0].substring(39)
                 };
 
@@ -1114,17 +1121,17 @@ const functions = function(jsonData) {
             if($.inArray(el, typelist) === -1) typelist.push(el);
         });
         $("#menu-container").append(
-            "<h1>New Node</h1>"
+            "<h1>Nodes</h1>"
         )
         for(let i = 0; i < typelist.length; i++){
             $("#menu-container").append(
                 '<div class="menu-division" id ="'+
                 typelist[i]
                 +'">'+"<i class='arrow'id='i"+typelist[i]+"'></i><div class='menu-name'>"+typelist[i]+ "</div><div style='display:none' id='"+typelist[i]+"btns'></div></div></div>"
-                );
+            );
 
         }
-        
+
         for (let i = 0; i < this.rawArr.length; i++) {
             let n = this.rawArr[i][1].slice(0,this.rawArr[i][1].indexOf("/")).split('.').join('-');
             $("#"+n+"btns").append(
@@ -1145,27 +1152,27 @@ const functions = function(jsonData) {
                 go(gType, gArray, gSettings, gInputs, gOutputs, gName);
             });
         }
-        
-    $(".menu-name").on("click", function(){
-        if($('#'+ $(this).text() + 'btns').css("display") == "block"){
-            $( "#i"+$(this).text()  ).css(
-                'transform', 'rotate(-45deg)')
+
+        $(".menu-name").on("click", function(){
+            if($('#'+ $(this).text() + 'btns').css("display") == "block"){
                 $( "#i"+$(this).text()  ).css(
-                '-webkit-transform', 'rotate(-45deg)'
-              );
-            $('#'+ $(this).text() + 'btns').css("display","none");
+                    'transform', 'rotate(-45deg)')
+                $( "#i"+$(this).text()  ).css(
+                    '-webkit-transform', 'rotate(-45deg)'
+                );
+                $('#'+ $(this).text() + 'btns').css("display","none");
 
 
-        }else{
-            $( "#i"+$(this).text()  ).css(
-                'transform', 'rotate(45deg)')
+            }else{
                 $( "#i"+$(this).text()  ).css(
-                '-webkit-transform', 'rotate(45deg)'
-              );
-            $('#'+ $(this).text() + 'btns').css("display","block")
-        }
-        
-    })
+                    'transform', 'rotate(45deg)')
+                $( "#i"+$(this).text()  ).css(
+                    '-webkit-transform', 'rotate(45deg)'
+                );
+                $('#'+ $(this).text() + 'btns').css("display","block")
+            }
+
+        })
     };
 };
 const importNodeTree = function(nodetree, functions) {
