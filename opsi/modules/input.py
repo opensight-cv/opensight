@@ -188,6 +188,7 @@ UndupeInstance = Unduplicator()
 class CameraInput(Function):
     def on_start(self):
         self.cap = create_capture(self.settings)
+        self.cap.read()  # test for errors
 
     @dataclass
     class Settings:
@@ -216,6 +217,7 @@ class CameraInput(Function):
         frame = None
         if self.cap:
             ret, frame = self.cap.read()
+            frame = frame.view(Mat)
         return self.Outputs(img=frame)
 
     def dispose(self):

@@ -363,7 +363,7 @@ def import_nodetree(program, nodetree: NodeTreeN):
                     del program.pipeline.nodes[node.id]
                 except KeyError:
                     pass
-                
+
                 raise NodeTreeImportError(
                     program, node, "Error creating Function"
                 ) from e

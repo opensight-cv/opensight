@@ -113,7 +113,7 @@ class DrawContours(Function):
         img: Mat
 
     def run(self, inputs):
-        draw = np.copy(inputs.img)
+        draw = np.copy(inputs.img.mat)
         cv2.drawContours(draw, inputs.contours, -1, (255, 255, 0), 3)
         return self.Outputs(img=draw)
 
@@ -149,9 +149,9 @@ class FindCenter(Function):
             cy = (y + (y + h)) // 2
             midpoint = (cx, cy)
             mids.append(midpoint)
-            draw = inputs.img
+            draw = inputs.img.mat
             if self.settings.draw:
-                draw = np.copy(inputs.img)
+                draw = np.copy(inputs.img.mat)
                 cv2.rectangle(draw, (x, y), (x + w, y + h), (234, 234, 0), thickness=2)
                 cv2.circle(draw, midpoint, 10, (0, 0, 255), 3)
                 if len(mids) > 1:
@@ -214,7 +214,7 @@ class BitwiseAND(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask)
+        img = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask).view(Mat)
         return self.Outputs(img=img)
 
 
@@ -228,11 +228,13 @@ class ConvexHulls(Function):
         contours: Contours
 
     def run(self, inputs):
-        contours = [cv2.convexHull(contour) for contour in inputs.contours]
+        contours = cv2.convex_hulls(inputs.contours)
         return self.Outputs(contours=contours)
 
 
 class MatBWToMat(Function):
+    disabled = True
+
     @dataclass
     class Inputs:
         imgBW: MatBW
@@ -242,7 +244,7 @@ class MatBWToMat(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cv2.cvtColor(inputs.imgBW, cv2.COLOR_GRAY2BGR)
+        img = inputs.imgBW.mat
         return self.Outputs(img=img)
 
 
@@ -270,5 +272,5 @@ class DrawFPS(Function):
             1.0,
             (255, 255, 255),
             lineType=cv2.LINE_AA,
-        )
+        ).view(Mat)
         return self.Outputs(img=img)

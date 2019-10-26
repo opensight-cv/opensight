@@ -1,15 +1,8 @@
-import logging
 from typing import List, NamedTuple
 
-LOGGER = logging.getLogger(__name__)
+from numpy import ndarray
 
-
-try:
-    from numpy import ndarray
-except ModuleNotFoundError:
-    LOGGER.warning("numpy not found")
-
-    ndarray = object  # for the custom type declarations
+from .cvwrapper import Mat, MatBW
 
 
 class AnyType:
@@ -66,14 +59,6 @@ class RangeType(_RangeBaseType):
 # ndarray doesn't allow me to differentiate between Mat and MatBW
 # NewType is some funky object which is hard to parse
 # Making new classes allows me to do simple equality testing
-
-
-class Mat(ndarray):
-    pass
-
-
-class MatBW(ndarray):
-    pass
 
 
 class Contour(ndarray):

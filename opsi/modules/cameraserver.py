@@ -6,12 +6,12 @@ import threading
 from dataclasses import dataclass
 from datetime import datetime
 
-import cv2
 import jinja2
 import numpy as np
 from starlette.applications import Starlette
 from starlette.routing import Route, Router
 
+import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import Mat, Slide
@@ -332,7 +332,6 @@ class CameraSource:
             except (TypeError, AttributeError):
                 LOGGER.debug("Invalid resolution", exc_info=True)
 
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
         time = datetime.now()
         while True:
 
@@ -354,8 +353,8 @@ class CameraSource:
                 break
 
             if res:
-                mat = cv2.resize(mat, res)
-            img = cv2.imencode(".jpg", mat, encode_param)[1].tobytes()
+                mat = cvw.resize(mat, res)
+            img = cvw.encode_jpg(mat, quality)
 
             yield img
 
