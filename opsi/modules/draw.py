@@ -24,6 +24,7 @@ class DrawContours(Function):
     def run(self, inputs):
         draw = np.copy(inputs.img.mat)
         cv2.drawContours(draw, inputs.contours, -1, (255, 255, 0), 3)
+        draw = draw.view(Mat)
         return self.Outputs(img=draw)
 
 
@@ -44,7 +45,7 @@ class DrawFPS(Function):
         self.f.update()
         fps_str = str(round(self.f.fps(), 1))
         img = cv2.putText(
-            inputs.img,
+            inputs.img.mat,
             fps_str,
             (30, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
@@ -66,5 +67,5 @@ class BitwiseAND(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cv2.bitwise_and(inputs.img, inputs.img, mask=inputs.mask).view(Mat)
+        img = cv2.bitwise_and(inputs.img.mat, inputs.img.mat, mask=inputs.mask.matBW).view(Mat)
         return self.Outputs(img=img)
