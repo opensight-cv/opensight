@@ -132,6 +132,7 @@ class FindCenter(Function):
     class Outputs:
         center: ()
         visual: Mat
+        success: bool
 
     def run(self, inputs):
         midpoint = None
@@ -140,7 +141,7 @@ class FindCenter(Function):
         cnt = None
         mids = []
         if len(inputs.contours) == 0:
-            return self.Outputs(center=(0, 0), visual=inputs.img)
+            return self.Outputs(center=(), success=False, visual=inputs.img)
         for i in range(len(inputs.contours)):
             cnt = inputs.contours[i]
             x, y, w, h = cv2.boundingRect(cnt)
@@ -166,7 +167,7 @@ class FindCenter(Function):
 
             offset = (imgw - midpoint[0], imgh - midpoint[1])
             normalized = (offset[0] / -imgw, offset[1] / -imgh)
-        return self.Outputs(center=normalized, visual=draw)
+        return self.Outputs(center=normalized, success=True, visual=draw)
 
 
 class FindAngle(Function):

@@ -121,6 +121,20 @@ if (c) {
     c.height = window.innerHeight;
     var ctx = c.getContext("2d");
 }
+
+function checkTypes(type1, type2) {
+    if (type2 == "any") {
+        return true;
+    }
+    if (type1 == "mbw" && type2 == "Mat") {
+        return true;
+    }
+    if (type1 == type2) {
+        return true;
+    }
+    return false;
+}
+
 $(document).ready(function() {
     //add input first
     $("body").on("mousedown", ".clicker", function() {
@@ -147,8 +161,8 @@ $(document).ready(function() {
             .attr("class") == "inputContainer"
         ) {
             if (inHand) {
-                if ((nodes[list][0].substring(36, 39) == $(this).attr("id").substring(36, 39) || $(this).attr("id").substring(36, 39) == "any" ) && !searchForInput(nodes, $(this).attr("id"))
-                ) {
+                if (checkTypes(nodes[list][0].substring(36, 39), $(this).attr("id").substring(36, 39)) && !searchForInput(nodes, $(this).attr("id")))
+                {
                     nodes[list].push($(this).attr("id"));
                     inHand = false;
                 } else {
@@ -904,7 +918,7 @@ const functions = function(jsonData) {
                         ]);
                     }
                     break;
-                case "boolean":
+                case "bol":
                     if (typeof this.rawArr[i][2][x].params.default != "undefined") {
                         this.settings[this.settingsCount].push([
                             x,
@@ -1144,7 +1158,7 @@ const importNodeTree = function(nodetree, functions) {
                             nodetree.nodes[i].settings[x]
                         );
                         break;
-                    case "boolean":
+                    case "bol":
                         if (nodetree.nodes[i].settings[x]) {
                             $("#" + nodetree.nodes[i].id + x).prop("checked", true);
                         } else {

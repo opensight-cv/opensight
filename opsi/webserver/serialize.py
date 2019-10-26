@@ -49,7 +49,7 @@ def _tuple_serialize(type):
 
 _type_name: Dict[Type, str] = {
     float: "dec",
-    bool: "boolean",
+    bool: "bol",
     MatBW: "mbw",
     Contour: "cnt",
     Contours: "cts",
