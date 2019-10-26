@@ -49,14 +49,16 @@ class PutNT(Function):
         if "/" in settings.key:
             raise ValueError("Key cannot have '/' in it")
 
-        fullPath = (settings.path, settings.key)
-        if not UndupeInstance.add(fullPath):
-            raise ValueError("Cannot have duplicate NetworkTables paths")
-
         return settings
 
     def on_start(self):
+        self.validate_paths()
         self.table = NetworkDict(self.settings.path)
+
+    def validate_paths(self):
+        fullPath = (self.settings.path, self.settings.key)
+        if not UndupeInstance.add(fullPath):
+            raise ValueError("Cannot have duplicate NetworkTables paths")
 
     @dataclass
     class Settings:
@@ -78,32 +80,17 @@ class PutNT(Function):
 
 
 class PutCoordinate(PutNT):
-    @dataclass
-    class Inputs:
-        val: tuple()
-
-    @classmethod
-    def validate_settings(cls, settings):
-        settings.path = settings.path.strip()
-        settings.key = settings.key.strip()
-
-        if not settings.path.startswith("/"):
-            raise ValueError("You must have an absolute that starts with '/'")
-
-        if not settings.key:
-            raise ValueError("Key cannot be empty")
-
-        if "/" in settings.key:
-            raise ValueError("Key cannot have '/' in it")
-
-        x = (settings.path, f"{settings.key}-x")
-        y = (settings.path, f"{settings.key}-y")
+    def validate_paths(self):
+        x = (self.settings.path, f"{self.settings.key}-x")
+        y = (self.settings.path, f"{self.settings.key}-y")
         xSuccess = UndupeInstance.add(x)
         ySuccess = UndupeInstance.add(y)
         if not xSuccess or not ySuccess:
             raise ValueError("Cannot have duplicate NetworkTables paths")
 
-        return settings
+    @dataclass
+    class Inputs:
+        val: tuple()
 
     def run(self, inputs):
         if inputs.val:

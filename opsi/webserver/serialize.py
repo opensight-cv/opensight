@@ -367,5 +367,10 @@ def import_nodetree(program, nodetree: NodeTreeN):
                 raise NodeTreeImportError(
                     program, node, "Error creating Function"
                 ) from e
+        try:
+            program.pipeline.run()
+        except Exception as e:
+            program.pipeline.broken = True
+            raise NodeTreeImportError(program, node, f"Failed test run due to '{e}'")
 
         program.pipeline.broken = False

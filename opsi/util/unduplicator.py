@@ -1,15 +1,17 @@
 class Unduplicator:
     def __init__(self):
-        self.keys = []
+        self.keys = set()
 
     def add(self, key):
         if key in self.keys:
             return False
-        self.keys.append(key)
+        self.keys.add(key)
         return True
 
     def remove(self, key):
-        if key not in self.keys:
-            return False
-        self.keys.remove(key)
-        return True
+        try:
+            self.keys.discard(key)
+            return True
+        except KeyError:
+            pass
+        return False

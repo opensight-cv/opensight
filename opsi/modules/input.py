@@ -187,6 +187,10 @@ UndupeInstance = Unduplicator()
 
 class CameraInput(Function):
     def on_start(self):
+        camNum = parse_camstring(self.settings.mode)[0]
+        if not UndupeInstance.add(camNum):
+            raise ValueError(f"Camera {camNum} already in use")
+
         self.cap = create_capture(self.settings)
         self.cap.read()  # test for errors
 
@@ -204,14 +208,6 @@ class CameraInput(Function):
     @dataclass
     class Outputs:
         img: Mat
-
-    @classmethod
-    def validate_settings(cls, settings):
-        camNum = parse_camstring(settings.mode)[0]
-        if not UndupeInstance.add(camNum):
-            raise ValueError(f"Camera {camNum} already in use")
-
-        return settings
 
     def run(self, inputs):
         frame = None
