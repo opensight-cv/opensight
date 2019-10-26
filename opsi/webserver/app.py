@@ -32,6 +32,7 @@ class WebServer:
                 "settings.html",
                 persist=self.program.lifespan.persist,
                 daemon=self.program.lifespan.using_systemd,
+                version=self.program.lifespan.VERSION,
             ),
         )
 

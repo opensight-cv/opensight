@@ -613,4 +613,10 @@ input:checked + .slidey:before {
     text-align: left;
     pointer-events: none;
 }
-
+.version-display {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-weight: bold;
+    font-size: 16px;
+}
