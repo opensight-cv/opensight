@@ -39,13 +39,12 @@ h4 {
 }
 #container h1 {
   padding: 5px;
-  font-size: larger;
+  font-size: medium;
   text-align: center;
   margin-left: 2px;
 }
 h3 {
-  font-size: medium;
-  margin-bottom: 3px;
+  font-size: smaller;
 }
 a {
   color: #551a8b;
@@ -247,12 +246,12 @@ input[type="button"] {
 
 .strInput {
   /* probably hacky */
-  max-width: 130px;
+  max-width: 85px;
 }
 input,
 button {
   font-family: "DejaVu Sans", sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   padding: 5px 6px;
   color: #444;
   border-radius: 5px;
@@ -308,7 +307,7 @@ input[type="button"]:active {
 }
 .node {
   width: auto;
-  min-width: 150px;
+  min-width: 120px;
   height: auto;
   background-color: #cccccc;
   border: 6px solid #7f7f7f;
@@ -414,7 +413,8 @@ input[type="button"]:active {
 .dropdown {
   margin: 0 auto;
   font-size: 12px;
-  padding: 5px;
+  padding: 2px;
+  max-width: 185px;
 }
 .numInput {
   margin: auto;
@@ -432,7 +432,6 @@ input[type="button"]:active {
   text-align: center;
 }
 .itemContainer {
-  margin-bottom: 5px;
 }
 .sliderOut {
   width: 10%;
@@ -498,14 +497,14 @@ html .ui-button.ui-state-disabled:active {
   border: 4px solid #454545;
   border-radius: 10px;
   overflow: hidden;
-  font-size: 16px;
+  font-size: 14px;
   top: 15px;
   right: 15px;
   min-width: 190px;
 }
 #menu-container h1 {
   margin: 5px;
-  font-size: 20px;
+  font-size: 16px;
   text-align: center;
 }
 #menu-container-modules {
@@ -519,7 +518,7 @@ html .ui-button.ui-state-disabled:active {
   border-top-width: 2px;
 }
 .menu-division {
-  padding: 4px;
+  padding: 2px;
 }
 .menu-name{
   display: inline;
@@ -542,9 +541,9 @@ html .ui-button.ui-state-disabled:active {
   border-radius: 10px;
   text-align: center;
   margin: 4px;
-  padding: 4px;
+  padding: 3px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   min-width: 125px;
   margin-left: 0px;
   margin-right: 0px;
