@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from opsi.manager.manager_schema import Function
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import AnyType
+from opsi.util.unduplicator import Unduplicator
 
 __package__ = "opsi.nt"
 __version__ = "0.123"
@@ -28,7 +29,7 @@ class Manager:
         self.keys.discard(self.make_path(settings))
 
 
-ManagerInstance = Manager()
+UndupeInstance = Unduplicator()
 
 
 class PutNT(Function):
@@ -48,10 +49,13 @@ class PutNT(Function):
         if "/" in settings.key:
             raise ValueError("Key cannot have '/' in it")
 
+        fullPath = (settings.path, settings.key)
+        if not UndupeInstance.add(fullPath):
+            raise ValueError("Cannot have duplicate NetworkTables paths")
+
         return settings
 
     def on_start(self):
-        ManagerInstance.add(self.settings)
         self.table = NetworkDict(self.settings.path)
 
     @dataclass
@@ -69,13 +73,37 @@ class PutNT(Function):
         return self.Outputs()
 
     def dispose(self):
-        ManagerInstance.dispose(self.settings)
+        fullPath = (self.settings.path, self.settings.key)
+        UndupeInstance.remove(fullPath)
 
 
 class PutCoordinate(PutNT):
     @dataclass
     class Inputs:
         val: tuple()
+
+    @classmethod
+    def validate_settings(cls, settings):
+        settings.path = settings.path.strip()
+        settings.key = settings.key.strip()
+
+        if not settings.path.startswith("/"):
+            raise ValueError("You must have an absolute that starts with '/'")
+
+        if not settings.key:
+            raise ValueError("Key cannot be empty")
+
+        if "/" in settings.key:
+            raise ValueError("Key cannot have '/' in it")
+
+        x = (settings.path, f"{settings.key}-x")
+        y = (settings.path, f"{settings.key}-y")
+        xSuccess = UndupeInstance.add(x)
+        ySuccess = UndupeInstance.add(y)
+        if not xSuccess or not ySuccess:
+            raise ValueError("Cannot have duplicate NetworkTables paths")
+
+        return settings
 
     def run(self, inputs):
         if inputs.val:
@@ -85,3 +113,9 @@ class PutCoordinate(PutNT):
             self.table[f"{self.settings.key}-y"] = y
 
         return self.Outputs()
+
+    def dispose(self):
+        x = (self.settings.path, f"{self.settings.key}-x")
+        y = (self.settings.path, f"{self.settings.key}-y")
+        UndupeInstance.remove(x)
+        UndupeInstance.remove(y)

@@ -61,6 +61,7 @@ class Api:
         import_nodetree(self.program, nodetree)
         # only save if successful import
         self.program.lifespan.persist.nodetree = nodetree
+        return nodetree
 
     def upgrade(self, file: UploadFile = File(...)):
         upgrade_opsi(file, self.program.lifespan)

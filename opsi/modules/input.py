@@ -8,6 +8,7 @@ import cv2
 
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat
+from opsi.util.unduplicator import Unduplicator
 
 LOGGER = logging.getLogger(__name__)
 ENABLE_RES = False
@@ -181,6 +182,9 @@ def create_capture(settings):
     return cap
 
 
+UndupeInstance = Unduplicator()
+
+
 class CameraInput(Function):
     def on_start(self):
         self.cap = create_capture(self.settings)
@@ -200,8 +204,20 @@ class CameraInput(Function):
     class Outputs:
         img: Mat
 
+    @classmethod
+    def validate_settings(cls, settings):
+        camNum = parse_camstring(settings.mode)[0]
+        if not UndupeInstance.add(camNum):
+            raise ValueError(f"Camera {camNum} already in use")
+
+        return settings
+
     def run(self, inputs):
         frame = None
         if self.cap:
             ret, frame = self.cap.read()
         return self.Outputs(img=frame)
+
+    def dispose(self):
+        camNum = parse_camstring(self.settings.mode)[0]
+        UndupeInstance.remove(camNum)
