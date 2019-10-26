@@ -127,11 +127,18 @@ class Function:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.alive = True
-        self.on_start()
+
+        try:
+            self.on_start()
+        except:
+            self.dispose()
+            raise
 
     def _private_dispose(self):
-        self._dispose()
-        self.alive = False
+        try:
+            self._dispose()
+        finally:
+            self.alive = False
 
     def _private_run(self, inputs) -> Outputs:
         if not self.alive:

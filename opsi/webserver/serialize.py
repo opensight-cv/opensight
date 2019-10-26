@@ -231,7 +231,7 @@ class NodeTreeImportError(ValueError):
             elif not isinstance(exc_info, tuple):
                 exc_info = sys.exc_info()
 
-            msg += ": " + str(exc_info[1].args[0])
+            msg += ": " + str(exc_info[1])
 
         if self.node:
             msg = f"Node '{self.node.id}' of type '{self.node.type}': {msg}"
@@ -359,7 +359,11 @@ def import_nodetree(program, nodetree: NodeTreeN):
             try:
                 program.pipeline.nodes[node.id].ensure_init()
             except Exception as e:
-                del program.pipeline.nodes[node.id]
+                try:
+                    del program.pipeline.nodes[node.id]
+                except KeyError:
+                    pass
+                
                 raise NodeTreeImportError(
                     program, node, "Error creating Function"
                 ) from e
