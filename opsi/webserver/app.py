@@ -6,6 +6,7 @@ from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from opsi.util.networking import get_server_url
 from opsi.util.templating import TemplateFolder
@@ -21,6 +22,7 @@ class WebServer:
         self.program = program
 
         self.app = Starlette(debug=True)
+        self.app.add_middleware(CacheControlMiddleware)
 
         self.url = get_server_url(program.lifespan.persist.network, port, prefix)
         self.template = TemplateFolder(join(frontend, "templates"))
@@ -82,3 +84,10 @@ class WebServer:
 
     def set_nodes(self, data: str) -> str:
         return self.testclient.post("/api/nodes", data)
+
+
+class CacheControlMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-cache public max-age=5"
+        return response
