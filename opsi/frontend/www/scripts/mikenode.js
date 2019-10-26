@@ -300,10 +300,13 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
         );
         $("#" + this.uuid).draggable({
             cancel: ".clicker, input, select",
-            stop: function(event, ui) {
+            stop: function() {
                 findNodeTreeSpot(uuid).pos = [$(this).offset().left, $(this).offset().top];
                 slowPostRequest();
-            }
+            },
+            grid: [1, 1],
+            start: setGreyscaleIcons,
+            stack: ".node"
         });
 
         $("#x" + this.uuid).on("click", function() {
@@ -1058,7 +1061,7 @@ const functions = function(jsonData) {
                     this.inputs[i],
                     this.outputs[i],
                     this.name[i],
-                    pos
+                    [Math.round(pos[0]), Math.round(pos[1])]
                 );
                 nodeTree.nodes.push({
                     type: type,
@@ -1071,6 +1074,10 @@ const functions = function(jsonData) {
         }
     };
 
+    var posCounter = 0;
+    var posOffset = 20;
+    var posMax = 5;
+
     var go = function(type, arr, set, inp, out, name) {
         for (let i = 0; i < arr.length; i++) {
             if (arr[i][1] === type) {
@@ -1082,7 +1089,7 @@ const functions = function(jsonData) {
                     inp[i],
                     out[i],
                     name[i],
-                    [0, 0]
+                    [80 + (posCounter * posOffset), 20 + (posCounter * posOffset)]
                 );
                 nodeTree.nodes.push({
                     type: type,
@@ -1091,6 +1098,7 @@ const functions = function(jsonData) {
                     inputs: {}
                 });
                 functionNode.create();
+                posCounter = (posCounter + 1) % posMax;
             }
         }
     };
