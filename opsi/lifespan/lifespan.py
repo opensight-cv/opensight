@@ -6,7 +6,6 @@ import threading
 from os import listdir
 from os.path import isdir, isfile, splitext
 
-import uvloop
 from networktables import NetworkTables
 from pystemd.systemd1 import Unit
 

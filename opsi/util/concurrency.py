@@ -3,7 +3,10 @@ import logging
 import threading
 import time
 
-import uvloop
+try:
+    import uvloop
+except ImportError:
+    import asyncio as uvloop
 
 LOGGER = logging.getLogger(__name__)
 
