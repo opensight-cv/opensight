@@ -9,7 +9,7 @@
 }
 * {
   margin: 0;
-  padding: 0;
+  padding: 0px;
 }
 /* to remove the top and left whitespace */
 html {
@@ -488,7 +488,7 @@ html .ui-button.ui-state-disabled:active {
   border-radius: 0px;
 }
 .arrow{
-  margin-right: 12px;
+  margin-right: 2px;
 }
 #menu-container {
   width: auto;
@@ -501,7 +501,7 @@ html .ui-button.ui-state-disabled:active {
   font-size: 16px;
   top: 15px;
   right: 15px;
-  min-width: 160px;
+  min-width: 190px;
 }
 #menu-container h1 {
   margin: 5px;
@@ -512,28 +512,42 @@ html .ui-button.ui-state-disabled:active {
   max-height: calc(100vh - 170px);
   overflow-y: auto;
 
-  padding: 15px;
+  padding: 20px;
   padding-top: 0px;
 
   border: 0px solid #666;
   border-top-width: 2px;
 }
 .menu-division {
-  padding: 2px;
+  padding: 4px;
 }
 .menu-name{
   display: inline;
   cursor: pointer;
+  padding: 4px;
+  white-space: nowrap;
+}
+.menu-selector {
+    position: relative;
+}
+.menu-selector:after {
+    content:'';
+    position:absolute;
+    top:-10px; bottom:-5px; 
+    left:-20px; right:-20px; 
 }
 .menu-button {
   border: 3px solid #2dbc4e;
   background-color:#ccc;
   border-radius: 10px;
   text-align: center;
-  margin: 5px;
-  padding: 5px;
+  margin: 4px;
+  padding: 4px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
+  min-width: 125px;
+  margin-left: 0px;
+  margin-right: 0px;
 }
 .switch {
   position: relative;
@@ -599,3 +613,4 @@ input:checked + .slidey:before {
     text-align: left;
     pointer-events: none;
 }
+

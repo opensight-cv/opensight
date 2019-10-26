@@ -1124,7 +1124,7 @@ const functions = function(jsonData) {
             $("#menu-container-modules").append(
                 '<div class="menu-division" id ="'+
                 typelist[i]
-                +'">'+"<i class='arrow'id='i"+typelist[i]+"'></i><div class='menu-name'>"+typelist[i]+ "</div><div style='display:none' id='"+typelist[i]+"btns'></div></div></div>"
+                +'">'+"<div class='menu-selector'><i class='arrow'id='i"+typelist[i]+"'></i><div class='menu-name'>"+typelist[i]+ "</div></div><div style='display:none' id='"+typelist[i]+"btns'></div></div></div>"
             );
 
         }
@@ -1150,23 +1150,24 @@ const functions = function(jsonData) {
             });
         }
 
-        $(".menu-name").on("click", function(){
-            if($('#'+ $(this).text() + 'btns').css("display") == "block"){
-                $( "#i"+$(this).text()  ).css(
+        $(".menu-selector").on("click", function(){
+            var name = $(this).find(".menu-name").text();
+            if($('#' + name + 'btns').css("display") == "block"){
+                $( "#i" + name  ).css(
                     'transform', 'rotate(-45deg)')
-                $( "#i"+$(this).text()  ).css(
+                $( "#i" + name  ).css(
                     '-webkit-transform', 'rotate(-45deg)'
                 );
-                $('#'+ $(this).text() + 'btns').css("display","none");
+                $('#'+ name + 'btns').css("display","none");
 
 
             }else{
-                $( "#i"+$(this).text()  ).css(
+                $( "#i" + name  ).css(
                     'transform', 'rotate(45deg)')
-                $( "#i"+$(this).text()  ).css(
+                $( "#i" + name  ).css(
                     '-webkit-transform', 'rotate(45deg)'
                 );
-                $('#'+ $(this).text() + 'btns').css("display","block")
+                $('#'+ name + 'btns').css("display","block")
             }
 
         })
