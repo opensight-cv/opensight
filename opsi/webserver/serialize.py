@@ -8,7 +8,7 @@ from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
 from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
-from opsi.manager.types import _RangeBaseType
+from opsi.manager.types import RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
 from .schema import *
@@ -276,13 +276,13 @@ def _process_node_links(program, node: NodeN) -> List[str]:
 
 
 def _process_widget(type: Type, val):
-    if isinstance(type, _RangeBaseType):
-        # if type == RangeType:
-        #   Val is a Tuple[float, float]
-        #   Convert to Range
-        # if type == Slide:
-        #   Val needs to be validated
+    if isinstance(type, RangeType):
+        # Val is a Tuple[float, float]
+        # Convert to Range
         val = type.create(**val)
+    elif isinstance(type, Slide):
+        # Val needs to be validated
+        val = type.create(val)
 
     return val
 
