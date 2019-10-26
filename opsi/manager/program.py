@@ -28,7 +28,7 @@ class Program:
         try:
             func = self.manager.funcs[func_type]
         except KeyError:
-            LOGGER.error("Function not found! %s", func_type)
+            raise ValueError(f"Function {func_type} not found")
 
         return self.pipeline.create_node(func, uuid)
 

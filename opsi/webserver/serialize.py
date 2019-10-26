@@ -347,7 +347,10 @@ def import_nodetree(program, nodetree: NodeTreeN):
 
         for node in nodetree.nodes:
             if node.id not in program.pipeline.nodes:
-                program.create_node(node.type, node.id)
+                try:
+                    program.create_node(node.type, node.id)
+                except KeyError as e:
+                    raise NodeTreeImportError from e
 
         for node in nodetree.nodes:
             _process_node_settings(program, node)

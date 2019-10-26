@@ -2,20 +2,16 @@ import glob
 import logging
 import re
 import subprocess
-from dataclasses import dataclass
 
 import cv2
 
-from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat
-from opsi.util.unduplicator import Unduplicator
 
 LOGGER = logging.getLogger(__name__)
-ENABLE_RES = False
-ENABLE_FPS = False
 
 __package__ = "opsi.input"
-__version__ = "0.123"
+
+ENABLE_RES = False
+ENABLE_FPS = False
 
 
 def get_w(string):
@@ -182,40 +178,40 @@ def create_capture(settings):
     return cap
 
 
-UndupeInstance = Unduplicator()
+# UndupeInstance = Unduplicator()
 
 
-class CameraInput(Function):
-    def on_start(self):
-        camNum = parse_camstring(self.settings.mode)[0]
-        if not UndupeInstance.add(camNum):
-            raise ValueError(f"Camera {camNum} already in use")
+# class CameraInput(Function):
+#     def on_start(self):
+#         camNum = parse_camstring(self.settings.mode)[0]
+#         if not UndupeInstance.add(camNum):
+#             raise ValueError(f"Camera {camNum} already in use")
 
-        self.cap = create_capture(self.settings)
-        self.cap.read()  # test for errors
+#         self.cap = create_capture(self.settings)
+#         self.cap.read()  # test for errors
 
-    @dataclass
-    class Settings:
-        mode: get_modes()
-        brightness: int = 50
-        contrast: int = 50
-        saturation: int = 50
-        exposure: int = 50
-        width: controls() = None
-        height: controls() = None
-        fps: controls(True) = None
+#     @dataclass
+#     class Settings:
+#         mode: get_modes()
+#         brightness: int = 50
+#         contrast: int = 50
+#         saturation: int = 50
+#         exposure: int = 50
+#         width: controls() = None
+#         height: controls() = None
+#         fps: controls(True) = None
 
-    @dataclass
-    class Outputs:
-        img: Mat
+#     @dataclass
+#     class Outputs:
+#         img: Mat
 
-    def run(self, inputs):
-        frame = None
-        if self.cap:
-            ret, frame = self.cap.read()
-            frame = frame.view(Mat)
-        return self.Outputs(img=frame)
+#     def run(self, inputs):
+#         frame = None
+#         if self.cap:
+#             ret, frame = self.cap.read()
+#             frame = frame.view(Mat)
+#         return self.Outputs(img=frame)
 
-    def dispose(self):
-        camNum = parse_camstring(self.settings.mode)[0]
-        UndupeInstance.remove(camNum)
+#     def dispose(self):
+#         camNum = parse_camstring(self.settings.mode)[0]
+#         UndupeInstance.remove(camNum)

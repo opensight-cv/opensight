@@ -501,6 +501,7 @@ html .ui-button.ui-state-disabled:active {
   font-size: 16px;
   top: 15px;
   right: 15px;
+  min-width: 160px;
 }
 #menu-container h1{
   margin-bottom: 5px;

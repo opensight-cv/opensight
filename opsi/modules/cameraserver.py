@@ -2,23 +2,18 @@ import asyncio
 import logging
 import queue
 import re
-import threading
-from dataclasses import dataclass
 from datetime import datetime
 
 import jinja2
-import numpy as np
-from starlette.applications import Starlette
 from starlette.routing import Route, Router
 
 import opsi.manager.cvwrapper as cvw
-from opsi.manager.manager_schema import Function, Hook
+from opsi.manager.manager_schema import Hook
 from opsi.manager.netdict import NetworkDict
-from opsi.manager.types import Mat, Slide
-from opsi.util.concurrency import AsyncThread, ShutdownThread, Snippet
+from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.templating import LiteralTemplate
 
-__package__ = "opsi.cameraserver"
+__package__ = "opsi.camserv"
 __version__ = "0.123"
 
 LOGGER = logging.getLogger(__name__)
@@ -212,7 +207,7 @@ class MjpegResponse:
 # -----------------------------------------------------------------------------
 
 
-class Hook(Hook):
+class CamHook(Hook):
     # Matches both "camera.mjpg" and "camera.mjpeg"
     ROUTE_URL = "/{func}.mjpe?g"  # Route to bind to
     STREAM_URL = "/{func}.mjpeg"  # Canonical path
@@ -282,9 +277,6 @@ class Hook(Hook):
 
         self.netdict.delete_table(self.CAMERA_NAME.format(func=func.id))
         self._update()
-
-
-HookInstance = Hook()
 
 
 class CameraSource:
@@ -367,38 +359,3 @@ class CameraSource:
         self._shutdown = True
         self.img = None
         self.thread.shutdown()
-
-
-class CameraServer(Function):
-    has_sideeffect = True
-
-    @classmethod
-    def validate_settings(cls, settings):
-        settings.name = settings.name.strip()
-
-        return settings
-
-    def on_start(self):
-        self.src = CameraSource()
-        HookInstance.register(self)
-
-    @dataclass
-    class Settings:
-        name: str = "camera"
-
-    @dataclass
-    class Inputs:
-        img: Mat
-
-    def run(self, inputs):
-        self.src.img = inputs.img
-        return self.Outputs()
-
-    def dispose(self):
-        self.src.shutdown()
-        HookInstance.unregister(self)
-
-    # Returns a unique string for each CameraServer instance
-    @property
-    def id(self):
-        return self.settings.name
