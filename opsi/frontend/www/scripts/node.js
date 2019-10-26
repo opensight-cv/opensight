@@ -9,7 +9,7 @@ $(function () {
 
     // If any of these .then()s fail, there will be no checkmark 
 
-    $.get("/api/funcs") // Download functions
+    $.get("../dev/funcs.json") // Download functions
     .then(function (data) { // Load functions
         try {
             funct = new functions(data);
