@@ -1120,11 +1120,8 @@ const functions = function(jsonData) {
         $.each(dir, function(i, el){
             if($.inArray(el, typelist) === -1) typelist.push(el);
         });
-        $("#menu-container").append(
-            "<h1>Nodes</h1>"
-        )
         for(let i = 0; i < typelist.length; i++){
-            $("#menu-container").append(
+            $("#menu-container-modules").append(
                 '<div class="menu-division" id ="'+
                 typelist[i]
                 +'">'+"<i class='arrow'id='i"+typelist[i]+"'></i><div class='menu-name'>"+typelist[i]+ "</div><div style='display:none' id='"+typelist[i]+"btns'></div></div></div>"
