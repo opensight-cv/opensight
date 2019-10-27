@@ -125,24 +125,20 @@ class AsyncThread(ShutdownThread):
         thread.daemon = True
         return thread
 
-    async def __monitor_coro__(self, coro):
-        try:
-            task = asyncio.create_task(coro)
-            self.tasks.append(task)
-            await asyncio.wait_for(task)
-            self.tasks.remove(task)
-        except asyncio.CancelledError:
-            LOGGER.debug("Coroutine being monitored was cancelled", exc_info=True)
+    async def async_run_coro(self, coro):
+        task = asyncio.create_task(coro)
+        self.tasks.append(task)
 
     def run_coro(self, coro):
-        asyncio.run_coroutine_threadsafe(self.__monitor_coro__(coro), self.loop)
+        asyncio.run_coroutine_threadsafe(self.async_run_coro(coro), self.loop)
 
     def __stop__(self):
         timer = threading.Timer(self.timeout, self.terminate)
         timer.start()
         # hoping that the coroutines stop themselves properly since we don't give them an event
         for task in self.tasks:
-            task.cancel()
+            if not (task.done() and task.cancelled()):
+                task.cancel()
             if self._terminate:
                 LOGGER.error("Failed to gracefully stop thread %s", self.name)
                 return
