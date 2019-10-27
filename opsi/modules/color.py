@@ -46,3 +46,17 @@ class HSVRange(Function):
             inputs.img, self.settings.hue, self.settings.sat, self.settings.val
         )
         return self.Outputs(imgBW=imgBW)
+
+
+class Greyscale(Function):
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        img: Mat
+
+    def run(self, inputs):
+        img = cvw.greyscale(inputs.img)
+        return self.Outputs(img=img)
