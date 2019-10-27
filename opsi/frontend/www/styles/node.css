@@ -87,6 +87,16 @@ p {
   display: inline;
   max-width: 18%;
 }
+/* https://stackoverflow.com/a/4298216 */
+#team-number::-webkit-outer-spin-button,
+#team-number::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+#team-number {
+    -moz-appearance:textfield; /* Firefox */
+}
 .preference .profile-button {
   display: inline;
   margin: 0px;
@@ -103,10 +113,14 @@ p {
   background-position: 0 0, 25px 25px;
   background-size: 50px 50px;
   background-attachment: local;
+  text-align: left;
+  display: table-row;
 }
 #prefs-container {
   text-align: center;
-  display: inline;
+  display: inline-block;
+  vertical-align: top;
+  border: none;
 }
 #upload-form {
   margin: 10px;

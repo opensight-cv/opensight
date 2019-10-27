@@ -117,6 +117,7 @@ function getCursorXY(e) {
       (document.documentElement.scrollTop
         ? document.documentElement.scrollTop
         : document.body.scrollTop);
+  cursorX -= 60; // Width of navbar
 }
 // master variables
 var styles = "";
