@@ -30,8 +30,19 @@ var postGo = function() {
       json = xhr.responseJSON;
       if (json) {
         setStatusMsg(json["message"]);
+      } else if (xhr.status === 0) {
+        var message = "Failed to connect to server: ";
+        switch (xhr.statusText) {
+          case "timeout":
+            message += "Network timed out";
+            break;
+          case "error":
+          default:
+            message += "Unknown network error";
+        }
+        setStatusMsg(message);
       } else {
-        setStatusMsg("Failed to import nodetree (unknown connection error)");
+        setStatusMsg("Failed to import nodetree: Unknown error");
       }
     }
   });
