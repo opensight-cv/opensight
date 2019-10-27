@@ -257,7 +257,10 @@ p {
   display: block;
 }
 
-/* Font Awesome */
+/* Font Awesome
+Licensed under the Font Awesome MIT license
+https://fontawesome.com/license/free
+*/
 
 .fa-spin {
   -webkit-animation: fa-spin 2s infinite linear;
