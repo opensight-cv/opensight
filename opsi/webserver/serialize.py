@@ -242,7 +242,7 @@ class NodeTreeImportError(ValueError):
         LOGGER.debug(f"Error during nodetree import: {msg}", exc_info=exc_info)
 
 
-def _process_node_links(program, node: NodeN) -> List[str]:
+def _process_node_links(program, node: NodeN, ids) -> List[str]:
     links: Links = {}
     empty_links: List[str] = []
 
@@ -257,6 +257,10 @@ def _process_node_links(program, node: NodeN) -> List[str]:
                 link = input
             else:
                 link = input.link
+
+            if link.id not in ids:
+                # Input link points to deleted node, so the key doesn't exist
+                raise AttributeError
 
             links[name] = Connection(link.id, link.name)
 
@@ -290,8 +294,8 @@ def _process_widget(type: Type, val):
     return val
 
 
-def _process_node_inputs(program, node: NodeN):
-    empty_links = _process_node_links(program, node)
+def _process_node_inputs(program, node: NodeN, ids):
+    empty_links = _process_node_links(program, node, ids)
 
     if LINKS_INSTEAD_OF_INPUTS:
         return
@@ -358,9 +362,9 @@ def import_nodetree(program, nodetree: NodeTreeN):
         for node in nodetree.nodes:
             _process_node_settings(program, node)
             if LINKS_INSTEAD_OF_INPUTS:
-                _process_node_links(program, node)
+                _process_node_links(program, node, ids)
             else:
-                _process_node_inputs(program, node)
+                _process_node_inputs(program, node, ids)
 
             try:
                 program.pipeline.nodes[node.id].ensure_init()
