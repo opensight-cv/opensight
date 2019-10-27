@@ -6,6 +6,8 @@ var nodeTree = {
   nodes: []
 };
 
+var NAV_WIDTH = 60; // Offset to the right of canvas and container
+
 $.ajaxSetup({
   timeout: 10 * 1000,
   dataType: "json"
@@ -117,7 +119,7 @@ function getCursorXY(e) {
       (document.documentElement.scrollTop
         ? document.documentElement.scrollTop
         : document.body.scrollTop);
-  cursorX -= 60; // Width of navbar
+  cursorX -= NAV_WIDTH;
 }
 // master variables
 var styles = "";
@@ -125,7 +127,7 @@ var nodes = [];
 
 // update
 
-var boxCenterXOffset = 10 - 60; // 60 is the width of nav bar
+var boxCenterXOffset = 10 - NAV_WIDTH;
 var boxCenterYOffset = 10;
 
 update();
@@ -243,7 +245,7 @@ function update() {
     }
   }
 
-  c.width = window.innerWidth - 60; // 60 = Width of navbar
+  c.width = window.innerWidth - NAV_WIDTH;
   c.height = window.innerHeight;
 
   ctx.strokeStyle = "#2DBC4E";
@@ -332,7 +334,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
       cancel: ".clicker, input, select",
       stop: function() {
         findNodeTreeSpot(uuid).pos = [
-          $(this).offset().left,
+          $(this).offset().left - NAV_WIDTH,
           $(this).offset().top
         ];
         slowPostRequest();
@@ -1304,4 +1306,3 @@ const importNodeTree = function(nodetree, functions) {
     nodeTree.nodes = nodetree.nodes;
   };
 };
-// const node = function(id, uuid, settings, inputs, outputs, name) {
