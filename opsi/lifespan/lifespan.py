@@ -24,12 +24,24 @@ from .webserverthread import WebserverThread
 LOGGER = logging.getLogger(__name__)
 
 
+IGNORE_FOLDERS = {"disabled", "__pycache__"}
+
+
 def register_modules(program, module_path):
     moddir = join(module_path, "modules") + "/"
-    if isdir(moddir):
-        files = [splitext(f)[0] for f in listdir(moddir) if isfile(join(moddir, f))]
-        for path in files:
-            program.manager.register_module(ModulePath(moddir, path))
+    if not isdir(moddir):
+        return
+
+    files = []
+    for path in listdir(moddir):
+        fullpath = join(moddir, path)
+
+        if isfile(fullpath):
+            path = splitext(path)[0]
+        elif not (isdir(fullpath) and path.strip().lower() not in IGNORE_FOLDERS):
+            continue
+
+        program.manager.register_module(ModulePath(moddir, path))
 
 
 def init_networktables(network):

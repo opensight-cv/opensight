@@ -22,7 +22,6 @@ def import_module(path: ModulePath):
     # So this sometimes doesn't work if the module name also exists in site-packages
     # But I don't understand exactly when and why this happens
 
-    """
     path_bak = sys.path[:]
     try:
         sys.path.insert(0, os.path.abspath(path.path))
@@ -47,6 +46,7 @@ def import_module(path: ModulePath):
     spec.loader.exec_module(module)
 
     return module
+    """
 
 
 class Manager:
@@ -64,7 +64,7 @@ class Manager:
                 isfunction(func)
                 and (not func.disabled)
                 # If a module imports a Function from another module, do not register that Function
-                and (inspect.getmodule(func) == module)
+                and (inspect.getmodule(func) == module or func.force_enabled)
             )
 
         return closure

@@ -33,6 +33,7 @@ class Function:
     has_sideeffect: bool = False
     require_restart: FrozenSet[str] = frozenset()
     disabled = False
+    force_enabled = False
 
     SettingTypes: List[Field]
     InputTypes: Dict[str, Type]
