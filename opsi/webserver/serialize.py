@@ -269,7 +269,10 @@ def _process_node_links(program, node: NodeN) -> List[str]:
 
             empty_links.append(name)
 
-    program.pipeline.create_links(node.id, links)
+    try:
+        program.pipeline.create_links(node.id, links)
+    except KeyError:  # idk why this happens
+        raise NodeTreeImportError(program, msg="Unknown Error, please try again")
 
     # empty_links used by _process_node_inputs to select input.value
     return empty_links

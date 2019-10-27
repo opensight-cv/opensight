@@ -37,15 +37,12 @@ class Api:
         parent_app.mount(prefix, self.app)
 
     def importerror_handler(self, request, exc):
-        return JSONResponse(
-            status_code=400,
-            content={
-                "error": "Invalid Nodetree",
-                "node": str(exc.node.id),
-                "type": exc.node.type,
-                "message": exc.args[0],
-            },
-        )
+        json = {"error": "Invalid Nodetree", "message": exc.args[0]}
+
+        if exc.node:
+            json.update({"node": str(exc.node.id), "type": exc.node.type})
+
+        return JSONResponse(status_code=400, content=json)
 
     def read_funcs(self) -> SchemaF:
         return export_manager(self.program.manager)
