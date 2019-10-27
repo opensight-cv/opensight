@@ -28,8 +28,10 @@ var postGo = function() {
     error: function(xhr, status, error) {
       setIcons("cross");
       json = xhr.responseJSON;
-      setErrMessage(json["message"]);
-      statusError = true;
+      if (json) {
+        setErrMessage(json["message"]);
+        statusError = true;
+      }
     }
   });
 };

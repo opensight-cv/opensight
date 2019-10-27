@@ -554,7 +554,7 @@ html .ui-button.ui-state-disabled:active {
   border-top-width: 2px;
 }
 .menu-division {
-  padding: 2px;
+  padding: 4px;
 }
 .menu-name {
   display: inline;
@@ -579,7 +579,7 @@ html .ui-button.ui-state-disabled:active {
   border-radius: 10px;
   text-align: center;
   margin: 4px;
-  padding: 3px;
+  padding: 2px;
   cursor: pointer;
   font-size: 14px;
   min-width: 125px;

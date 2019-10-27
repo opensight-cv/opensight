@@ -18,10 +18,28 @@ $(document).ready(function() {
       contentType: false,
       cache: false,
       success: function(data) {
-        $("#update-button").prop("disabled", false);
+        $("#update-button").prop("disabled", true);
       },
       error: function(e) {
         $("#update-button").prop("disabled", false);
+      }
+    });
+  });
+  $("#delete-button").click(function(event) {
+    event.preventDefault();
+    $.ajax({
+      type: "POST",
+      enctype: "multipart/form-data",
+      url: "/api/nodes",
+      data: '{"nodes": []}',
+      processData: false,
+      contentType: false,
+      cache: false,
+      success: function(data) {
+        $("#delete-button").prop("disabled", true);
+      },
+      error: function(e) {
+        $("#delete-button").prop("disabled", false);
       }
     });
   });
