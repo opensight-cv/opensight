@@ -5,7 +5,6 @@ import subprocess
 
 import cv2
 
-
 LOGGER = logging.getLogger(__name__)
 
 __package__ = "opsi.input"

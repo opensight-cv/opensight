@@ -67,5 +67,7 @@ class BitwiseAND(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cv2.bitwise_and(inputs.img.mat, inputs.img.mat, mask=inputs.mask.matBW).view(Mat)
+        img = cv2.bitwise_and(
+            inputs.img.mat, inputs.img.mat, mask=inputs.mask.matBW
+        ).view(Mat)
         return self.Outputs(img=img)

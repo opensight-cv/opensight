@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import MatBW

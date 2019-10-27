@@ -42,6 +42,7 @@ def init_networktables(network):
 
 class Lifespan:
     PORTS = (80, 8000)
+
     def __init__(self, args, *, catch_signal=False, load_persist=True):
         self.event = threading.Event()
         self.threads = []

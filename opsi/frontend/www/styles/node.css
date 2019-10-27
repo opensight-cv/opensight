@@ -61,8 +61,6 @@ p {
   padding-bottom: 5px;
 }
 
-
-
 #prefs-table {
   display: block;
 }
@@ -143,7 +141,6 @@ p {
   -webkit-transform: rotate(-45deg);
 }
 
-
 .status-indicator {
   position: fixed;
   width: 50px;
@@ -187,22 +184,36 @@ p {
 
 .status-indicator-icon-enter {
   display: block;
-  animation: status-indicator-icon-entering .5s cubic-bezier(0.02, 0.99, 0.76, 1.63);
+  animation: status-indicator-icon-entering 0.5s
+    cubic-bezier(0.02, 0.99, 0.76, 1.63);
 }
 
 @keyframes status-indicator-icon-entering {
-  0% { top: -50px; display: block; }
-  100% { top: 0px; display: block; }
+  0% {
+    top: -50px;
+    display: block;
+  }
+  100% {
+    top: 0px;
+    display: block;
+  }
 }
 
 .status-indicator-icon-leave {
   display: block;
-  animation: status-indicator-icon-leaving .5s cubic-bezier(0.02, 0.99, 0.76, 1.63);
+  animation: status-indicator-icon-leaving 0.5s
+    cubic-bezier(0.02, 0.99, 0.76, 1.63);
 }
 
 @keyframes status-indicator-icon-leaving {
-  0% { top: 0px; display: block; }
-  100% { top: 50px; display: none; }
+  0% {
+    top: 0px;
+    display: block;
+  }
+  100% {
+    top: 50px;
+    display: none;
+  }
 }
 
 /* Default icon */
@@ -215,30 +226,37 @@ p {
 
 .fa-spin {
   -webkit-animation: fa-spin 2s infinite linear;
-          animation: fa-spin 2s infinite linear; }
+  animation: fa-spin 2s infinite linear;
+}
 
 .fa-pulse {
   -webkit-animation: fa-spin 1s infinite steps(8);
-          animation: fa-spin 1s infinite steps(8); }
+  animation: fa-spin 1s infinite steps(8);
+}
 
 @-webkit-keyframes fa-spin {
   0% {
     -webkit-transform: rotate(0deg);
-            transform: rotate(0deg); }
+    transform: rotate(0deg);
+  }
   100% {
     -webkit-transform: rotate(360deg);
-            transform: rotate(360deg); } }
+    transform: rotate(360deg);
+  }
+}
 
 @keyframes fa-spin {
   0% {
     -webkit-transform: rotate(0deg);
-            transform: rotate(0deg); }
+    transform: rotate(0deg);
+  }
   100% {
     -webkit-transform: rotate(360deg);
-            transform: rotate(360deg); } }
+    transform: rotate(360deg);
+  }
+}
 
 /* Font Awesome */
-
 
 input[type="button"] {
   background: linear-gradient(0deg, #e7e5e3 0, #f5f4f3 75%);
@@ -263,8 +281,12 @@ button {
 input[type="button"]:active {
   border-radius: 5px;
   border: #cdc7c2;
-  background: rgb(164,163,162);
-  background: linear-gradient(180deg, rgba(231,229,227) 0%, rgba(217,217,217,1) 100%); 
+  background: rgb(164, 163, 162);
+  background: linear-gradient(
+    180deg,
+    rgba(231, 229, 227) 0%,
+    rgba(217, 217, 217, 1) 100%
+  );
   border-width: 1px;
   border-style: solid;
 }
@@ -390,7 +412,7 @@ input[type="button"]:active {
   justify-content: space-evenly;
   align-items: center;
   height: auto;
-  max-height: 20px
+  max-height: 20px;
 }
 .ioContainer {
   height: auto;
@@ -486,7 +508,7 @@ html .ui-button.ui-state-disabled:active {
   background: #e1e1e1;
   border-radius: 0px;
 }
-.arrow{
+.arrow {
   margin-right: 2px;
 }
 #menu-container {
@@ -520,24 +542,26 @@ html .ui-button.ui-state-disabled:active {
 .menu-division {
   padding: 2px;
 }
-.menu-name{
+.menu-name {
   display: inline;
   cursor: pointer;
   padding: 4px;
   white-space: nowrap;
 }
 .menu-selector {
-    position: relative;
+  position: relative;
 }
 .menu-selector:after {
-    content:'';
-    position:absolute;
-    top:-10px; bottom:-5px; 
-    left:-20px; right:-20px; 
+  content: "";
+  position: absolute;
+  top: -10px;
+  bottom: -5px;
+  left: -20px;
+  right: -20px;
 }
 .menu-button {
   border: 3px solid #2dbc4e;
-  background-color:#ccc;
+  background-color: #ccc;
   border-radius: 10px;
   text-align: center;
   margin: 4px;
@@ -601,21 +625,21 @@ input:checked + .slidey:before {
   border-radius: 50%;
 }
 .outputDesc {
-    position: relative;
-    left: 80%;
-    text-align: right;
-    pointer-events: none;
+  position: relative;
+  left: 80%;
+  text-align: right;
+  pointer-events: none;
 }
 .inputDesc {
-    position: relative;
-    right: 80%;
-    text-align: left;
-    pointer-events: none;
+  position: relative;
+  right: 80%;
+  text-align: left;
+  pointer-events: none;
 }
 .version-display {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    font-weight: bold;
-    font-size: 16px;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-weight: bold;
+  font-size: 16px;
 }

@@ -2,10 +2,9 @@ from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat
-from opsi.util.unduplicator import Unduplicator
-
-from opsi.modules.input import get_modes, controls, create_capture, parse_camstring
 from opsi.modules.cameraserver import CameraSource, CamHook
+from opsi.modules.input import controls, create_capture, get_modes, parse_camstring
+from opsi.util.unduplicator import Unduplicator
 
 __package__ = "opsi.videoio"
 __version__ = "0.123"

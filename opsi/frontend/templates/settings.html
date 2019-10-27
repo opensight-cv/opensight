@@ -14,13 +14,14 @@
                 <div class="preference">
                     <h2>Update</h2>
                     <p>
-                        <a href="https://github.com/opensight-cv/packages/releases">Download the latest version of OpenSight.</a>
+                        <a href="https://github.com/opensight-cv/packages/releases">Download the latest version of
+                            OpenSight.</a>
                         Make sure to only download the "with-dependencies" package.
                     </p>
                     <form id="update-form" enctype="multipart/form-data" method="post" name="update-form">
                         <input type="file" class="bfi" required />
                     </form>
-                    <input id="update-button" type="button" value="Update"/>
+                    <input id="update-button" type="button" value="Update" />
                 </div>
             </td>
             {% endif %}
@@ -28,12 +29,12 @@
                 <div class="preference">
                     <h2>Actions</h2>
                     {% if daemon %}
-                    <input id="restart" type="button" value="Restart OpenSight"/>
-                    <input id="restart-host" type="button" value="Restart System"/>
-                    <input id="shutdown-host" type="button" value="Shutdown System"/>
+                    <input id="restart" type="button" value="Restart OpenSight" />
+                    <input id="restart-host" type="button" value="Restart System" />
+                    <input id="shutdown-host" type="button" value="Shutdown System" />
                     {% else %}
-                    <input id="restart" type="button" value="Restart OpenSight"/>
-                    <input id="shutdown" type="button" value="Stop OpenSight"/>
+                    <input id="restart" type="button" value="Restart OpenSight" />
+                    <input id="shutdown" type="button" value="Stop OpenSight" />
                     {% endif %}
                 </div>
             </td>
@@ -41,17 +42,17 @@
                 <div class="preference">
                     <h2>Profiles</h2>
                     <p>Current profile: {{persist.profile}}</p>
-                    <input class="profile-button" type="button" value="0"/>
-                    <input class="profile-button" type="button" value="1"/>
-                    <input class="profile-button" type="button" value="2"/>
-                    <input class="profile-button" type="button" value="3"/>
-                    <input class="profile-button" type="button" value="4"/>
+                    <input class="profile-button" type="button" value="0" />
+                    <input class="profile-button" type="button" value="1" />
+                    <input class="profile-button" type="button" value="2" />
+                    <input class="profile-button" type="button" value="3" />
+                    <input class="profile-button" type="button" value="4" />
                     <br>
-                    <input class="profile-button" type="button" value="5"/>
-                    <input class="profile-button" type="button" value="6"/>
-                    <input class="profile-button" type="button" value="7"/>
-                    <input class="profile-button" type="button" value="8"/>
-                    <input class="profile-button" type="button" value="9"/>
+                    <input class="profile-button" type="button" value="5" />
+                    <input class="profile-button" type="button" value="6" />
+                    <input class="profile-button" type="button" value="7" />
+                    <input class="profile-button" type="button" value="8" />
+                    <input class="profile-button" type="button" value="9" />
                 </div>
             </td>
             <td>
@@ -60,8 +61,8 @@
                     <form id="import-form" enctype="multipart/form-data" method="post" name="import-form">
                         <input type="file" class="bfi" required />
                     </form>
-                    <input id="import-button" type="button" value="Import"/>
-                    <input id="export-button" type="button" value="Export"/>
+                    <input id="import-button" type="button" value="Import" />
+                    <input id="export-button" type="button" value="Export" />
                 </div>
             </td>
             <td>
@@ -70,13 +71,14 @@
                     <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
                         <h3>General</h3>
                         <label for="team-number">Team Number:</label>
-                        <input id="team-number" type="number" min="1" max="9999" step="1" required value="{{persist.network.team | int}}"/>
+                        <input id="team-number" type="number" min="1" max="9999" step="1" required
+                            value="{{persist.network.team | int}}" />
                         <br>
                         <label for="nt-enabled">Use Static IP:</label>
-                        <input id="static" type="checkbox" {{"checked" if persist.network.static}}/>
+                        <input id="static" type="checkbox" {{"checked" if persist.network.static}} />
                         <h3>NetworkTables</h3>
                         <label for="nt-enabled">Enabled:</label>
-                        <input id="nt-enabled" type="checkbox" {{"checked" if persist.network.nt_enabled}}/>
+                        <input id="nt-enabled" type="checkbox" {{"checked" if persist.network.nt_enabled}} />
                         <br>
                         <label for="nt-mode">Mode:</label>
                         <select id="nt-mode">
@@ -84,7 +86,7 @@
                             <option value="server" {{"selected" if not persist.network.nt_client}}>Server</option>
                         </select>
                     </form>
-                    <input id="network-button" type="button" value="Submit"/>
+                    <input id="network-button" type="button" value="Submit" />
                 </div>
             </td>
         </tr>

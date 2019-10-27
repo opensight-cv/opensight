@@ -4,9 +4,10 @@ import subprocess
 from fastapi import FastAPI, File, UploadFile
 from starlette.responses import JSONResponse
 
+import opsi
 from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
-import opsi
+
 from .schema import Network, NodeTreeN, SchemaF
 from .serialize import *
 
@@ -17,7 +18,9 @@ class Api:
     def __init__(self, parent_app, program, prefix="/api"):
         self.program = program
 
-        self.app = FastAPI(title="OpenSight API", version=opsi.__version__, openapi_prefix=prefix)
+        self.app = FastAPI(
+            title="OpenSight API", version=opsi.__version__, openapi_prefix=prefix
+        )
 
         self.app.exception_handler(NodeTreeImportError)(self.importerror_handler)
 

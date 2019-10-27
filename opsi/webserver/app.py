@@ -4,10 +4,11 @@ from os.path import join
 
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
-from starlette.middleware.base import BaseHTTPMiddleware
 
+import opsi
 from opsi.util.networking import get_server_url
 from opsi.util.templating import TemplateFolder
 
@@ -33,7 +34,8 @@ class WebServer:
             self.template(
                 "settings.html",
                 persist=self.program.lifespan.persist,
-                daemon=self.program.lifespan.using_systemd
+                daemon=self.program.lifespan.using_systemd,
+                version=opsi.__version__,
             ),
         )
 

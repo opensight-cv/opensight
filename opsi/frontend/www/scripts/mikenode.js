@@ -3,77 +3,78 @@ var cursorY = 0;
 
 var isPressing = false;
 var nodeTree = {
-    nodes: []
+  nodes: []
 };
 
 $.ajaxSetup({
-    timeout: 10 * 1000,
-    dataType: "json"
+  timeout: 10 * 1000,
+  dataType: "json"
 });
 
 // https://stackoverflow.com/a/1909508
 var postGo = function() {
-    setIcons("spinner");
-    return $.ajax({
-        type: "POST",
-        url: "/api/nodes",
-        data: JSON.stringify(nodeTree),
-        success: function() {
-            setIcons("check");
-            setErrMessage(" ");
-            statusError = false;
-        },
-        error: function(xhr, status, error) {
-            setIcons("cross");
-            json = xhr.responseJSON;
-            setErrMessage(json['message']);
-            statusError = true;
-        }
-    });
+  setIcons("spinner");
+  return $.ajax({
+    type: "POST",
+    url: "/api/nodes",
+    data: JSON.stringify(nodeTree),
+    success: function() {
+      setIcons("check");
+      setErrMessage(" ");
+      statusError = false;
+    },
+    error: function(xhr, status, error) {
+      setIcons("cross");
+      json = xhr.responseJSON;
+      setErrMessage(json["message"]);
+      statusError = true;
+    }
+  });
 };
 var statusError = false;
 
 $(".status-indicator").hover(
-    function() {
-        if (statusError) {
-            $("#status-content").css("display","block");
-        }
-    }, 
-    function() {
-        $("#status-content").css("display","none");
+  function() {
+    if (statusError) {
+      $("#status-content").css("display", "block");
     }
+  },
+  function() {
+    $("#status-content").css("display", "none");
+  }
 );
 
-function setErrMessage(err){
-    $("#status-content").text(err);
-
+function setErrMessage(err) {
+  $("#status-content").text(err);
 }
 function setGreyscaleIcons() {
-    $(".status-indicator-icon").addClass("status-indicator-greyscale");
+  $(".status-indicator-icon").addClass("status-indicator-greyscale");
 }
 
 // spinner, check, cross
 function setIcons(icon) {
-    $(".status-indicator-icon").css("display", "none").removeClass("status-indicator-greyscale");
-    $(".status-indicator-" + icon).css("display", "block");
+  $(".status-indicator-icon")
+    .css("display", "none")
+    .removeClass("status-indicator-greyscale");
+  $(".status-indicator-" + icon).css("display", "block");
 }
 
 // https://stackoverflow.com/a/1909508
 function delay(fn, ms) {
-    let timer = 0
-    return function(...args) {
-        clearTimeout(timer)
-        timer = setTimeout(fn.bind(this, ...args), ms || 0)
-    }
+  let timer = 0;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(fn.bind(this, ...args), ms || 0);
+  };
 }
 
 var makePostRequestFunc = function(time) {
-    var delayPost = delay(postGo, time);
+  var delayPost = delay(postGo, time);
 
-    return function() {
-        setGreyscaleIcons();
-        delayPost();
-    };
+  return function() {
+    setGreyscaleIcons();
+    delayPost();
+  };
 };
 
 var postRequest = makePostRequestFunc(750);
@@ -86,36 +87,36 @@ body.addEventListener("mouseup", notPressingDown, false);
 body.addEventListener("mouseleave", notPressingDown, false);
 
 function pressingDown(e) {
-    isPressing = true;
+  isPressing = true;
 }
 
 function notPressingDown(e) {
-    isPressing = false;
+  isPressing = false;
 }
 
 window.onload = init;
 
 function init() {
-    if (window.Event) {
-        document.addEventListener("mousemove", getCursorXY);
-        // document.captureEvents(Event.MOUSEMOVE);
-    }
-    // document.onmousemove = getCursorXY;
+  if (window.Event) {
+    document.addEventListener("mousemove", getCursorXY);
+    // document.captureEvents(Event.MOUSEMOVE);
+  }
+  // document.onmousemove = getCursorXY;
 }
 
 function getCursorXY(e) {
-    cursorX = window.Event ?
-        e.pageX :
-        event.clientX +
-        (document.documentElement.scrollLeft ?
-            document.documentElement.scrollLeft :
-            document.body.scrollLeft);
-    cursorY = window.Event ?
-        e.pageY :
-        event.clientY +
-        (document.documentElement.scrollTop ?
-            document.documentElement.scrollTop :
-            document.body.scrollTop);
+  cursorX = window.Event
+    ? e.pageX
+    : event.clientX +
+      (document.documentElement.scrollLeft
+        ? document.documentElement.scrollLeft
+        : document.body.scrollLeft);
+  cursorY = window.Event
+    ? e.pageY
+    : event.clientY +
+      (document.documentElement.scrollTop
+        ? document.documentElement.scrollTop
+        : document.body.scrollTop);
 }
 // master variables
 var styles = "";
@@ -129,1149 +130,1177 @@ var boxCenterYOffset = 10;
 update();
 
 var numOn = 0;
-var nodes = [
-    []
-];
+var nodes = [[]];
 var inHand = false;
 var list = 0;
 
 var c = document.getElementById("canvas");
 
 if (c) {
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-    var ctx = c.getContext("2d");
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+  var ctx = c.getContext("2d");
 }
 
 function checkTypes(type1, type2) {
-    if (type2 == "any") {
-        return true;
-    }
-    if (type1 == "mbw" && type2 == "Mat") {
-        return true;
-    }
-    if (type1 == type2) {
-        return true;
-    }
-    return false;
+  if (type2 == "any") {
+    return true;
+  }
+  if (type1 == "mbw" && type2 == "Mat") {
+    return true;
+  }
+  if (type1 == type2) {
+    return true;
+  }
+  return false;
 }
 
 $(document).ready(function() {
-
-    //add input first
-    $("body").on("mousedown", ".clicker", function() {
+  //add input first
+  $("body").on("mousedown", ".clicker", function() {
+    if (
+      $(this)
+        .parent()
+        .attr("class") == "inputContainer"
+    ) {
+      popLoop(nodes, $(this).attr("id"));
+      postRequest();
+    } else if (
+      $(this)
+        .parent()
+        .attr("class") == "outputContainer"
+    ) {
+      nodes[list].push($(this).attr("id"));
+      inHand = true;
+    }
+  });
+  $("body").on("mouseup", ".clicker", function() {
+    if (
+      $(this)
+        .parent()
+        .attr("class") == "inputContainer"
+    ) {
+      if (inHand) {
         if (
+          checkTypes(
+            nodes[list][0].substring(36, 39),
             $(this)
-            .parent()
-            .attr("class") == "inputContainer"
+              .attr("id")
+              .substring(36, 39)
+          ) &&
+          !searchForInput(nodes, $(this).attr("id"))
         ) {
-            popLoop(nodes, $(this).attr("id"));
-            postRequest();
-        } else if (
-            $(this)
-            .parent()
-            .attr("class") == "outputContainer"
-        ) {
-            nodes[list].push($(this).attr("id"));
-            inHand = true;
+          nodes[list].push($(this).attr("id"));
+          inHand = false;
+        } else {
+          inHand = false;
+          nodes[list].pop();
         }
-    });
-    $("body").on("mouseup", ".clicker", function() {
-        if (
-            $(this)
+      }
+      if (nodes[list].length == 2) {
+        findNodeTreeSpot(
+          $("#" + nodes[list][1])
             .parent()
-            .attr("class") == "inputContainer"
-        ) {
-            if (inHand) {
-                if (checkTypes(nodes[list][0].substring(36, 39), $(this).attr("id").substring(36, 39)) && !searchForInput(nodes, $(this).attr("id")))
-                {
-                    nodes[list].push($(this).attr("id"));
-                    inHand = false;
-                } else {
-                    inHand = false;
-                    nodes[list].pop();
-                }
-            }
-            if (nodes[list].length == 2) {
-                findNodeTreeSpot(
-                    $("#" + nodes[list][1])
-                    .parent()
-                    .parent()
-                    .parent()
-                    .attr("id")
-                ).inputs[nodes[list][1].substring(39)] = {
-                    id: $("#" + nodes[list][0])
-                    .parent()
-                    .parent()
-                    .parent()
-                    .attr("id"),
-                    name: nodes[list][0].substring(39)
-                };
+            .parent()
+            .parent()
+            .attr("id")
+        ).inputs[nodes[list][1].substring(39)] = {
+          id: $("#" + nodes[list][0])
+            .parent()
+            .parent()
+            .parent()
+            .attr("id"),
+          name: nodes[list][0].substring(39)
+        };
 
-                postRequest();
+        postRequest();
 
-                nodes[list + 1] = [];
-                list++;
-                firsttime = true;
-                onOut = false;
-            }
-        } else {}
-    });
+        nodes[list + 1] = [];
+        list++;
+        firsttime = true;
+        onOut = false;
+      }
+    } else {
+    }
+  });
 });
 
 function update() {
-    // Instead of setInterval: update at native fps
-    requestAnimationFrame(update);
+  // Instead of setInterval: update at native fps
+  requestAnimationFrame(update);
 
-    // don't produce a million errors
-    // TODO: mike please fix this i have no idea what this is
-    if (!c) {
-        return;
-    }
+  // don't produce a million errors
+  // TODO: mike please fix this i have no idea what this is
+  if (!c) {
+    return;
+  }
 
-    if (!isPressing) {
-        if (inHand) {
-            inHand = false;
-            nodes[list].pop();
-        }
-    }
-
-    c.width = window.innerWidth - 60; // 60 = Width of navbar
-    c.height = window.innerHeight;
-
-    ctx.strokeStyle = "#2DBC4E";
-    ctx.lineWidth = 5;
-    for (let i = 0; i < nodes.length; i++) {
-        if (nodes[i].length == 2) {
-            //math to find points
-            var x1 = $("[id=\"" + nodes[i][0] + "\"]").last().offset().left + boxCenterXOffset;
-            var x2 = $("#" + nodes[i][1]).offset().left + boxCenterXOffset;
-            var y1 = $("[id=\"" + nodes[i][0] + "\"]").last().offset().top + boxCenterYOffset;
-            var y2 = $("#" + nodes[i][1]).offset().top + boxCenterYOffset;
-
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
-            ctx.stroke();
-        }
-    }
+  if (!isPressing) {
     if (inHand) {
-        $(".input").css("cursor", "crosshair");
-
-        var x1 = $("[id=\"" + nodes[list][0] + "\"]").last().offset().left + boxCenterXOffset;
-        var x2 = cursorX;
-        var y1 = $("[id=\"" + nodes[list][0] + "\"]").last().offset().top + boxCenterYOffset;
-        var y2 = cursorY;
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
-        ctx.stroke();
-    } else {
-        $(".input").css("cursor", "not-allowed");
+      inHand = false;
+      nodes[list].pop();
     }
+  }
+
+  c.width = window.innerWidth - 60; // 60 = Width of navbar
+  c.height = window.innerHeight;
+
+  ctx.strokeStyle = "#2DBC4E";
+  ctx.lineWidth = 5;
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].length == 2) {
+      //math to find points
+      var x1 =
+        $('[id="' + nodes[i][0] + '"]')
+          .last()
+          .offset().left + boxCenterXOffset;
+      var x2 = $("#" + nodes[i][1]).offset().left + boxCenterXOffset;
+      var y1 =
+        $('[id="' + nodes[i][0] + '"]')
+          .last()
+          .offset().top + boxCenterYOffset;
+      var y2 = $("#" + nodes[i][1]).offset().top + boxCenterYOffset;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
+      ctx.stroke();
+    }
+  }
+  if (inHand) {
+    $(".input").css("cursor", "crosshair");
+
+    var x1 =
+      $('[id="' + nodes[list][0] + '"]')
+        .last()
+        .offset().left + boxCenterXOffset;
+    var x2 = cursorX;
+    var y1 =
+      $('[id="' + nodes[list][0] + '"]')
+        .last()
+        .offset().top + boxCenterYOffset;
+    var y2 = cursorY;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
+    ctx.stroke();
+  } else {
+    $(".input").css("cursor", "not-allowed");
+  }
 }
 numNode = 0;
 // class declarations
 const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
-    this.uuid = uuid;
-    this.name = name;
+  this.uuid = uuid;
+  this.name = name;
 
-    this.settings = settings;
-    this.inputs = inputs;
-    this.outputs = outputs;
-    this.id = id;
-    this.pos = pos;
-    this.create = function() {
-        numNode++
-        $("#container").append(
-            '<div class="node" style="left: ' + pos[0] + 'px; top:' + pos[1] + 'px;" id="' +
-            this.uuid +
-            '">' +
-            "<h1>" +
-            this.name +
-            "</h1>" +
-            '<div id="x' +
-            this.uuid +
-            '" class="x">-</div>' +
-            '<div class="ioContainer">' +
-            '<div class="inputContainer">' +
-            inputLoop(this.inputs, this.uuid) +
-            "</div>" +
-            '<div class="outputContainer">' +
-            outputLoop(this.outputs, this.uuid) +
-            "</div>" +
-            "</div>" +
-            settingsLoop(this.settings, uuid) +
-            "</div>"
-        );
-        $("#" + this.uuid).draggable({
-            cancel: ".clicker, input, select",
-            stop: function() {
-                findNodeTreeSpot(uuid).pos = [$(this).offset().left, $(this).offset().top];
-                slowPostRequest();
-            },
-            grid: [1, 1],
-            start: setGreyscaleIcons,
-            stack: ".node"
-        });
+  this.settings = settings;
+  this.inputs = inputs;
+  this.outputs = outputs;
+  this.id = id;
+  this.pos = pos;
+  this.create = function() {
+    numNode++;
+    $("#container").append(
+      '<div class="node" style="left: ' +
+        pos[0] +
+        "px; top:" +
+        pos[1] +
+        'px;" id="' +
+        this.uuid +
+        '">' +
+        "<h1>" +
+        this.name +
+        "</h1>" +
+        '<div id="x' +
+        this.uuid +
+        '" class="x">-</div>' +
+        '<div class="ioContainer">' +
+        '<div class="inputContainer">' +
+        inputLoop(this.inputs, this.uuid) +
+        "</div>" +
+        '<div class="outputContainer">' +
+        outputLoop(this.outputs, this.uuid) +
+        "</div>" +
+        "</div>" +
+        settingsLoop(this.settings, uuid) +
+        "</div>"
+    );
+    $("#" + this.uuid).draggable({
+      cancel: ".clicker, input, select",
+      stop: function() {
+        findNodeTreeSpot(uuid).pos = [
+          $(this).offset().left,
+          $(this).offset().top
+        ];
+        slowPostRequest();
+      },
+      grid: [1, 1],
+      start: setGreyscaleIcons,
+      stack: ".node"
+    });
 
-        $("#x" + this.uuid).on("click", function() {
-            numNode--;
-            killLoop(uuid);
-            $("#" + this.id.substring(1)).remove();
+    $("#x" + this.uuid).on("click", function() {
+      numNode--;
+      killLoop(uuid);
+      $("#" + this.id.substring(1)).remove();
 
-            for (let i = 0; i < nodeTree.nodes.length; i++) {
-                if (nodeTree.nodes[i].id == this.id.substring(1)) {
-                    nodeTree.nodes.splice(i, 1);
-                }
-            }
-            for (let i = 0; i < nodeTree.nodes.length; i++) {
-
-                for (let j = 0; j < Object.keys(nodeTree.nodes[0].inputs).length; j++) {
-
-                    if (nodeTree.nodes[i].inputs[Object.keys(nodeTree.nodes[i].inputs)[j]].id == uuid) {
-                        delete nodeTree.nodes[i].inputs[Object.keys(nodeTree.nodes[i].inputs)[j]];
-                        j--
-                    }
-                }
-            }
-            postRequest();
-
-        });
-        settingsGo(this.settings);
-        slowPostRequest();        
-    };
+      for (let i = 0; i < nodeTree.nodes.length; i++) {
+        if (nodeTree.nodes[i].id == this.id.substring(1)) {
+          nodeTree.nodes.splice(i, 1);
+        }
+      }
+      for (let i = 0; i < nodeTree.nodes.length; i++) {
+        for (let j = 0; j < Object.keys(nodeTree.nodes[0].inputs).length; j++) {
+          if (
+            nodeTree.nodes[i].inputs[Object.keys(nodeTree.nodes[i].inputs)[j]]
+              .id == uuid
+          ) {
+            delete nodeTree.nodes[i].inputs[
+              Object.keys(nodeTree.nodes[i].inputs)[j]
+            ];
+            j--;
+          }
+        }
+      }
+      postRequest();
+    });
+    settingsGo(this.settings);
+    slowPostRequest();
+  };
 };
 
 // ------------------------------------- settings ------------------------------------------------------
 
 const intInput = function(name, def) {
-    this.value = null;
-    this.id = "";
-    this.create = function(uuid) {
-        this.id = uuid;
-        return (
-            '<input value="' +
-            def +
-            '" type="number" class="numInput int setting" oninput="" id="' +
-            uuid +
-            name +
-            '">' +
-            "</input>"
-        );
-    };
-    this.go = function() {
-        let id = this.id;
+  this.value = null;
+  this.id = "";
+  this.create = function(uuid) {
+    this.id = uuid;
+    return (
+      '<input value="' +
+      def +
+      '" type="number" class="numInput int setting" oninput="" id="' +
+      uuid +
+      name +
+      '">' +
+      "</input>"
+    );
+  };
+  this.go = function() {
+    let id = this.id;
 
-        findNodeTreeSpot(
-            $("#" + this.id + name)
-            .parent()
-            .parent()
-            .attr("id")
-        ).settings[name] = parseFloat($("#" + this.id + name).val());
-        $("#" + this.id + name)
-            .on("keyup mouseup", function(e) {
-                if (e.which === 46) return false;
-                postRequest();
-            })
-            .on("input", function() {
-                var self = this;
-                setTimeout(function() {
-                    if (self.value.indexOf(".") != -1)
-                        self.value = parseInt(self.value, 10);
-                }, 0);
-            });
+    findNodeTreeSpot(
+      $("#" + this.id + name)
+        .parent()
+        .parent()
+        .attr("id")
+    ).settings[name] = parseFloat($("#" + this.id + name).val());
+    $("#" + this.id + name)
+      .on("keyup mouseup", function(e) {
+        if (e.which === 46) return false;
+        postRequest();
+      })
+      .on("input", function() {
+        var self = this;
+        setTimeout(function() {
+          if (self.value.indexOf(".") != -1)
+            self.value = parseInt(self.value, 10);
+        }, 0);
+      });
 
-        $("#" + this.id + name).on("input", function() {
-            findNodeTreeSpot(
-                $(this)
-                .parent()
-                .parent()
-                .attr("id")
-            ).settings[name] = parseFloat($(this).val());
-        });
-    };
+    $("#" + this.id + name).on("input", function() {
+      findNodeTreeSpot(
+        $(this)
+          .parent()
+          .parent()
+          .attr("id")
+      ).settings[name] = parseFloat($(this).val());
+    });
+  };
 };
 const decInput = function(name, def) {
-    this.value = def;
-    this.id = "";
-    this.create = function(uuid) {
-        this.id = uuid;
-        return (
-            '<input value="' +
-            def +
-            '" type="number" class="numInput setting" oninput="" id="' +
-            uuid +
-            name +
-            '">' +
-            "</input>"
-        );
-    };
-    this.go = function() {
-        let id = this.id;
+  this.value = def;
+  this.id = "";
+  this.create = function(uuid) {
+    this.id = uuid;
+    return (
+      '<input value="' +
+      def +
+      '" type="number" class="numInput setting" oninput="" id="' +
+      uuid +
+      name +
+      '">' +
+      "</input>"
+    );
+  };
+  this.go = function() {
+    let id = this.id;
 
-        findNodeTreeSpot(
-            $("#" + this.id + name)
-            .parent()
-            .parent()
-            .attr("id")
-        ).settings[name] = parseFloat($("#" + this.id + name).val());
-        $("#" + this.id + name)
-            .on("keyup", function(e) {
-                postRequest();
-            })
+    findNodeTreeSpot(
+      $("#" + this.id + name)
+        .parent()
+        .parent()
+        .attr("id")
+    ).settings[name] = parseFloat($("#" + this.id + name).val());
+    $("#" + this.id + name).on("keyup", function(e) {
+      postRequest();
+    });
 
-        $("#" + this.id + name).on("input", function() {
-            findNodeTreeSpot(
-                $(this)
-                .parent()
-                .parent()
-                .attr("id")
-            ).settings[name] = parseFloat($(this).val());
-        });
-    };
+    $("#" + this.id + name).on("input", function() {
+      findNodeTreeSpot(
+        $(this)
+          .parent()
+          .parent()
+          .attr("id")
+      ).settings[name] = parseFloat($(this).val());
+    });
+  };
 };
 
 const strInput = function(name, def) {
-    this.value = null;
-    this.id = "";
-    this.create = function(uuid) {
-        this.id = uuid;
-        return (
-            '<input value="' +
-            def +
-            '" class="strInput setting" oninput="" id="' +
-            uuid +
-            name +
-            '">' +
-            "</input>"
-        );
-    };
-    this.go = function() {
-        let id = this.id;
-        findNodeTreeSpot(
-            $("#" + this.id + name)
-            .parent()
-            .parent()
-            .attr("id")
-        ).settings[name] = $("#" + this.id + name).val();
-        $("#" + this.id + name)
-            .on("keyup", function(e) {
-                postRequest();
-            })
-        $("#" + this.id + name).on("input", function() {
-            findNodeTreeSpot(
-                $(this)
-                .parent()
-                .parent()
-                .attr("id")
-            ).settings[name] = $(this).val();
-        });
-    };
+  this.value = null;
+  this.id = "";
+  this.create = function(uuid) {
+    this.id = uuid;
+    return (
+      '<input value="' +
+      def +
+      '" class="strInput setting" oninput="" id="' +
+      uuid +
+      name +
+      '">' +
+      "</input>"
+    );
+  };
+  this.go = function() {
+    let id = this.id;
+    findNodeTreeSpot(
+      $("#" + this.id + name)
+        .parent()
+        .parent()
+        .attr("id")
+    ).settings[name] = $("#" + this.id + name).val();
+    $("#" + this.id + name).on("keyup", function(e) {
+      postRequest();
+    });
+    $("#" + this.id + name).on("input", function() {
+      findNodeTreeSpot(
+        $(this)
+          .parent()
+          .parent()
+          .attr("id")
+      ).settings[name] = $(this).val();
+    });
+  };
 };
 
 const booleanInput = function(name, def) {
-    this.value = null;
-    this.id = "";
-    this.create = function(uuid) {
-        this.id = uuid;
-        if (def == true) {
-            return (
-                '<label class="switch">' +
-                '<input checked type="checkbox" id="' +
-                uuid +
-                name +
-                '">' +
-                '<span class="slidey round"></span>' +
-                "</label>"
-            );
-        } else {
-            return (
-                '<label class="switch">' +
-                '<input type="checkbox" id="' +
-                uuid +
-                name +
-                '">' +
-                '<span class="slidey round"></span>' +
-                "</label>"
-            );
-        }
-    };
-    this.go = function() {
-        let id = this.id;
-        if (def == true) {
-            findNodeTreeSpot(
-                $("#" + this.id + name)
-                .parent()
-                .parent()
-                .parent()
-                .attr("id")
-            ).settings[name] = true;
-        } else {
-            findNodeTreeSpot(
-                $($("#" + this.id + name))
-                .parent()
-                .parent()
-                .parent()
-                .attr("id")
-            ).settings[name] = false;
-        }
-        $("#" + this.id + name).on("change", function() {
-            if (this.checked) {
-                findNodeTreeSpot(
-                    $(this)
-                    .parent()
-                    .parent()
-                    .parent()
-                    .attr("id")
-                ).settings[name] = true;
-            } else {
-                findNodeTreeSpot(
-                    $(this)
-                    .parent()
-                    .parent()
-                    .parent()
-                    .attr("id")
-                ).settings[name] = false;
-            }
-            postRequest();
-        });
-    };
+  this.value = null;
+  this.id = "";
+  this.create = function(uuid) {
+    this.id = uuid;
+    if (def == true) {
+      return (
+        '<label class="switch">' +
+        '<input checked type="checkbox" id="' +
+        uuid +
+        name +
+        '">' +
+        '<span class="slidey round"></span>' +
+        "</label>"
+      );
+    } else {
+      return (
+        '<label class="switch">' +
+        '<input type="checkbox" id="' +
+        uuid +
+        name +
+        '">' +
+        '<span class="slidey round"></span>' +
+        "</label>"
+      );
+    }
+  };
+  this.go = function() {
+    let id = this.id;
+    if (def == true) {
+      findNodeTreeSpot(
+        $("#" + this.id + name)
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
+      ).settings[name] = true;
+    } else {
+      findNodeTreeSpot(
+        $($("#" + this.id + name))
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
+      ).settings[name] = false;
+    }
+    $("#" + this.id + name).on("change", function() {
+      if (this.checked) {
+        findNodeTreeSpot(
+          $(this)
+            .parent()
+            .parent()
+            .parent()
+            .attr("id")
+        ).settings[name] = true;
+      } else {
+        findNodeTreeSpot(
+          $(this)
+            .parent()
+            .parent()
+            .parent()
+            .attr("id")
+        ).settings[name] = false;
+      }
+      postRequest();
+    });
+  };
 };
 
 const range = function(min, max, name, defMin, defMax) {
-    this.min = min;
-    this.max = max;
-    this.minVal = min;
-    this.maxVal = max;
-    var slider = null;
-    this.id = "";
-    this.create = function(uuid) {
-        this.id = uuid;
-        return (
-            '<div class="setting slider" id="' +
-            uuid +
-            name +
-            '"></div><div id="' +
-            uuid +
-            name +
-            'out1"class="setting sliderOut">' +
-            defMin +
-            '</div><div id="' +
-            uuid +
-            name +
-            'out2"class="setting sliderOut2">' +
-            defMax +
-            "</div>"
-        );
+  this.min = min;
+  this.max = max;
+  this.minVal = min;
+  this.maxVal = max;
+  var slider = null;
+  this.id = "";
+  this.create = function(uuid) {
+    this.id = uuid;
+    return (
+      '<div class="setting slider" id="' +
+      uuid +
+      name +
+      '"></div><div id="' +
+      uuid +
+      name +
+      'out1"class="setting sliderOut">' +
+      defMin +
+      '</div><div id="' +
+      uuid +
+      name +
+      'out2"class="setting sliderOut2">' +
+      defMax +
+      "</div>"
+    );
+  };
+  this.go = function() {
+    findNodeTreeSpot(
+      $("#" + this.id + name)
+        .parent()
+        .parent()
+        .attr("id")
+    ).settings[name] = {
+      min: parseFloat(defMin),
+      max: parseFloat(defMax)
     };
-    this.go = function() {
+    $("#" + this.id + name).slider({
+      range: true,
+      min: this.min,
+      max: this.max,
+      values: [defMin, defMax],
+      stop: function(event, ui) {
+        postRequest();
+      },
+      slide: function(event, ui) {
+        this.minVal = ui.values[0];
+        this.maxVal = ui.values[1];
+
         findNodeTreeSpot(
-            $("#" + this.id + name)
+          $(this)
             .parent()
             .parent()
             .attr("id")
         ).settings[name] = {
-            min: parseFloat(defMin),
-            max: parseFloat(defMax)
+          min: parseFloat(this.minVal),
+          max: parseFloat(this.maxVal)
         };
-        $("#" + this.id + name).slider({
-            range: true,
-            min: this.min,
-            max: this.max,
-            values: [defMin, defMax],
-            stop: function(event, ui) {
-                postRequest();
-            },
-            slide: function(event, ui) {
-                this.minVal = ui.values[0];
-                this.maxVal = ui.values[1];
 
-                findNodeTreeSpot(
-                    $(this)
-                    .parent()
-                    .parent()
-                    .attr("id")
-                ).settings[name] = {
-                    min: parseFloat(this.minVal),
-                    max: parseFloat(this.maxVal)
-                };
+        $("#" + this.id + "out1").text(this.minVal);
 
-                $("#" + this.id + "out1").text(this.minVal);
-
-                $("#" + this.id + "out2").text(this.maxVal);
-            }
-        });
-    };
+        $("#" + this.id + "out2").text(this.maxVal);
+      }
+    });
+  };
 };
 
 const slide = function(min, max, name, def) {
-    this.min = min;
-    this.max = max;
-    this.val = def;
-    var slider = null;
-    this.id = "";
-    this.create = function(uuid) {
-        this.id = uuid;
-        return (
-            '<div class="setting slider" id="' +
-            uuid +
-            name +
-            '"></div><div id="' +
-            uuid +
-            name +
-            'out"class="setting sliderOut">' +
-            this.val +
-            "</div>"
-        );
-    };
-    this.go = function() {
+  this.min = min;
+  this.max = max;
+  this.val = def;
+  var slider = null;
+  this.id = "";
+  this.create = function(uuid) {
+    this.id = uuid;
+    return (
+      '<div class="setting slider" id="' +
+      uuid +
+      name +
+      '"></div><div id="' +
+      uuid +
+      name +
+      'out"class="setting sliderOut">' +
+      this.val +
+      "</div>"
+    );
+  };
+  this.go = function() {
+    findNodeTreeSpot(
+      $("#" + this.id + name)
+        .parent()
+        .parent()
+        .attr("id")
+    ).settings[name] = parseFloat(def);
+    $("#" + this.id + name).slider({
+      range: false,
+      min: this.min,
+      max: this.max,
+      value: this.val,
+      stop: function(event, ui) {
+        postRequest();
+      },
+      slide: function(event, ui) {
+        this.val = ui.value;
+
         findNodeTreeSpot(
-            $("#" + this.id + name)
+          $(this)
             .parent()
             .parent()
             .attr("id")
-        ).settings[name] = parseFloat(def);
-        $("#" + this.id + name).slider({
-            range: false,
-            min: this.min,
-            max: this.max,
-            value: this.val,
-            stop: function(event, ui) {
-                postRequest();
-            },
-            slide: function(event, ui) {
-                this.val = ui.value;
+        ).settings[name] = parseFloat(this.val);
 
-                findNodeTreeSpot(
-                    $(this)
-                    .parent()
-                    .parent()
-                    .attr("id")
-                ).settings[name] = parseFloat(this.val);
-
-                $("#" + this.id + "out").text(this.val);
-            }
-        });
-    };
+        $("#" + this.id + "out").text(this.val);
+      }
+    });
+  };
 };
 
 const box = function(options, name, def) {
-    this.options = options;
-    this.value = options[0];
-    this.id = "";
-    let loopy = function() {
-        let going = "";
-        for (let i = 0; i < options.length; i++) {
-            going += '<option value="' + options[i] + '">' + options[i] + "</option>";
-        }
-        return going;
-    };
-    this.create = function(uuid) {
-        this.id = uuid;
-        return (
-            '<select class="setting dropdown" id="' +
-            uuid +
-            name +
-            '">' +
-            loopy() +
-            "</select>"
-        );
-    };
-    this.go = function() {
-        $("#" + this.id + name).val(def);
-        findNodeTreeSpot(
-            $("#" + this.id + name)
-            .parent()
-            .parent()
-            .attr("id")
-        ).settings[name] = def;
-        $("#" + this.id + name).on("change", function() {
-            findNodeTreeSpot(
-                $(this)
-                .parent()
-                .parent()
-                .attr("id")
-            ).settings[name] = $(this).val();
-            postRequest();
-        });
-    };
+  this.options = options;
+  this.value = options[0];
+  this.id = "";
+  let loopy = function() {
+    let going = "";
+    for (let i = 0; i < options.length; i++) {
+      going += '<option value="' + options[i] + '">' + options[i] + "</option>";
+    }
+    return going;
+  };
+  this.create = function(uuid) {
+    this.id = uuid;
+    return (
+      '<select class="setting dropdown" id="' +
+      uuid +
+      name +
+      '">' +
+      loopy() +
+      "</select>"
+    );
+  };
+  this.go = function() {
+    $("#" + this.id + name).val(def);
+    findNodeTreeSpot(
+      $("#" + this.id + name)
+        .parent()
+        .parent()
+        .attr("id")
+    ).settings[name] = def;
+    $("#" + this.id + name).on("change", function() {
+      findNodeTreeSpot(
+        $(this)
+          .parent()
+          .parent()
+          .attr("id")
+      ).settings[name] = $(this).val();
+      postRequest();
+    });
+  };
 };
 
 var findNodeTreeSpot = function(finder) {
-    for (let i = 0; i < nodeTree.nodes.length; i++) {
-        if (nodeTree.nodes[i].id == finder) {
-            return nodeTree.nodes[i];
-        }
+  for (let i = 0; i < nodeTree.nodes.length; i++) {
+    if (nodeTree.nodes[i].id == finder) {
+      return nodeTree.nodes[i];
     }
-    throw "error!";
+  }
+  throw "error!";
 };
 
 var inputLoop = function(array, uuid) {
-    let arr = [];
-    if (array && array.length) {
-        for (let i = 0; i < array.length - 1; i++) {
-            arr +=
-                '<div class="clicker input" id="' +
-                uuid +
-                array[i] +
-                array[array.length - 1][i].replace(/\s+/g, "") +
-                '">' +
-                "</div>" +
-                "<div class='inputDesc'>" +
-                array[array.length - 1][i] +
-                "</div>";
-        }
-        return arr;
-    } else {
-        return "";
+  let arr = [];
+  if (array && array.length) {
+    for (let i = 0; i < array.length - 1; i++) {
+      arr +=
+        '<div class="clicker input" id="' +
+        uuid +
+        array[i] +
+        array[array.length - 1][i].replace(/\s+/g, "") +
+        '">' +
+        "</div>" +
+        "<div class='inputDesc'>" +
+        array[array.length - 1][i] +
+        "</div>";
     }
+    return arr;
+  } else {
+    return "";
+  }
 };
 var outputLoop = function(array, uuid) {
-    let arr = [];
-    if (array && array.length) {
-        for (let i = 0; i < array.length - 1; i++) {
-            arr +=
-                '<div class="clicker output" id="' +
-                uuid +
-                array[i] +
-                array[array.length - 1][i].replace(/\s+/g, "") +
-                '">' +
-                "</div>" +
-                "<div class='outputDesc'>" +
-                array[array.length - 1][i] +
-                "</div>";
-        }
-        return arr;
-    } else {
-        return "";
+  let arr = [];
+  if (array && array.length) {
+    for (let i = 0; i < array.length - 1; i++) {
+      arr +=
+        '<div class="clicker output" id="' +
+        uuid +
+        array[i] +
+        array[array.length - 1][i].replace(/\s+/g, "") +
+        '">' +
+        "</div>" +
+        "<div class='outputDesc'>" +
+        array[array.length - 1][i] +
+        "</div>";
     }
+    return arr;
+  } else {
+    return "";
+  }
 };
 var settingsLoop = function(settings, uuid) {
-    if (settings && settings.length) {
-        let arr = [];
-        for (let i = 0; i < settings.length; i++) {
-            arr += '<div class="itemContainer">';
-            arr +=
-                '<div class="setting settingName">' +
-                "<h3>" +
-                settings[i][0] +
-                "</h3>" +
-                "</div>";
-            arr += settings[i][1].create(uuid);
-            arr += "</div>";
-        }
-        return arr;
-    } else {
-        return "";
+  if (settings && settings.length) {
+    let arr = [];
+    for (let i = 0; i < settings.length; i++) {
+      arr += '<div class="itemContainer">';
+      arr +=
+        '<div class="setting settingName">' +
+        "<h3>" +
+        settings[i][0] +
+        "</h3>" +
+        "</div>";
+      arr += settings[i][1].create(uuid);
+      arr += "</div>";
     }
+    return arr;
+  } else {
+    return "";
+  }
 };
 var searchForInput = function(array, name) {
-    for (let i = 0; i < array.length; i++) {
-        if (array[i][1] == name) {
-            return true;
-        }
+  for (let i = 0; i < array.length; i++) {
+    if (array[i][1] == name) {
+      return true;
     }
-    return false;
+  }
+  return false;
 };
 
 settingsGo = function(settings) {
-    if (settings && settings.length) {
-        for (let i = 0; i < settings.length; i++) {
-            settings[i][1].go();
-        }
+  if (settings && settings.length) {
+    for (let i = 0; i < settings.length; i++) {
+      settings[i][1].go();
     }
+  }
 };
 $("#" + nodes[list][1])
-    .parent()
-    .parent()
-    .parent()
-    .attr("id");
+  .parent()
+  .parent()
+  .parent()
+  .attr("id");
 
 var popLoop = function(loop, id) {
-    for (let i = 0; i < loop.length; i++) {
-        if (loop[i].indexOf(id) != -1) {
-            var x = findNodeTreeSpot(
-                $("#" + loop[i][1])
-                .parent()
-                .parent()
-                .parent()
-                .attr("id")
-                .substring(0, 36)
-            ).inputs[loop[i][1].substring(39)];
+  for (let i = 0; i < loop.length; i++) {
+    if (loop[i].indexOf(id) != -1) {
+      var x = findNodeTreeSpot(
+        $("#" + loop[i][1])
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
+          .substring(0, 36)
+      ).inputs[loop[i][1].substring(39)];
 
-            if (id.indexOf(x['id']) == -1) {
-                // certified redundant javascript moment
-                delete findNodeTreeSpot(
-                    $("#" + loop[i][1])
-                    .parent()
-                    .parent()
-                    .parent()
-                    .attr("id")
-                    .substring(0, 36)
-                ).inputs[loop[i][1].substring(39)];
+      if (id.indexOf(x["id"]) == -1) {
+        // certified redundant javascript moment
+        delete findNodeTreeSpot(
+          $("#" + loop[i][1])
+            .parent()
+            .parent()
+            .parent()
+            .attr("id")
+            .substring(0, 36)
+        ).inputs[loop[i][1].substring(39)];
 
-                loop.splice(i, 1);
-                list--;
-
-            }
-
-        }
+        loop.splice(i, 1);
+        list--;
+      }
     }
+  }
 };
 
 //loop to get rid of all connections for a node UUID
 var killLoop = function(id) {
-    for (let i = 0; i < nodes.length; i++) {
-        if (typeof nodes[i][0] != "undefined") {
-            if (nodes[i][0].search(id) != -1) {
-                nodes.splice(i, 1);
-                i--;
-                list--;
-            } else if (typeof nodes[i][1] != "undefined") {
-                if (nodes[i][1].search(id) != -1) {
-                    nodes.splice(i, 1);
-                    i--;
-                    list--;
-                }
-            }
+  for (let i = 0; i < nodes.length; i++) {
+    if (typeof nodes[i][0] != "undefined") {
+      if (nodes[i][0].search(id) != -1) {
+        nodes.splice(i, 1);
+        i--;
+        list--;
+      } else if (typeof nodes[i][1] != "undefined") {
+        if (nodes[i][1].search(id) != -1) {
+          nodes.splice(i, 1);
+          i--;
+          list--;
         }
+      }
     }
+  }
 };
 
 //tofix
 
 function uuid(a) {
-    return a ?
-        (a ^ ((Math.random() * 16) >> (a / 4))).toString(16) :
-        ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
+  return a
+    ? (a ^ ((Math.random() * 16) >> (a / 4))).toString(16)
+    : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
 }
 
 var nodeCount = 0;
 //json functions
 const functions = function(jsonData) {
-    this.rawArr = [];
-    this.inputs = [];
-    this.inputsCount = -1;
-    this.outputsCount = -1;
-    this.settingsCount = -1;
-    this.settings = [];
-    this.outputs = [];
-    this.name = [];
-    for (let i = 0; i < jsonData.funcs.length; i++) {
-        let array = jsonData.funcs[i];
-        this.rawArr.push([
-            array.name,
-            array.type,
-            array.settings,
-            array.inputs,
-            array.outputs,
-            uuid()
-        ]);
-        this.name.push(array.name);
+  this.rawArr = [];
+  this.inputs = [];
+  this.inputsCount = -1;
+  this.outputsCount = -1;
+  this.settingsCount = -1;
+  this.settings = [];
+  this.outputs = [];
+  this.name = [];
+  for (let i = 0; i < jsonData.funcs.length; i++) {
+    let array = jsonData.funcs[i];
+    this.rawArr.push([
+      array.name,
+      array.type,
+      array.settings,
+      array.inputs,
+      array.outputs,
+      uuid()
+    ]);
+    this.name.push(array.name);
+  }
+  for (let i = 0; i < this.rawArr.length; i++) {
+    this.outputs.push([]);
+    this.outputsCount++;
+    let numinn = 0;
+    let numoutt = 0;
+    this.inputs.push([]);
+    this.inputsCount++;
+    for (x in this.rawArr[i][3]) {
+      this.inputs[this.inputsCount].push(this.rawArr[i][3][x].type);
+      numinn++;
     }
+    if (numinn != 0) {
+      this.inputs[this.inputsCount].push(Object.keys(this.rawArr[i][3]));
+    }
+    for (x in this.rawArr[i][4]) {
+      this.outputs[this.outputsCount].push(this.rawArr[i][4][x].type);
+      numoutt++;
+    }
+    if (numoutt != 0) {
+      this.outputs[this.outputsCount].push(Object.keys(this.rawArr[i][4]));
+    }
+  }
+
+  for (let i = 0; i < this.rawArr.length; i++) {
+    let j = 0;
+    this.settings.push([]);
+    this.settingsCount++;
+    for (x in this.rawArr[i][2]) {
+      let nam = Object.keys(this.rawArr[i][2]);
+
+      switch (this.rawArr[i][2][x].type) {
+        case "dec":
+          if (typeof this.rawArr[i][2][x].params.default != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new decInput(nam[j], this.rawArr[i][2][x].params.default)
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new decInput(nam[j], 0)
+            ]);
+          }
+
+          break;
+        case "int":
+          if (typeof this.rawArr[i][2][x].params.default != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new intInput(nam[j], this.rawArr[i][2][x].params.default)
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new intInput(nam[j], 0)
+            ]);
+          }
+
+          break;
+        case "str":
+          if (typeof this.rawArr[i][2][x].params.default != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new strInput(nam[j], this.rawArr[i][2][x].params.default)
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new strInput(nam[j], "")
+            ]);
+          }
+          break;
+        case "bol":
+          if (typeof this.rawArr[i][2][x].params.default != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new booleanInput(nam[j], this.rawArr[i][2][x].params.default)
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new booleanInput(nam[j], "false")
+            ]);
+          }
+          break;
+        case "slide":
+          if (typeof this.rawArr[i][2][x].params.default != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new slide(
+                this.rawArr[i][2][x].params.min,
+                this.rawArr[i][2][x].params.max,
+                nam[j],
+                this.rawArr[i][2][x].params.default
+              )
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new slide(
+                this.rawArr[i][2][x].params.min,
+                this.rawArr[i][2][x].params.max,
+                nam[j],
+                (this.rawArr[i][2][x].params.min +
+                  this.rawArr[i][2][x].params.max) /
+                  2
+              )
+            ]);
+          }
+          break;
+        case "range":
+          if (typeof this.rawArr[i][2][x].params.defaultMin != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new range(
+                this.rawArr[i][2][x].params.min,
+                this.rawArr[i][2][x].params.max,
+                nam[j],
+                this.rawArr[i][2][x].params.defaultMin,
+                this.rawArr[i][2][x].params.defaultMax
+              )
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new range(
+                this.rawArr[i][2][x].params.min,
+                this.rawArr[i][2][x].params.max,
+                nam[j],
+                this.rawArr[i][2][x].params.min,
+                this.rawArr[i][2][x].params.max
+              )
+            ]);
+          }
+          break;
+        case "box":
+          if (typeof this.rawArr[i][2][x].params.default != "undefined") {
+            this.settings[this.settingsCount].push([
+              x,
+              new box(
+                this.rawArr[i][2][x].params.options,
+                nam[j],
+                this.rawArr[i][2][x].params.default
+              )
+            ]);
+          } else {
+            this.settings[this.settingsCount].push([
+              x,
+              new box(
+                this.rawArr[i][2][x].params.options,
+                nam[j],
+                this.rawArr[i][2][x].params.options[0]
+              )
+            ]);
+          }
+          break;
+      }
+      j++;
+    }
+  }
+
+  this.findType = function(name, parentType, inputs) {
+    if (inputs) {
+      for (let i = 0; i < this.rawArr.length; i++) {
+        if (this.rawArr[i][1] == parentType) {
+          return this.rawArr[i][3][name].type;
+        }
+      }
+    } else {
+      for (let i = 0; i < this.rawArr.length; i++) {
+        if (this.rawArr[i][1] == parentType) {
+          return this.rawArr[i][4][name].type;
+        }
+      }
+    }
+    return "fail";
+  };
+
+  //returns setting type of imported nodetree obj (since nodetree doesnt give setting)
+  this.findSettingType = function(name, parentType) {
     for (let i = 0; i < this.rawArr.length; i++) {
-        this.outputs.push([]);
-        this.outputsCount++;
-        let numinn = 0;
-        let numoutt = 0;
-        this.inputs.push([]);
-        this.inputsCount++;
-        for (x in this.rawArr[i][3]) {
-            this.inputs[this.inputsCount].push(this.rawArr[i][3][x].type);
-            numinn++;
-        }
-        if (numinn != 0) {
-            this.inputs[this.inputsCount].push(Object.keys(this.rawArr[i][3]));
-        }
-        for (x in this.rawArr[i][4]) {
-            this.outputs[this.outputsCount].push(this.rawArr[i][4][x].type);
-            numoutt++;
-        }
-        if (numoutt != 0) {
-            this.outputs[this.outputsCount].push(Object.keys(this.rawArr[i][4]));
-        }
+      if (this.rawArr[i][1] == parentType) {
+        return this.rawArr[i][2][name].type;
+      }
     }
+  };
 
+  this.recreate = function(type, uuid, pos) {
     for (let i = 0; i < this.rawArr.length; i++) {
-        let j = 0;
-        this.settings.push([]);
-        this.settingsCount++;
-        for (x in this.rawArr[i][2]) {
-            let nam = Object.keys(this.rawArr[i][2]);
-
-            switch (this.rawArr[i][2][x].type) {
-                case "dec":
-                    if (typeof this.rawArr[i][2][x].params.default != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new decInput(nam[j], this.rawArr[i][2][x].params.default)
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new decInput(nam[j], 0)
-                        ]);
-                    }
-
-                    break;
-                case "int":
-                    if (typeof this.rawArr[i][2][x].params.default != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new intInput(nam[j], this.rawArr[i][2][x].params.default)
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new intInput(nam[j], 0)
-                        ]);
-                    }
-
-                    break;
-                case "str":
-                    if (typeof this.rawArr[i][2][x].params.default != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new strInput(nam[j], this.rawArr[i][2][x].params.default)
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new strInput(nam[j], "")
-                        ]);
-                    }
-                    break;
-                case "bol":
-                    if (typeof this.rawArr[i][2][x].params.default != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new booleanInput(nam[j], this.rawArr[i][2][x].params.default)
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new booleanInput(nam[j], "false")
-                        ]);
-                    }
-                    break;
-                case "slide":
-                    if (typeof this.rawArr[i][2][x].params.default != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new slide(
-                                this.rawArr[i][2][x].params.min,
-                                this.rawArr[i][2][x].params.max,
-                                nam[j],
-                                this.rawArr[i][2][x].params.default
-                            )
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new slide(
-                                this.rawArr[i][2][x].params.min,
-                                this.rawArr[i][2][x].params.max,
-                                nam[j],
-                                (this.rawArr[i][2][x].params.min +
-                                    this.rawArr[i][2][x].params.max) /
-                                2
-                            )
-                        ]);
-                    }
-                    break;
-                case "range":
-                    if (typeof this.rawArr[i][2][x].params.defaultMin != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new range(
-                                this.rawArr[i][2][x].params.min,
-                                this.rawArr[i][2][x].params.max,
-                                nam[j],
-                                this.rawArr[i][2][x].params.defaultMin,
-                                this.rawArr[i][2][x].params.defaultMax
-                            )
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new range(
-                                this.rawArr[i][2][x].params.min,
-                                this.rawArr[i][2][x].params.max,
-                                nam[j],
-                                this.rawArr[i][2][x].params.min,
-                                this.rawArr[i][2][x].params.max
-                            )
-                        ]);
-                    }
-                    break;
-                case "box":
-                    if (typeof this.rawArr[i][2][x].params.default != "undefined") {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new box(
-                                this.rawArr[i][2][x].params.options,
-                                nam[j],
-                                this.rawArr[i][2][x].params.default
-                            )
-                        ]);
-                    } else {
-                        this.settings[this.settingsCount].push([
-                            x,
-                            new box(
-                                this.rawArr[i][2][x].params.options,
-                                nam[j],
-                                this.rawArr[i][2][x].params.options[0]
-                            )
-                        ]);
-                    }
-                    break;
-            }
-            j++;
-        }
-    }
-
-    this.findType = function(name, parentType, inputs) {
-        if (inputs) {
-            for (let i = 0; i < this.rawArr.length; i++) {
-                if (this.rawArr[i][1] == parentType) {
-                    return this.rawArr[i][3][name].type;
-                }
-            }
-        } else {
-            for (let i = 0; i < this.rawArr.length; i++) {
-                if (this.rawArr[i][1] == parentType) {
-                    return this.rawArr[i][4][name].type;
-                }
-            }
-        }
-        return "fail";
-    };
-
-    //returns setting type of imported nodetree obj (since nodetree doesnt give setting)
-    this.findSettingType = function(name, parentType) {
-        for (let i = 0; i < this.rawArr.length; i++) {
-            if (this.rawArr[i][1] == parentType) {
-                return this.rawArr[i][2][name].type;
-            }
-        }
-    };
-
-    this.recreate = function(type, uuid, pos) {
-        for (let i = 0; i < this.rawArr.length; i++) {
-            if (this.rawArr[i][1] === type) {
-                functionNode = new Node(
-                    "node" + nodeCount,
-                    uuid,
-                    this.settings[i],
-                    this.inputs[i],
-                    this.outputs[i],
-                    this.name[i],
-                    [Math.round(pos[0]), Math.round(pos[1])]
-                );
-                nodeTree.nodes.push({
-                    type: type,
-                    id: uuid,
-                    settings: {},
-                    inputs: {}
-                });
-                functionNode.create();
-            }
-        }
-    };
-
-    var posCounter = 0;
-    var posOffset = 20;
-    var posMax = 5;
-    var posCalculated = 0;
-
-    var go = function(type, arr, set, inp, out, name) {
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i][1] === type) {
-                posCalculated = 20 + (posCounter * posOffset);
-                let uuidIn = uuid();
-                functionNode = new Node(
-                    "node" + nodeCount,
-                    uuidIn,
-                    set[i],
-                    inp[i],
-                    out[i],
-                    name[i],
-                    [posCalculated, posCalculated]
-                );
-                nodeTree.nodes.push({
-                    type: type,
-                    id: uuidIn,
-                    settings: {},
-                    inputs: {}
-                });
-                functionNode.create();
-                posCounter = (posCounter + 1) % posMax;
-            }
-        }
-    };
-
-    this.ui = function() {
-        let dir = [];
-        let typelist = [];
-        for (let i = 0; i<this.rawArr.length; i++){
-            let str = this.rawArr[i][1].slice(0,this.rawArr[i][1].indexOf("/"));
-            dir[i] = str.split('.').join('-');
-        }
-        $.each(dir, function(i, el){
-            if($.inArray(el, typelist) === -1) typelist.push(el);
+      if (this.rawArr[i][1] === type) {
+        functionNode = new Node(
+          "node" + nodeCount,
+          uuid,
+          this.settings[i],
+          this.inputs[i],
+          this.outputs[i],
+          this.name[i],
+          [Math.round(pos[0]), Math.round(pos[1])]
+        );
+        nodeTree.nodes.push({
+          type: type,
+          id: uuid,
+          settings: {},
+          inputs: {}
         });
-        for(let i = 0; i < typelist.length; i++){
-            $("#menu-container-modules").append(
-                '<div class="menu-division" id ="'+
-                typelist[i]
-                +'">'+"<div class='menu-selector'><i class='arrow'id='i"+typelist[i]+"'></i><div class='menu-name'>"+typelist[i]+ "</div></div><div style='display:none' id='"+typelist[i]+"btns'></div></div></div>"
-            );
+        functionNode.create();
+      }
+    }
+  };
 
-        }
+  var posCounter = 0;
+  var posOffset = 20;
+  var posMax = 5;
+  var posCalculated = 0;
 
-        for (let i = 0; i < this.rawArr.length; i++) {
-            let n = this.rawArr[i][1].slice(0,this.rawArr[i][1].indexOf("/")).split('.').join('-');
-            $("#"+n+"btns").append(
-                '<div class="menu-button" id="' +
-                this.rawArr[i][5] +
-                '">' +
-                this.rawArr[i][0] +
-                ""+
-                "</div>"
-            );
-            let gType = this.rawArr[i][1];
-            let gArray = this.rawArr;
-            let gSettings = this.settings;
-            let gInputs = this.inputs;
-            let gOutputs = this.outputs;
-            let gName = this.name;
-            $("#" + this.rawArr[i][5]).on("click", function() {
-                go(gType, gArray, gSettings, gInputs, gOutputs, gName);
-            });
-        }
+  var go = function(type, arr, set, inp, out, name) {
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i][1] === type) {
+        posCalculated = 20 + posCounter * posOffset;
+        let uuidIn = uuid();
+        functionNode = new Node(
+          "node" + nodeCount,
+          uuidIn,
+          set[i],
+          inp[i],
+          out[i],
+          name[i],
+          [posCalculated, posCalculated]
+        );
+        nodeTree.nodes.push({
+          type: type,
+          id: uuidIn,
+          settings: {},
+          inputs: {}
+        });
+        functionNode.create();
+        posCounter = (posCounter + 1) % posMax;
+      }
+    }
+  };
 
-        $(".menu-selector").on("click", function(){
-            var name = $(this).find(".menu-name").text();
-            if($('#' + name + 'btns').css("display") == "block"){
-                $( "#i" + name  ).css(
-                    'transform', 'rotate(-45deg)')
-                $( "#i" + name  ).css(
-                    '-webkit-transform', 'rotate(-45deg)'
-                );
-                $('#'+ name + 'btns').css("display","none");
+  this.ui = function() {
+    let dir = [];
+    let typelist = [];
+    for (let i = 0; i < this.rawArr.length; i++) {
+      let str = this.rawArr[i][1].slice(0, this.rawArr[i][1].indexOf("/"));
+      dir[i] = str.split(".").join("-");
+    }
+    $.each(dir, function(i, el) {
+      if ($.inArray(el, typelist) === -1) typelist.push(el);
+    });
+    for (let i = 0; i < typelist.length; i++) {
+      $("#menu-container-modules").append(
+        '<div class="menu-division" id ="' +
+          typelist[i] +
+          '">' +
+          "<div class='menu-selector'><i class='arrow'id='i" +
+          typelist[i] +
+          "'></i><div class='menu-name'>" +
+          typelist[i] +
+          "</div></div><div style='display:none' id='" +
+          typelist[i] +
+          "btns'></div></div></div>"
+      );
+    }
 
+    for (let i = 0; i < this.rawArr.length; i++) {
+      let n = this.rawArr[i][1]
+        .slice(0, this.rawArr[i][1].indexOf("/"))
+        .split(".")
+        .join("-");
+      $("#" + n + "btns").append(
+        '<div class="menu-button" id="' +
+          this.rawArr[i][5] +
+          '">' +
+          this.rawArr[i][0] +
+          "" +
+          "</div>"
+      );
+      let gType = this.rawArr[i][1];
+      let gArray = this.rawArr;
+      let gSettings = this.settings;
+      let gInputs = this.inputs;
+      let gOutputs = this.outputs;
+      let gName = this.name;
+      $("#" + this.rawArr[i][5]).on("click", function() {
+        go(gType, gArray, gSettings, gInputs, gOutputs, gName);
+      });
+    }
 
-            }else{
-                $( "#i" + name  ).css(
-                    'transform', 'rotate(45deg)')
-                $( "#i" + name  ).css(
-                    '-webkit-transform', 'rotate(45deg)'
-                );
-                $('#'+ name + 'btns').css("display","block")
-            }
-
-        })
-    };
+    $(".menu-selector").on("click", function() {
+      var name = $(this)
+        .find(".menu-name")
+        .text();
+      if ($("#" + name + "btns").css("display") == "block") {
+        $("#i" + name).css("transform", "rotate(-45deg)");
+        $("#i" + name).css("-webkit-transform", "rotate(-45deg)");
+        $("#" + name + "btns").css("display", "none");
+      } else {
+        $("#i" + name).css("transform", "rotate(45deg)");
+        $("#i" + name).css("-webkit-transform", "rotate(45deg)");
+        $("#" + name + "btns").css("display", "block");
+      }
+    });
+  };
 };
 const importNodeTree = function(nodetree, functions) {
-    this.findOutputType = function(id) {
-        for (let i = 0; i < nodetree.nodes.length; i++) {
-            if (nodetree.nodes[i].id == id) {
-                return nodetree.nodes[i].type;
-            }
+  this.findOutputType = function(id) {
+    for (let i = 0; i < nodetree.nodes.length; i++) {
+      if (nodetree.nodes[i].id == id) {
+        return nodetree.nodes[i].type;
+      }
+    }
+  };
+
+  this.go = function() {
+    for (let i = 0; i < nodetree.nodes.length; i++) {
+      //nodes
+      functions.recreate(
+        nodetree.nodes[i].type,
+        nodetree.nodes[i].id,
+        nodetree.nodes[i].pos
+      );
+      //inputs
+      if (Object.keys(nodetree.nodes[i].inputs).length != 0) {
+        for (x in nodetree.nodes[i].inputs) {
+          nodes[list].push(
+            nodetree.nodes[i].inputs[x].id +
+              functions.findType(
+                nodetree.nodes[i].inputs[x].name,
+                this.findOutputType(nodetree.nodes[i].inputs[x].id, false)
+              ) +
+              nodetree.nodes[i].inputs[x].name
+          );
+
+          nodes[list].push(
+            nodetree.nodes[i].id +
+              functions.findType(x, nodetree.nodes[i].type, true) +
+              x
+          );
+
+          nodes[list + 1] = [];
+          list++;
+          firsttime = true;
+          onOut = false;
         }
-    };
+      }
 
-    this.go = function() {
-        for (let i = 0; i < nodetree.nodes.length; i++) {
-            //nodes
-            functions.recreate(nodetree.nodes[i].type, nodetree.nodes[i].id, nodetree.nodes[i].pos);
-            //inputs
-            if (Object.keys(nodetree.nodes[i].inputs).length != 0) {
-                for (x in nodetree.nodes[i].inputs) {
-                    nodes[list].push(
-                        nodetree.nodes[i].inputs[x].id +
-                        functions.findType(
-                            nodetree.nodes[i].inputs[x].name,
-                            this.findOutputType(nodetree.nodes[i].inputs[x].id, false)
-                        ) +
-                        nodetree.nodes[i].inputs[x].name
-                    );
+      //settings
 
-                    nodes[list].push(
-                        nodetree.nodes[i].id +
-                        functions.findType(x, nodetree.nodes[i].type, true) +
-                        x
-                    );
-
-                    nodes[list + 1] = [];
-                    list++;
-                    firsttime = true;
-                    onOut = false;
-                }
+      for (x in nodetree.nodes[i].settings) {
+        switch (functions.findSettingType(x, nodetree.nodes[i].type)) {
+          case "dec":
+            $("#" + nodetree.nodes[i].id + x).val(
+              nodetree.nodes[i].settings[x]
+            );
+            break;
+          case "int":
+            $("#" + nodetree.nodes[i].id + x).val(
+              nodetree.nodes[i].settings[x]
+            );
+            break;
+          case "str":
+            $("#" + nodetree.nodes[i].id + x).val(
+              nodetree.nodes[i].settings[x]
+            );
+            break;
+          case "bol":
+            if (nodetree.nodes[i].settings[x]) {
+              $("#" + nodetree.nodes[i].id + x).prop("checked", true);
+            } else {
+              $("#" + nodetree.nodes[i].id + x).prop("checked", false);
             }
+            break;
+          case "slide":
+            $("#" + nodetree.nodes[i].id + x).slider(
+              "value",
+              nodetree.nodes[i].settings[x]
+            );
+            $("#" + nodetree.nodes[i].id + x + "out").text(
+              nodetree.nodes[i].settings[x]
+            );
 
-            //settings
+            break;
+          case "range":
+            $("#" + nodetree.nodes[i].id + x).slider("values", [
+              nodetree.nodes[i].settings[x].min,
+              nodetree.nodes[i].settings[x].max
+            ]);
+            $("#" + nodetree.nodes[i].id + x + "out1").text(
+              nodetree.nodes[i].settings[x].min
+            );
 
-            for (x in nodetree.nodes[i].settings) {
-                switch (functions.findSettingType(x, nodetree.nodes[i].type)) {
-                    case "dec":
-                        $("#" + nodetree.nodes[i].id + x).val(
-                            nodetree.nodes[i].settings[x]
-                        );
-                        break;
-                    case "int":
-                        $("#" + nodetree.nodes[i].id + x).val(
-                            nodetree.nodes[i].settings[x]
-                        );
-                        break;
-                    case "str":
-                        $("#" + nodetree.nodes[i].id + x).val(
-                            nodetree.nodes[i].settings[x]
-                        );
-                        break;
-                    case "bol":
-                        if (nodetree.nodes[i].settings[x]) {
-                            $("#" + nodetree.nodes[i].id + x).prop("checked", true);
-                        } else {
-                            $("#" + nodetree.nodes[i].id + x).prop("checked", false);
-                        }
-                        break;
-                    case "slide":
-                        $("#" + nodetree.nodes[i].id + x).slider(
-                            "value",
-                            nodetree.nodes[i].settings[x]
-                        );
-                        $("#" + nodetree.nodes[i].id + x + "out").text(
-                            nodetree.nodes[i].settings[x]
-                        );
-
-                        break;
-                    case "range":
-                        $("#" + nodetree.nodes[i].id + x).slider("values", [
-                            nodetree.nodes[i].settings[x].min,
-                            nodetree.nodes[i].settings[x].max
-                        ]);
-                        $("#" + nodetree.nodes[i].id + x + "out1").text(
-                            nodetree.nodes[i].settings[x].min
-                        );
-
-                        $("#" + nodetree.nodes[i].id + x + "out2").text(
-                            nodetree.nodes[i].settings[x].max
-                        );
-                        // $('#' + nodetree.nodes[i].id + x).maxVal(nodetree.nodes[i].settings[x].max);
-                        break;
-                    case "box":
-                        $("#" + nodetree.nodes[i].id + x).val(
-                            nodetree.nodes[i].settings[x]
-                        );
-                        break;
-                }
-            }
+            $("#" + nodetree.nodes[i].id + x + "out2").text(
+              nodetree.nodes[i].settings[x].max
+            );
+            // $('#' + nodetree.nodes[i].id + x).maxVal(nodetree.nodes[i].settings[x].max);
+            break;
+          case "box":
+            $("#" + nodetree.nodes[i].id + x).val(
+              nodetree.nodes[i].settings[x]
+            );
+            break;
         }
-        nodeTree.nodes = nodetree.nodes;
-    };
+      }
+    }
+    nodeTree.nodes = nodetree.nodes;
+  };
 };
 // const node = function(id, uuid, settings, inputs, outputs, name) {
