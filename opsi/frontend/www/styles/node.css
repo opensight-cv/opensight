@@ -126,20 +126,41 @@ p {
   margin: 10px;
 }
 
-#status-content {
+.status-content {
   display: none;
   position: fixed;
   width: auto;
   height: auto;
+  overflow-wrap: break-word;
+  max-width: 40vw;
   min-width: 500px;
   min-height: 30px;
   border: 5px solid #7f7f7f;
   border-radius: 10px;
   padding: 10px;
   background-color: #ccc;
-  bottom: 20px;
-  right: 5%;
+  bottom: 2%;
+  right: 7%;
   z-index: 60;
+  user-select: text;
+}
+.status-content:after {
+  position: absolute;
+  content: "";
+  top: -35%;
+  bottom: -35%;
+  left: 99%;
+  right: -80%;
+  user-select: none;
+}
+.status-content:before {
+  position: absolute;
+  content: "";
+  top: -35%;
+  bottom: -35%;
+  left: -10%;
+  right: 99%;
+  user-select: none;
 }
 
 .status-dropdown:hover .status-indicator-icon {
@@ -159,8 +180,8 @@ p {
   position: fixed;
   width: 50px;
   height: 50px;
-  right: 20px;
-  bottom: 20px;
+  right: 1%;
+  bottom: 2%;
   z-index: 10015;
 
   border-radius: 10px;

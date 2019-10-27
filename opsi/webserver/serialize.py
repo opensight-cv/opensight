@@ -233,13 +233,15 @@ class NodeTreeImportError(ValueError):
 
             msg += ": " + str(exc_info[1])
 
+        logMsg = msg
         if self.node:
-            msg = f"Node '{self.node.id}' of type '{self.node.type}': {msg}"
+            msg = f"{self.node.type}: {msg}"
+            logMsg = f"Node '{self.node.id}' returned error {msg}"
 
         super().__init__(msg)
 
         # if exc_info == True, this class must not be instantiated outside an `except:` clause
-        LOGGER.debug(f"Error during nodetree import: {msg}", exc_info=exc_info)
+        LOGGER.debug(f"Error during importing nodetree. {logMsg}", exc_info=exc_info)
 
 
 def _process_node_links(program, node: NodeN, ids) -> List[str]:
@@ -268,7 +270,7 @@ def _process_node_links(program, node: NodeN, ids) -> List[str]:
             if LINKS_INSTEAD_OF_INPUTS:
                 # there is no input.value to fall back on -> missing link
                 raise NodeTreeImportError(
-                    program, node, f"Missing link '{name}'", exc_info=False
+                    program, node, f"Missing input '{name}'", exc_info=False
                 )
 
             empty_links.append(name)

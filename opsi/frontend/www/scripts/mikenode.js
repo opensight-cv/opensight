@@ -16,42 +16,43 @@ $.ajaxSetup({
 // https://stackoverflow.com/a/1909508
 var postGo = function() {
   setIcons("spinner");
+  setStatusMsg("Attempting to import nodetree...");
   return $.ajax({
     type: "POST",
     url: "/api/nodes",
     data: JSON.stringify(nodeTree),
     success: function() {
       setIcons("check");
-      setErrMessage(" ");
-      statusError = false;
+      setStatusMsg("Nodetree imported successfully. It successfully imported. The nodetree import was completed successfully. In fact, the nodetree which was queued for import was successfully able to import.");
     },
     error: function(xhr, status, error) {
       setIcons("cross");
       json = xhr.responseJSON;
       if (json) {
-        setErrMessage(json["message"]);
-        statusError = true;
+        setStatusMsg(json["message"]);
+      } else {
+        setStatusMsg("Failed to import nodetree (unknown connection error)");
       }
     }
   });
 };
-var statusError = false;
 
-$(".status-indicator").hover(
+$(".status-indicator").mouseover(
   function() {
-    if (statusError) {
-      $("#status-content").css("display", "block");
-    }
-  },
+    $(".status-content").css("display", "block");
+  }
+);
+$(".status-content").mouseleave(
   function() {
-    $("#status-content").css("display", "none");
+    $(".status-content").css("display", "none");
   }
 );
 
-function setErrMessage(err) {
-  $("#status-content").text(err);
+function setStatusMsg(msg) {
+  $(".status-content").text(msg);
 }
 function setGreyscaleIcons() {
+  setStatusMsg("Nodetree out of date. Waiting to import...");
   $(".status-indicator-icon").addClass("status-indicator-greyscale");
 }
 
