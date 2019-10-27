@@ -146,3 +146,11 @@ def encode_jpg(img: Mat, quality=None) -> bytes:
 
 
 resize = cv2.resize
+
+
+def invert(img: MatBW) -> MatBW:
+    return cv2.bitwise_not(img.matBW)
+
+
+def joinBW(img1: MatBW, img2: MatBW) -> MatBW:
+    return cv2.bitwise_or(img1.matBW, img2.matBW)

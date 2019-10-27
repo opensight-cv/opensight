@@ -41,3 +41,32 @@ class Dilate(Erode):
     @classmethod
     def _impl(cls, imgBW, size):
         return cvw.dilate(imgBW, size)
+
+
+class Invert(Function):
+    @dataclass
+    class Inputs:
+        imgBW: MatBW
+
+    @dataclass
+    class Outputs:
+        imgBW: MatBW
+
+    def run(self, inputs):
+        imgBW = cvw.invert(inputs.imgBW)
+        return self.Outputs(imgBW=imgBW)
+
+
+class Join(Function):
+    @dataclass
+    class Inputs:
+        imgBW1: MatBW
+        imgBW2: MatBW
+
+    @dataclass
+    class Outputs:
+        imgBW: MatBW
+
+    def run(self, inputs):
+        imgBW = cvw.joinBW(inputs.imgBW1, inputs.imgBW2)
+        return self.Outputs(imgBW=imgBW)
