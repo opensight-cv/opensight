@@ -88,14 +88,8 @@ class WebServer:
         return self.testclient.post("/api/nodes", data)
 
 
-class CacheControlStaticFiles(StaticFiles):
-    def file_response(self, *args, **kwargs):
-        response = super().file_response(*args, **kwargs)
-        response.headers["Cache-Control"] = "no-cache public max-age=0 must-validate"
-        return response
-
-
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
+        response.headers["Cache-Control"] = "no-cache public max-age=0 must-validate"
         return response

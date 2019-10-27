@@ -175,10 +175,13 @@ class MjpegResponse:
         self.src = src
 
     async def send_images(self, app, quality, fps, resolution):
-        async for img in self.src.get_img(app, quality, fps, resolution):
-            if img is None:
-                break
-            asyncio.create_task(app.send(self.HEADERS + img))
+        try:
+            async for img in self.src.get_img(app, quality, fps, resolution):
+                if img is None:
+                    break
+                asyncio.create_task(app.send(self.HEADERS + img))
+        except asycnio.CancelledError:
+            pass
 
     def get_values(self):
         quality = 100
