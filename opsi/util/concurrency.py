@@ -133,10 +133,10 @@ class AsyncThread(ShutdownThread):
     def run_coro(self, coro):
         asyncio.run_coroutine_threadsafe(coro, self.loop)
 
-    def wait_for_task(self, task, timeout=0.5):
+    def wait_for_task(self, task, timeout=0.1):
         start = time.time()
         while True:
-            if (start - time.time()) >= timeout:
+            if (time.time() - start) >= timeout:
                 return False
             if task.done() or task.cancelled():
                 return True
