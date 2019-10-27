@@ -123,7 +123,7 @@ var nodes = [];
 
 // update
 
-var boxCenterXOffset = 10;
+var boxCenterXOffset = 10 - 60; // 60 is the width of nav bar
 var boxCenterYOffset = 10;
 
 update();
@@ -236,7 +236,7 @@ function update() {
         }
     }
 
-    c.width = window.innerWidth;
+    c.width = window.innerWidth - 60; // 60 = Width of navbar
     c.height = window.innerHeight;
 
     ctx.strokeStyle = "#2DBC4E";
@@ -1084,10 +1084,12 @@ const functions = function(jsonData) {
     var posCounter = 0;
     var posOffset = 20;
     var posMax = 5;
+    var posCalculated = 0;
 
     var go = function(type, arr, set, inp, out, name) {
         for (let i = 0; i < arr.length; i++) {
             if (arr[i][1] === type) {
+                posCalculated = 20 + (posCounter * posOffset);
                 let uuidIn = uuid();
                 functionNode = new Node(
                     "node" + nodeCount,
@@ -1096,7 +1098,7 @@ const functions = function(jsonData) {
                     inp[i],
                     out[i],
                     name[i],
-                    [80 + (posCounter * posOffset), 20 + (posCounter * posOffset)]
+                    [posCalculated, posCalculated]
                 );
                 nodeTree.nodes.push({
                     type: type,

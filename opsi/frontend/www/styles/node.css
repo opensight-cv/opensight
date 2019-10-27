@@ -21,6 +21,8 @@ html {
 /* just to be sure these are full screen*/
 canvas {
   display: block;
+  position: absolute;
+  left: 60px; /* Width of navbar */
 }
 /* To remove the scrollbars */
 body {
@@ -69,7 +71,7 @@ p {
   vertical-align: top;
   border: none;
 }
-#preference {
+.preference {
   float: left;
   z-index: 7;
   border: 5px solid #2dbc4e;
@@ -79,7 +81,7 @@ p {
   padding: 10px;
   text-align: center;
 }
-#preference input {
+.preference input {
   display: block;
   margin: 5px auto;
 }
@@ -87,17 +89,17 @@ p {
   display: inline;
   max-width: 18%;
 }
-#preference #profile-button {
+.preference .profile-button {
   display: inline;
   margin: 0px;
 }
 #container,
 #prefs-container {
-  width: 100%;
+  width: calc(100vw - 60px); /* Width of navbar */
   height: 100%;
   position: absolute;
   top: 0;
-  left: 0;
+  left: 60px; /* Width of navbar */
   overflow: auto;
   background-image: radial-gradient(#a5a5a5 3%, transparent 3%);
   background-position: 0 0, 25px 25px;
@@ -105,9 +107,7 @@ p {
   background-attachment: local;
 }
 #prefs-container {
-  /* width: 96%; */
   text-align: center;
-  padding-left: 60px;
   display: inline;
 }
 #upload-form {
@@ -499,7 +499,7 @@ html .ui-button.ui-state-disabled:active {
   overflow: hidden;
   font-size: 14px;
   top: 15px;
-  right: 15px;
+  right: 20px;
   min-width: 190px;
 }
 #menu-container h1 {

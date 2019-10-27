@@ -42,8 +42,6 @@ def init_networktables(network):
 
 class Lifespan:
     PORTS = (80, 8000)
-    VERSION = opsi.__version__
-
     def __init__(self, args, *, catch_signal=False, load_persist=True):
         self.event = threading.Event()
         self.threads = []
@@ -106,7 +104,7 @@ class Lifespan:
 
     def main_loop(self):
         while self._restart:
-            LOGGER.info(f"OpenSight starting... version {self.VERSION}")
+            LOGGER.info(f"OpenSight starting... version {opsi.__version__}")
             self.event.clear()
             self.make_threads()
             self.event.wait()

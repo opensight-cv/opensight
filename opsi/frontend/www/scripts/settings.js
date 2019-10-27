@@ -67,7 +67,7 @@ $(document).ready(function() {
                 $(this).remove()
             })[0].click()
     })
-    $(document).on("click", "#profile-button", function(event) {
+    $(document).on("click", ".profile-button", function(event) {
         $.ajax({
             type: "POST",
             url: "/api/profile?profile=" + $(this).val(),

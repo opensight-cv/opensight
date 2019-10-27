@@ -33,8 +33,7 @@ class WebServer:
             self.template(
                 "settings.html",
                 persist=self.program.lifespan.persist,
-                daemon=self.program.lifespan.using_systemd,
-                version=self.program.lifespan.VERSION,
+                daemon=self.program.lifespan.using_systemd
             ),
         )
 
@@ -89,5 +88,5 @@ class WebServer:
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
-        response.headers["Cache-Control"] = "no-cache public max-age=5"
+        response.headers["Cache-Control"] = "no-cache public max-age=30"
         return response

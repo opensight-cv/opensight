@@ -9,22 +9,23 @@
 <div id="prefs-container">
     <table id="prefs-table">
         <tr>
+            {% if daemon %}
             <td>
-                <div id="preference">
+                <div class="preference">
                     <h2>Update</h2>
                     <p>
-                        You can get the latest version of OpenSight
-                        <a href="https://github.com/opensight-cv/packages/releases">here</a>.
+                        <a href="https://github.com/opensight-cv/packages/releases">Download the latest version of OpenSight.</a>
+                        Make sure to only download the "with-dependencies" package.
                     </p>
-                    <p>Updating from web-ui only works on Raspbian</p>
                     <form id="update-form" enctype="multipart/form-data" method="post" name="update-form">
                         <input type="file" class="bfi" required />
                     </form>
-                    <input class="update-button" id="update-button" type="button" value="Update"/>
+                    <input id="update-button" type="button" value="Update"/>
                 </div>
             </td>
+            {% endif %}
             <td>
-                <div id="preference">
+                <div class="preference">
                     <h2>Actions</h2>
                     {% if daemon %}
                     <input id="restart" type="button" value="Restart OpenSight"/>
@@ -37,24 +38,24 @@
                 </div>
             </td>
             <td>
-                <div id="preference">
+                <div class="preference">
                     <h2>Profiles</h2>
                     <p>Current profile: {{persist.profile}}</p>
-                    <input id="profile-button" type="button" value="0"/>
-                    <input id="profile-button" type="button" value="1"/>
-                    <input id="profile-button" type="button" value="2"/>
-                    <input id="profile-button" type="button" value="3"/>
-                    <input id="profile-button" type="button" value="4"/>
+                    <input class="profile-button" type="button" value="0"/>
+                    <input class="profile-button" type="button" value="1"/>
+                    <input class="profile-button" type="button" value="2"/>
+                    <input class="profile-button" type="button" value="3"/>
+                    <input class="profile-button" type="button" value="4"/>
                     <br>
-                    <input id="profile-button" type="button" value="5"/>
-                    <input id="profile-button" type="button" value="6"/>
-                    <input id="profile-button" type="button" value="7"/>
-                    <input id="profile-button" type="button" value="8"/>
-                    <input id="profile-button" type="button" value="9"/>
+                    <input class="profile-button" type="button" value="5"/>
+                    <input class="profile-button" type="button" value="6"/>
+                    <input class="profile-button" type="button" value="7"/>
+                    <input class="profile-button" type="button" value="8"/>
+                    <input class="profile-button" type="button" value="9"/>
                 </div>
             </td>
             <td>
-                <div id="preference">
+                <div class="preference">
                     <h2>Import/Export</h2>
                     <form id="import-form" enctype="multipart/form-data" method="post" name="import-form">
                         <input type="file" class="bfi" required />
@@ -64,7 +65,7 @@
                 </div>
             </td>
             <td>
-                <div id="preference">
+                <div class="preference">
                     <h2>Network Config</h2>
                     <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
                         <h3>General</h3>
