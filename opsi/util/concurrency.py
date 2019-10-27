@@ -115,7 +115,7 @@ class ShutdownThread(ThreadBase):
 class AsyncThread(ShutdownThread):
     def __init__(self, coroutine=None, **kwargs):
         self.loop = uvloop.new_event_loop()
-        self.coros = []
+        self.tasks = []
         super().__init__(self.loop.run_forever, autostart=True, **kwargs)
         if coroutine:
             self.run_coro(coroutine)
@@ -126,9 +126,13 @@ class AsyncThread(ShutdownThread):
         return thread
 
     async def __monitor_coro__(self, coro):
-        self.coros.append(coro)
-        await coro
-        self.coros.remove(coro)
+        try:
+            task = asyncio.create_task(coro)
+            self.tasks.append(task)
+            await asyncio.wait_for(task)
+            self.tasks.remove(task)
+        except asyncio.CancelledError:
+            LOGGER.debug("Coroutine being monitored was cancelled", exc_info=True)
 
     def run_coro(self, coro):
         asyncio.run_coroutine_threadsafe(self.__monitor_coro__(coro), self.loop)
@@ -137,8 +141,8 @@ class AsyncThread(ShutdownThread):
         timer = threading.Timer(self.timeout, self.terminate)
         timer.start()
         # hoping that the coroutines stop themselves properly since we don't give them an event
-        while self.coros:
-            time.sleep(0.05)
+        for task in self.tasks:
+            task.cancel()
             if self._terminate:
                 LOGGER.error("Failed to gracefully stop thread %s", self.name)
                 return

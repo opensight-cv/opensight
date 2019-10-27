@@ -1,6 +1,6 @@
 import logging
 import sys
-from dataclasses import _MISSING_TYPE, asdict, fields
+from dataclasses import _MISSING_TYPE, asdict
 from typing import Any, Callable, Dict, List, Optional, Type
 
 from opsi.manager.link import NodeLink

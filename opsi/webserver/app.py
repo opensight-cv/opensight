@@ -23,7 +23,6 @@ class WebServer:
         self.program = program
 
         self.app = Starlette(debug=True)
-        self.app.add_middleware(CacheControlMiddleware)
 
         self.url = get_server_url(program.lifespan.persist.network, port, prefix)
         self.template = TemplateFolder(join(frontend, "templates"))
@@ -43,7 +42,9 @@ class WebServer:
         self.api = Api(self.app, self.program)
         self.make_hooks()
 
-        self.app.mount("/", StaticFiles(directory=join(frontend, "www")))
+        self.app.mount(
+            "/", CacheControlMiddleware(StaticFiles(directory=join(frontend, "www")))
+        )
 
     def __check_port__(self, port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -87,8 +88,14 @@ class WebServer:
         return self.testclient.post("/api/nodes", data)
 
 
+class CacheControlStaticFiles(StaticFiles):
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "no-cache public max-age=0 must-validate"
+        return response
+
+
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
-        response.headers["Cache-Control"] = "no-cache public max-age=0 must-validate"
         return response

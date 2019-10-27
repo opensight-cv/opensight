@@ -175,4 +175,3 @@ def create_capture(settings):
     set_property(cap, cv2.CAP_PROP_SATURATION, settings.saturation)
     set_property(cap, cv2.CAP_PROP_EXPOSURE, settings.exposure)
     return cap
-
