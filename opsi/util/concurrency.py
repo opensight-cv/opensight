@@ -47,12 +47,18 @@ class Snippet:
 
     async def run(self):
         self.__start__.set()
-        await self.__end__.wait()
+        try:
+            await self.__end__.wait()
+        except asyncio.CancelledError:
+            pass
         self.__end__.clear()
 
     async def start(self):
-        await self.__start__.wait()
-        self.__start__.clear()
+        try:
+            await self.__start__.wait()
+            self.__start__.clear()
+        except asyncio.CancelledError:
+            pass
 
     def run_abandon(self):
         self.__start__.set()
@@ -115,7 +121,6 @@ class ShutdownThread(ThreadBase):
 class AsyncThread(ShutdownThread):
     def __init__(self, coroutine=None, **kwargs):
         self.loop = uvloop.new_event_loop()
-        self.tasks = []
         super().__init__(self.loop.run_forever, autostart=True, **kwargs)
         if coroutine:
             self.run_coro(coroutine)
@@ -125,22 +130,27 @@ class AsyncThread(ShutdownThread):
         thread.daemon = True
         return thread
 
-    async def async_run_coro(self, coro):
-        task = asyncio.create_task(coro)
-        self.tasks.append(task)
-
     def run_coro(self, coro):
-        asyncio.run_coroutine_threadsafe(self.async_run_coro(coro), self.loop)
+        asyncio.run_coroutine_threadsafe(coro, self.loop)
+
+    def wait_for_task(self, task, timeout=0.5):
+        start = time.time()
+        while True:
+            if (start - time.time()) >= timeout:
+                return False
+            if task.done() or task.cancelled():
+                return True
+            time.sleep(0.01)
 
     def __stop__(self):
         timer = threading.Timer(self.timeout, self.terminate)
         timer.start()
-        # hoping that the coroutines stop themselves properly since we don't give them an event
-        for task in self.tasks:
-            if not (task.done() and task.cancelled()):
+        for task in asyncio.all_tasks(loop=self.loop):
+            if not (task.done() or task.cancelled()):
                 task.cancel()
+                self.wait_for_task(task)
             if self._terminate:
-                LOGGER.error("Failed to gracefully stop thread %s", self.name)
+                LOGGER.error("Failed to gracefully stop async thread %s", self.name)
                 return
         timer.cancel()
 

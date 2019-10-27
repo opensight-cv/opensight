@@ -160,7 +160,10 @@ class ASGIStreamer(ASGIApplication):
         super().__init__(receive, send, status=status, headers=headers)
 
     async def send(self, data):
-        await super().send(self._boundary + data)
+        try:
+            await super().send(self._boundary + data)
+        except asyncio.CancelledError:
+            return
 
 
 # -----------------------------------------------------------------------------
@@ -175,13 +178,10 @@ class MjpegResponse:
         self.src = src
 
     async def send_images(self, app, quality, fps, resolution):
-        try:
-            async for img in self.src.get_img(app, quality, fps, resolution):
-                if img is None:
-                    break
-                asyncio.create_task(app.send(self.HEADERS + img))
-        except asycnio.CancelledError:
-            pass
+        async for img in self.src.get_img(app, quality, fps, resolution):
+            if img is None:
+                break
+            asyncio.create_task(app.send(self.HEADERS + img))
 
     def get_values(self):
         quality = 100
@@ -204,7 +204,10 @@ class MjpegResponse:
                     return
                 if self.src._shutdown:
                     return
-                await asyncio.sleep(0.1)
+                try:
+                    await asyncio.sleep(0.1)
+                except asyncio.CancelledError:
+                    return
 
 
 # -----------------------------------------------------------------------------
@@ -313,7 +316,10 @@ class CameraSource:
 
     async def notify_generators(self):
         for snip in self.snippets:
-            await snip.run()
+            try:
+                await snip.run()
+            except asyncio.CancelledError:
+                return
 
     async def get_img(self, app, quality: int, fps_limit: int, resolution=None):
         snippet = Snippet()
