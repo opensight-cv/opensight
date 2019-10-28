@@ -2,7 +2,7 @@ import logging
 import signal
 import subprocess
 import threading
-from os import listdir
+import os
 from os.path import isdir, isfile, splitext
 
 from networktables import NetworkTables
@@ -32,7 +32,7 @@ def register_modules(program, module_path):
         return
 
     files = []
-    for path in listdir(moddir):
+    for path in os.listdir(moddir):
         fullpath = join(moddir, path)
 
         if isfile(fullpath):
@@ -54,10 +54,13 @@ def init_networktables(network):
 class Lifespan:
     PORTS = (80, 8000)
 
-    def __init__(self, args, *, catch_signal=False, load_persist=True):
+    def __init__(self, args, *, catch_signal=False, load_persist=True, timeout=10):
         self.event = threading.Event()
         self.threads = []
+
         self._restart = True
+
+        self.timer = threading.Timer(timeout, self.terminate)
 
         self._systemd = None
         self._unit = None
@@ -123,12 +126,19 @@ class Lifespan:
             for thread in self.threads:
                 LOGGER.debug("Shutting down %s", thread.name)
                 thread.shutdown()
+            self.timer.cancel()
             LOGGER.info("OpenSight successfully shutdown.")
 
     def catch_signal(self, signum, frame):
         self.shutdown()
 
+    def terminate(self):
+        LOGGER.error("CRITICAL: OpenSight failed to close gracefully. Terminating...")
+        os.kill(os.getpid(), signal.SIGKILL)
+
     def shutdown_threads(self):
+        if not self._restart:
+            self.timer.start()
         if self.persist.network.nt_enabled:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
