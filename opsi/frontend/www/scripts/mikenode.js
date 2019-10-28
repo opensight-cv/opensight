@@ -23,7 +23,7 @@ var postGo = function() {
     data: JSON.stringify(nodeTree),
     success: function() {
       setIcons("check");
-      setStatusMsg("Nodetree imported successfully. It successfully imported. The nodetree import was completed successfully. In fact, the nodetree which was queued for import was successfully able to import.");
+      setStatusMsg("Nodetree imported successfully.");
     },
     error: function(xhr, status, error) {
       setIcons("cross");
@@ -124,15 +124,15 @@ function getCursorXY(e) {
   cursorX = window.Event
     ? e.pageX
     : event.clientX +
-      (document.documentElement.scrollLeft
-        ? document.documentElement.scrollLeft
-        : document.body.scrollLeft);
+    (document.documentElement.scrollLeft
+      ? document.documentElement.scrollLeft
+      : document.body.scrollLeft);
   cursorY = window.Event
     ? e.pageY
     : event.clientY +
-      (document.documentElement.scrollTop
-        ? document.documentElement.scrollTop
-        : document.body.scrollTop);
+    (document.documentElement.scrollTop
+      ? document.documentElement.scrollTop
+      : document.body.scrollTop);
   cursorX -= NAV_WIDTH;
 }
 // master variables
@@ -177,15 +177,15 @@ $(document).ready(function() {
   $("body").on("mousedown", ".clicker", function() {
     if (
       $(this)
-        .parent()
-        .attr("class") == "inputContainer"
+      .parent()
+      .attr("class") == "inputContainer"
     ) {
       popLoop(nodes, $(this).attr("id"));
       postRequest();
     } else if (
       $(this)
-        .parent()
-        .attr("class") == "outputContainer"
+      .parent()
+      .attr("class") == "outputContainer"
     ) {
       nodes[list].push($(this).attr("id"));
       inHand = true;
@@ -194,16 +194,16 @@ $(document).ready(function() {
   $("body").on("mouseup", ".clicker", function() {
     if (
       $(this)
-        .parent()
-        .attr("class") == "inputContainer"
+      .parent()
+      .attr("class") == "inputContainer"
     ) {
       if (inHand) {
         if (
           checkTypes(
             nodes[list][0].substring(36, 39),
             $(this)
-              .attr("id")
-              .substring(36, 39)
+            .attr("id")
+            .substring(36, 39)
           ) &&
           !searchForInput(nodes, $(this).attr("id"))
         ) {
@@ -217,16 +217,16 @@ $(document).ready(function() {
       if (nodes[list].length == 2) {
         findNodeTreeSpot(
           $("#" + nodes[list][1])
-            .parent()
-            .parent()
-            .parent()
-            .attr("id")
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
         ).inputs[nodes[list][1].substring(39)] = {
           id: $("#" + nodes[list][0])
-            .parent()
-            .parent()
-            .parent()
-            .attr("id"),
+          .parent()
+          .parent()
+          .parent()
+          .attr("id"),
           name: nodes[list][0].substring(39)
         };
 
@@ -269,13 +269,13 @@ function update() {
       //math to find points
       var x1 =
         $('[id="' + nodes[i][0] + '"]')
-          .last()
-          .offset().left + boxCenterXOffset;
+        .last()
+        .offset().left + boxCenterXOffset;
       var x2 = $("#" + nodes[i][1]).offset().left + boxCenterXOffset;
       var y1 =
         $('[id="' + nodes[i][0] + '"]')
-          .last()
-          .offset().top + boxCenterYOffset;
+        .last()
+        .offset().top + boxCenterYOffset;
       var y2 = $("#" + nodes[i][1]).offset().top + boxCenterYOffset;
 
       ctx.beginPath();
@@ -289,13 +289,13 @@ function update() {
 
     var x1 =
       $('[id="' + nodes[list][0] + '"]')
-        .last()
-        .offset().left + boxCenterXOffset;
+      .last()
+      .offset().left + boxCenterXOffset;
     var x2 = cursorX;
     var y1 =
       $('[id="' + nodes[list][0] + '"]')
-        .last()
-        .offset().top + boxCenterYOffset;
+      .last()
+      .offset().top + boxCenterYOffset;
     var y2 = cursorY;
 
     ctx.beginPath();
@@ -321,28 +321,28 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
     numNode++;
     $("#container").append(
       '<div class="node" style="left: ' +
-        pos[0] +
-        "px; top:" +
-        pos[1] +
-        'px;" id="' +
-        this.uuid +
-        '">' +
-        "<h1>" +
-        this.name +
-        "</h1>" +
-        '<div id="x' +
-        this.uuid +
-        '" class="x">-</div>' +
-        '<div class="ioContainer">' +
-        '<div class="inputContainer">' +
-        inputLoop(this.inputs, this.uuid) +
-        "</div>" +
-        '<div class="outputContainer">' +
-        outputLoop(this.outputs, this.uuid) +
-        "</div>" +
-        "</div>" +
-        settingsLoop(this.settings, uuid) +
-        "</div>"
+      pos[0] +
+      "px; top:" +
+      pos[1] +
+      'px;" id="' +
+      this.uuid +
+      '">' +
+      "<h1>" +
+      this.name +
+      "</h1>" +
+      '<div id="x' +
+      this.uuid +
+      '" class="x">-</div>' +
+      '<div class="ioContainer">' +
+      '<div class="inputContainer">' +
+      inputLoop(this.inputs, this.uuid) +
+      "</div>" +
+      '<div class="outputContainer">' +
+      outputLoop(this.outputs, this.uuid) +
+      "</div>" +
+      "</div>" +
+      settingsLoop(this.settings, uuid) +
+      "</div>"
     );
     $("#" + this.uuid).draggable({
       cancel: ".clicker, input, select",
@@ -372,7 +372,7 @@ const Node = function(id, uuid, settings, inputs, outputs, name, pos) {
         for (let j = 0; j < Object.keys(nodeTree.nodes[0].inputs).length; j++) {
           if (
             nodeTree.nodes[i].inputs[Object.keys(nodeTree.nodes[i].inputs)[j]]
-              .id == uuid
+            .id == uuid
           ) {
             delete nodeTree.nodes[i].inputs[
               Object.keys(nodeTree.nodes[i].inputs)[j]
@@ -410,9 +410,9 @@ const intInput = function(name, def) {
 
     findNodeTreeSpot(
       $("#" + this.id + name)
-        .parent()
-        .parent()
-        .attr("id")
+      .parent()
+      .parent()
+      .attr("id")
     ).settings[name] = parseFloat($("#" + this.id + name).val());
     $("#" + this.id + name)
       .on("keyup mouseup", function(e) {
@@ -430,9 +430,9 @@ const intInput = function(name, def) {
     $("#" + this.id + name).on("input", function() {
       findNodeTreeSpot(
         $(this)
-          .parent()
-          .parent()
-          .attr("id")
+        .parent()
+        .parent()
+        .attr("id")
       ).settings[name] = parseFloat($(this).val());
     });
   };
@@ -457,9 +457,9 @@ const decInput = function(name, def) {
 
     findNodeTreeSpot(
       $("#" + this.id + name)
-        .parent()
-        .parent()
-        .attr("id")
+      .parent()
+      .parent()
+      .attr("id")
     ).settings[name] = parseFloat($("#" + this.id + name).val());
     $("#" + this.id + name).on("keyup", function(e) {
       postRequest();
@@ -468,9 +468,9 @@ const decInput = function(name, def) {
     $("#" + this.id + name).on("input", function() {
       findNodeTreeSpot(
         $(this)
-          .parent()
-          .parent()
-          .attr("id")
+        .parent()
+        .parent()
+        .attr("id")
       ).settings[name] = parseFloat($(this).val());
     });
   };
@@ -495,9 +495,9 @@ const strInput = function(name, def) {
     let id = this.id;
     findNodeTreeSpot(
       $("#" + this.id + name)
-        .parent()
-        .parent()
-        .attr("id")
+      .parent()
+      .parent()
+      .attr("id")
     ).settings[name] = $("#" + this.id + name).val();
     $("#" + this.id + name).on("keyup", function(e) {
       postRequest();
@@ -505,9 +505,9 @@ const strInput = function(name, def) {
     $("#" + this.id + name).on("input", function() {
       findNodeTreeSpot(
         $(this)
-          .parent()
-          .parent()
-          .attr("id")
+        .parent()
+        .parent()
+        .attr("id")
       ).settings[name] = $(this).val();
     });
   };
@@ -545,36 +545,36 @@ const booleanInput = function(name, def) {
     if (def == true) {
       findNodeTreeSpot(
         $("#" + this.id + name)
-          .parent()
-          .parent()
-          .parent()
-          .attr("id")
+        .parent()
+        .parent()
+        .parent()
+        .attr("id")
       ).settings[name] = true;
     } else {
       findNodeTreeSpot(
         $($("#" + this.id + name))
-          .parent()
-          .parent()
-          .parent()
-          .attr("id")
+        .parent()
+        .parent()
+        .parent()
+        .attr("id")
       ).settings[name] = false;
     }
     $("#" + this.id + name).on("change", function() {
       if (this.checked) {
         findNodeTreeSpot(
           $(this)
-            .parent()
-            .parent()
-            .parent()
-            .attr("id")
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
         ).settings[name] = true;
       } else {
         findNodeTreeSpot(
           $(this)
-            .parent()
-            .parent()
-            .parent()
-            .attr("id")
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
         ).settings[name] = false;
       }
       postRequest();
@@ -611,9 +611,9 @@ const range = function(min, max, name, defMin, defMax) {
   this.go = function() {
     findNodeTreeSpot(
       $("#" + this.id + name)
-        .parent()
-        .parent()
-        .attr("id")
+      .parent()
+      .parent()
+      .attr("id")
     ).settings[name] = {
       min: parseFloat(defMin),
       max: parseFloat(defMax)
@@ -632,9 +632,9 @@ const range = function(min, max, name, defMin, defMax) {
 
         findNodeTreeSpot(
           $(this)
-            .parent()
-            .parent()
-            .attr("id")
+          .parent()
+          .parent()
+          .attr("id")
         ).settings[name] = {
           min: parseFloat(this.minVal),
           max: parseFloat(this.maxVal)
@@ -671,9 +671,9 @@ const slide = function(min, max, name, def) {
   this.go = function() {
     findNodeTreeSpot(
       $("#" + this.id + name)
-        .parent()
-        .parent()
-        .attr("id")
+      .parent()
+      .parent()
+      .attr("id")
     ).settings[name] = parseFloat(def);
     $("#" + this.id + name).slider({
       range: false,
@@ -688,9 +688,9 @@ const slide = function(min, max, name, def) {
 
         findNodeTreeSpot(
           $(this)
-            .parent()
-            .parent()
-            .attr("id")
+          .parent()
+          .parent()
+          .attr("id")
         ).settings[name] = parseFloat(this.val);
 
         $("#" + this.id + "out").text(this.val);
@@ -725,16 +725,16 @@ const box = function(options, name, def) {
     $("#" + this.id + name).val(def);
     findNodeTreeSpot(
       $("#" + this.id + name)
-        .parent()
-        .parent()
-        .attr("id")
+      .parent()
+      .parent()
+      .attr("id")
     ).settings[name] = def;
     $("#" + this.id + name).on("change", function() {
       findNodeTreeSpot(
         $(this)
-          .parent()
-          .parent()
-          .attr("id")
+        .parent()
+        .parent()
+        .attr("id")
       ).settings[name] = $(this).val();
       postRequest();
     });
@@ -836,22 +836,22 @@ var popLoop = function(loop, id) {
     if (loop[i].indexOf(id) != -1) {
       var x = findNodeTreeSpot(
         $("#" + loop[i][1])
-          .parent()
-          .parent()
-          .parent()
-          .attr("id")
-          .substring(0, 36)
+        .parent()
+        .parent()
+        .parent()
+        .attr("id")
+        .substring(0, 36)
       ).inputs[loop[i][1].substring(39)];
 
       if (id.indexOf(x["id"]) == -1) {
         // certified redundant javascript moment
         delete findNodeTreeSpot(
           $("#" + loop[i][1])
-            .parent()
-            .parent()
-            .parent()
-            .attr("id")
-            .substring(0, 36)
+          .parent()
+          .parent()
+          .parent()
+          .attr("id")
+          .substring(0, 36)
         ).inputs[loop[i][1].substring(39)];
 
         loop.splice(i, 1);
@@ -861,19 +861,20 @@ var popLoop = function(loop, id) {
   }
 };
 
+var inFromOut = function(loop, id) {
+};
+
 //loop to get rid of all connections for a node UUID
 var killLoop = function(id) {
   for (let i = 0; i < nodes.length; i++) {
     if (typeof nodes[i][0] != "undefined") {
       if (nodes[i][0].search(id) != -1) {
-        nodes.splice(i, 1);
+        popLoop(nodes, nodes[i][1]);
         i--;
-        list--;
       } else if (typeof nodes[i][1] != "undefined") {
         if (nodes[i][1].search(id) != -1) {
-          nodes.splice(i, 1);
+          popLoop(nodes, nodes[i][1]);
           i--;
-          list--;
         }
       }
     }
@@ -1016,7 +1017,7 @@ const functions = function(jsonData) {
                 nam[j],
                 (this.rawArr[i][2][x].params.min +
                   this.rawArr[i][2][x].params.max) /
-                  2
+                2
               )
             ]);
           }
@@ -1165,15 +1166,15 @@ const functions = function(jsonData) {
     for (let i = 0; i < typelist.length; i++) {
       $("#menu-container-modules").append(
         '<div class="menu-division" id ="' +
-          typelist[i] +
-          '">' +
-          "<div class='menu-selector'><i class='arrow'id='i" +
-          typelist[i] +
-          "'></i><div class='menu-name'>" +
-          typelist[i] +
-          "</div></div><div style='display:none' id='" +
-          typelist[i] +
-          "btns'></div></div></div>"
+        typelist[i] +
+        '">' +
+        "<div class='menu-selector'><i class='arrow'id='i" +
+        typelist[i] +
+        "'></i><div class='menu-name'>" +
+        typelist[i] +
+        "</div></div><div style='display:none' id='" +
+        typelist[i] +
+        "btns'></div></div></div>"
       );
     }
 
@@ -1184,11 +1185,11 @@ const functions = function(jsonData) {
         .join("-");
       $("#" + n + "btns").append(
         '<div class="menu-button" id="' +
-          this.rawArr[i][5] +
-          '">' +
-          this.rawArr[i][0] +
-          "" +
-          "</div>"
+        this.rawArr[i][5] +
+        '">' +
+        this.rawArr[i][0] +
+        "" +
+        "</div>"
       );
       let gType = this.rawArr[i][1];
       let gArray = this.rawArr;
@@ -1239,17 +1240,17 @@ const importNodeTree = function(nodetree, functions) {
         for (x in nodetree.nodes[i].inputs) {
           nodes[list].push(
             nodetree.nodes[i].inputs[x].id +
-              functions.findType(
-                nodetree.nodes[i].inputs[x].name,
-                this.findOutputType(nodetree.nodes[i].inputs[x].id, false)
-              ) +
-              nodetree.nodes[i].inputs[x].name
+            functions.findType(
+              nodetree.nodes[i].inputs[x].name,
+              this.findOutputType(nodetree.nodes[i].inputs[x].id, false)
+            ) +
+            nodetree.nodes[i].inputs[x].name
           );
 
           nodes[list].push(
             nodetree.nodes[i].id +
-              functions.findType(x, nodetree.nodes[i].type, true) +
-              x
+            functions.findType(x, nodetree.nodes[i].type, true) +
+            x
           );
 
           nodes[list + 1] = [];
