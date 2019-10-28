@@ -1,98 +1,111 @@
+/**** node.css ***/
 /* disable text selection */
 * {
-  -ms-user-select: none;
+    -ms-user-select: none;
   /* IE 10+ */
-  -moz-user-select: -moz-none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
+
 * {
-  margin: 0;
-  padding: 0px;
+    margin: 0;
+    padding: 0px;
 }
 /* to remove the top and left whitespace */
 html {
-  height: 100%;
+    height: 100%;
 }
+
 .clear {
-  clear: both;
+    clear: both;
 }
 /* just to be sure these are full screen*/
 canvas {
-  display: block;
-  position: absolute;
-  left: 60px; /* Width of navbar */
+    display: block;
+    position: absolute;
+    left: 60px;
+ /* Width of navbar */
 }
 /* To remove the scrollbars */
 body {
-  font-family: "DejaVu Sans", sans-serif;
-  background-color: #cccccc;
-  color: #474448;
-  overflow-x: hidden;
-  overflow-y: auto;
-  min-height: 100%;
+    font-family: "DejaVu Sans", sans-serif;
+    background-color: #cccccc;
+    color: #474448;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100%;
 }
+
 h1,
 h2,
 h3,
 h4 {
-  font-weight: bold;
+    font-weight: bold;
 }
+
 #container h1 {
-  padding: 5px;
-  font-size: medium;
-  text-align: center;
-  margin-left: 2px;
+    padding: 5px;
+    font-size: medium;
+    text-align: center;
+    margin-left: 2px;
 }
+
 h3 {
-  font-size: smaller;
+    font-size: smaller;
 }
+
 a {
-  color: #551a8b;
-  outline: 0;
-  border: none;
-  color: inherit;
-  -moz-outline-style: none;
-  outline-style: none;
+    color: #551a8b;
+    outline: 0;
+    border: none;
+    color: inherit;
+    -moz-outline-style: none;
+    outline-style: none;
 }
 
 p {
-  padding-bottom: 5px;
+    padding-bottom: 5px;
 }
 
 #prefs-table {
-  display: block;
+    display: block;
 }
+
 #prefs-table td {
-  display: inline-block;
-  vertical-align: top;
-  border: none;
+    display: inline-block;
+    vertical-align: top;
+    border: none;
 }
+
 .preference {
-  float: left;
-  z-index: 7;
-  border: 5px solid #2dbc4e;
-  margin: 10px;
-  background-color: #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
+    float: left;
+    z-index: 7;
+    border: 5px solid #2dbc4e;
+    margin: 10px;
+    background-color: #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
 }
+
 .preference input {
-  display: block;
-  margin: 5px auto;
+    display: block;
+    margin: 5px auto;
 }
+
 #network-form input {
-  display: inline;
-  max-width: 18%;
+    display: inline;
+    max-width: 18%;
 }
 /* https://stackoverflow.com/a/4298216 */
 #team-number::-webkit-outer-spin-button,
 #team-number::-webkit-inner-spin-button {
     /* display: none; <- Crashes Chrome on hover */
     -webkit-appearance: none;
-    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+    margin: 0;
+ /* <-- Apparently some margin are still there even though it's hidden */
 }
 #team-number {
     -moz-appearance:textfield; /* Firefox */

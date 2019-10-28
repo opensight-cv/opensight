@@ -861,9 +861,6 @@ var popLoop = function(loop, id) {
   }
 };
 
-var inFromOut = function(loop, id) {
-};
-
 //loop to get rid of all connections for a node UUID
 var killLoop = function(id) {
   for (let i = 0; i < nodes.length; i++) {
