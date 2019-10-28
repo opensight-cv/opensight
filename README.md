@@ -25,7 +25,7 @@ For Raspberry Pi, Download the [latest release image](https://github.com/opensig
 
 For installing OpenSight on non-Raspberry Pi devices and for upgrading from previous versions of OpenSight, you can find more information [here](https://github.com/opensight-cv/packages#how-do-i-upgrade-an-existing-installation-of-opensight).
 
-![](https://i.imgur.com/Kflqrnh.png)
+![OpenSight Nodetree](images/simple_nodetree.png "OpenSight Nodetree")
 
 ## About
 
