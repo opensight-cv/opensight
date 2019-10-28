@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 
 import cv2
 import numpy as np
@@ -93,33 +94,54 @@ class FindCenter(Function):
 
 
 class FindAngle(Function):
-    disabled = True
+    @classmethod
+    @lru_cache(maxsize=2 ** 4)  # cache once for each set of params
+    def calculate_focal_length(cls, diagonalFOV, horizontalAspect, verticalAspect):
+        # Thanks Peter for making ChickenVision
+        # https://github.com/team3997/ChickenVision/blob/4587503a2c524c6149620b7ba6dc245a19d85436/ChickenVision.py#L155
+
+        diagonalView = math.radians(diagonalFOV)
+
+        # Reasons for using diagonal aspect is to calculate horizontal field of view.
+        diagonalAspect = math.hypot(horizontalAspect, verticalAspect)
+        # Calculations: http://vrguy.blogspot.com/2013/04/converting-diagonal-field-of-view-and.html
+        horizontalView = (
+            math.atan(math.tan(diagonalView / 2) * (horizontalAspect / diagonalAspect))
+            * 2
+        )
+        # verticalView = math.atan(math.tan(diagonalView/2) * (verticalAspect / diagonalAspect)) * 2
+
+        # Since point is -1 <= (x, y) <= 1: width, height = 2; center = (0, 0)
+
+        # Focal Length calculations: https://docs.google.com/presentation/d/1ediRsI-oR3-kwawFJZ34_ZTlQS2SDBLjZasjzZ-eXbQ/pub?start=false&loop=false&slide=id.g12c083cffa_0_165
+        H_FOCAL_LENGTH = 2 / (2 * math.tan((horizontalView / 2)))
+        # V_FOCAL_LENGTH = 2 / (2*math.tan((verticalView/2)))
+
+        return H_FOCAL_LENGTH
 
     @dataclass
     class Settings:
-        draw: bool
+        diagonalFOV: float = 68.5
 
     @dataclass
     class Inputs:
-        pnt: ()
+        point: ()
         img: Mat
 
     @dataclass
     class Outputs:
-        angle: int
-        visual: Mat
+        radians: float
 
     def run(self, inputs):
-        width = inputs.img.shape[1] // 2
-        height = inputs.img.shape[0] // 2
-        x = inputs.pnt[0]
-        y = inputs.pnt[1]
-        delta = (width - x, height - y)
-        deg = math.degrees(math.atan2(delta[1], delta[0]))
-        draw = None
-        if self.settings.draw:
-            draw = np.copy(inputs.img)
-            line = cv2.line(draw, (width, height), (x, y), (0, 255, 0), 2)
-            return self.Outputs(angle=deg, visual=line)
-        else:
-            return self.Outputs(angle=deg, visual=(draw or inputs.img))
+        width = inputs.img.shape[1]
+        height = inputs.img.shape[0]
+
+        center_x = 0
+        x = inputs.point[0]
+
+        H_FOCAL_LENGTH = self.calculate_focal_length(
+            self.settings.diagonalFOV, width, height
+        )
+        radians = math.atan2(x, H_FOCAL_LENGTH)
+
+        return self.Outputs(radians=radians)
