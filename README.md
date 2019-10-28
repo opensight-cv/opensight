@@ -54,4 +54,5 @@ One unique advantage of OpenSight is its extendability. You can create your own 
 OpenSight is free and open source software, now and forever. It is licensed under the MIT License. This means you can modify it, use the program commericially, and use it privately. You may also redistribute it, under the condition it is also distributed under the same or a stricter license. This statemenet is not legal advice, please read the license for full details. You can find the full terms of the license in the [LICENSE file](https://github.com/opensight-cv/opensight/tree/master/LICENSE).
 
 **Font Awesome**
+
 This project uses Font Awesome icons, as seen on the left navigation bar. Font Awesome is licensed under Creative Commons Attribution 4.0. You can find the details of this license [here](https://fontawesome.com/license/free).
