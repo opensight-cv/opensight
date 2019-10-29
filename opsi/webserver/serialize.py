@@ -1,5 +1,6 @@
 import logging
 import sys
+from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
 from typing import Any, Callable, Dict, List, Optional, Type
 
@@ -348,10 +349,52 @@ def _process_node_settings(program, node: NodeN):
     real_node.settings = settings
 
 
+def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
+    visited = set()
+    queue = deque()
+    nodes = {}
+
+    # First, add all sideeffect nodes to queue
+    for node in nodetree.nodes:
+        nodes[node.id] = node
+
+        func = program.manager.funcs[node.type]
+        if func.has_sideeffect:
+            queue.append(node.id)
+
+    # Then, do a DFS over queue, adding all reachable nodes to visited
+    while queue:
+        id = queue.pop()
+
+        if id in visited:
+            continue
+
+        visited.add(id)
+
+        for input in nodes[id].inputs.values():
+            if LINKS_INSTEAD_OF_INPUTS:
+                link = input
+            else:
+                link = input.link
+
+            if link is None:
+                continue
+
+            queue.append(link.id)
+
+    # Finally, remove those nodes that weren't visited
+    nodes = [node for node in nodetree.nodes if node.id in visited]
+    nodetree.nodes = nodes
+
+    return nodetree
+
+
 def import_nodetree(program, nodetree: NodeTreeN):
+    nodetree = _remove_unneeded_nodes(program, nodetree)
+    ids = [node.id for node in nodetree.nodes]
+
     # todo: how to cache FifoLock in the stateless import_nodetree function?
     with FifoLock(program.queue):
-        ids = [node.id for node in nodetree.nodes]
         program.pipeline.prune_nodetree(ids)
 
         for node in nodetree.nodes:
