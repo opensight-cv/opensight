@@ -36,7 +36,7 @@ class ConvexHulls(Function):
         contours: Contours
 
     def run(self, inputs):
-        contours = cv2.convex_hulls(inputs.contours)
+        contours = cvw.convex_hulls(inputs.contours)
         return self.Outputs(contours=contours)
 
 
