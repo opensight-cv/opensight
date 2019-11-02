@@ -24,9 +24,9 @@ class MatBW(ndarray):
 
     @property
     def mat(self):
-        if not self._mat:
+        if self._mat is None:
             self._mat = matBW_to_mat(self)
-        return
+        return self._mat
 
     @property
     def matBW(self):
