@@ -9,9 +9,16 @@ from starlette.routing import Route, Router
 
 import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Hook
-from opsi.manager.netdict import NetworkDict
+
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.templating import LiteralTemplate
+
+try:
+    from opsi.manager.netdict import NetworkDict
+
+    NT_AVAIL = True
+except ImportError:
+    NT_AVAIL = False
 
 __package__ = "opsi.camserv"
 __version__ = "0.123"
@@ -245,7 +252,8 @@ class CamHook(Hook):
 
     def __init__(self):
         self.app = Router()
-        self.netdict = NetworkDict("/CameraPublisher")
+        if NT_AVAIL:
+            self.netdict = NetworkDict("/CameraPublisher")
         self.funcs = {}  # {name: route}
         self.index_route = [
             Route("/", LiteralTemplate(self.TEMPLATE, funcs=self.funcs.keys()))
@@ -272,8 +280,9 @@ class CamHook(Hook):
         self._update()
 
         # https://github.com/wpilibsuite/allwpilib/blob/ec9738245d86ec5a535a7d9eb22eadc78dee88b4/wpilibj/src/main/java/edu/wpi/first/wpilibj/CameraServer.java#L313
-        ntdict = self.netdict.get_subtable(self.CAMERA_NAME.format(func=func.id))
-        ntdict["streams"] = [self.CAMERA_URL.format(url=self.url, func=func.id)]
+        if NT_AVAIL:
+            ntdict = self.netdict.get_subtable(self.CAMERA_NAME.format(func=func.id))
+            ntdict["streams"] = [self.CAMERA_URL.format(url=self.url, func=func.id)]
 
     def unregister(self, func):
         try:
@@ -281,7 +290,9 @@ class CamHook(Hook):
         except KeyError:
             pass
 
-        self.netdict.delete_table(self.CAMERA_NAME.format(func=func.id))
+        if NT_AVAIL:
+            self.netdict.delete_table(self.CAMERA_NAME.format(func=func.id))
+
         self._update()
 
 

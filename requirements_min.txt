@@ -8,11 +8,7 @@ MarkupSafe==1.1.1
 netifaces==0.10.9
 numpy==1.16.2
 pydantic==0.32.2
-pynetworktables==2019.0.2
-pystemd==0.6.0
 python-multipart==0.0.5
-six==1.12.0
 starlette==0.12.9
 toposort==1.5
 uvicorn==0.9.0
-uvloop==0.11.2

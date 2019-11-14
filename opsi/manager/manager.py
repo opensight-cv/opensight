@@ -26,6 +26,14 @@ def import_module(path: ModulePath):
     try:
         sys.path.insert(0, os.path.abspath(path.path))
         return importlib.import_module(path.name)
+    except ImportError as e:
+        # for error, print only error name (which is likely a missing dependency) and print full exception in debug
+        LOGGER.error(
+            'Encountered error when importing module %s due to "%s", skipping...',
+            path.name,
+            e,
+        )
+        LOGGER.debug("", exc_info=True)
     finally:
         sys.path = path_bak[:]
     """
@@ -80,6 +88,8 @@ class Manager:
 
     def register_module(self, path: ModulePath):
         module = import_module(path)
+        if not module:
+            return
         info = Manager.get_module_info(module)
 
         hooks_tuple = inspect.getmembers(module, ishook)
