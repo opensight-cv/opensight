@@ -4,7 +4,7 @@ import logging
 
 from opsi.lifespan.lifespan import Lifespan
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()

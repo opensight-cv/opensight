@@ -39,6 +39,7 @@
             <br>
             <label for="nt-enabled">Use Static IP:</label>
             <input id="static" type="checkbox" {{"checked" if persist.network.static}} />
+            {% if nt %}
             <h3>NetworkTables</h3>
             <label for="nt-enabled">Enabled:</label>
             <input id="nt-enabled" type="checkbox" {{"checked" if persist.network.nt_enabled}} />
@@ -48,6 +49,7 @@
                 <option value="client" {{"selected" if persist.network.nt_client}}>Client</option>
                 <option value="server" {{"selected" if not persist.network.nt_client}}>Server</option>
             </select>
+            {% endif %}
         </form>
         <input id="network-button" type="button" value="Submit" />
     </div>

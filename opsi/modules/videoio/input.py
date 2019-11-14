@@ -58,7 +58,7 @@ def get_cam_info(cam):
 
 
 def get_modes():
-    # TODO: don't use globals
+    # TODO: don't use globals, move all of this to a class and make a instance for module
     global ENABLE_FPS
     global ENABLE_RES
 

@@ -5,9 +5,6 @@ import subprocess
 import threading
 from os.path import isdir, isfile, splitext
 
-from networktables import NetworkTables
-from pystemd.systemd1 import Unit
-
 import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
@@ -19,6 +16,22 @@ from opsi.webserver import WebServer
 from opsi.webserver.serialize import import_nodetree
 
 from .webserverthread import WebserverThread
+
+# import optional dependencies
+try:
+    from networktables import NetworkTables
+
+    NT_AVAIL = True
+except ImportError:
+    NT_AVAIL = False
+
+try:
+    from pystemd.systemd1 import Unit
+
+    PYSTEMD_AVAIL = True
+except ImportError:
+    PYSTEMD_AVAIL = False
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,6 +66,7 @@ def init_networktables(network):
 
 class Lifespan:
     PORTS = (80, 8000)
+    NT_AVAIL = NT_AVAIL
 
     def __init__(self, args, *, catch_signal=False, load_persist=True, timeout=10):
         self.event = threading.Event()
@@ -81,6 +95,8 @@ class Lifespan:
 
     @property
     def using_systemd(self):
+        if not PYSTEMD_AVAIL:
+            return False
         if self._systemd:
             return self._systemd
         self._unit = Unit(b"opensight.service", _autoload=True)
@@ -88,9 +104,8 @@ class Lifespan:
         return self._systemd
 
     def make_threads(self):
-        if self.persist.network.nt_enabled:
+        if self.NT_AVAIL and self.persist.network.nt_enabled:
             init_networktables(self.persist.network)
-
         program = Program(self)
 
         path = opsi.__file__
@@ -139,7 +154,7 @@ class Lifespan:
     def shutdown_threads(self):
         if not self._restart:
             self.timer.start()
-        if self.persist.network.nt_enabled:
+        if NT_AVAIL and self.persist.network.nt_enabled:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()

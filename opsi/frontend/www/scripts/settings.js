@@ -109,12 +109,19 @@ $(document).ready(function() {
   });
   $(document).on("click", "#network-button", function(event) {
     var form = $("#network-form")[0];
-    var data = {
-      team: parseInt(form[0].valueAsNumber),
-      static: form[1].checked,
-      nt_enabled: form[2].checked,
-      nt_client: form[3].value == "client"
-    };
+    if (typeof form[2] != undefined) {
+      var data = {
+        team: parseInt(form[0].valueAsNumber),
+        static: form[1].checked,
+      };
+    } else {
+      var data = {
+        team: parseInt(form[0].valueAsNumber),
+        static: form[1].checked,
+        nt_enabled: form[2].checked,
+        nt_client: form[3].value == "client"
+      };
+    }
     $.ajax({
       type: "POST",
       url: "/api/network",
