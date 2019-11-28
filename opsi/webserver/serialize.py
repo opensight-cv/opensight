@@ -384,7 +384,9 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
 
     # Finally, remove those nodes that weren't visited
     nodes = [node for node in nodetree.nodes if node.id in visited]
-    nodetree.nodes = nodes
+
+    # make a copy of nodetree to fix broken json save
+    nodetree = NodeTreeN(nodes=nodes)
 
     return nodetree
 
