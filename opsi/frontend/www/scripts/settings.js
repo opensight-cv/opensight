@@ -1,14 +1,23 @@
-// im sorry
 function sleep(time) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
+
+// spinner, check, cross
+function setIcons(icon) {
+  $(".status-indicator-icon")
+    .css("display", "none")
+    .removeClass("status-indicator-greyscale");
+  $(".status-indicator-" + icon).css("display", "block");
+}
 $(document).ready(function() {
+  setIcons("check");
   $("#update-button").click(function(event) {
     event.preventDefault();
     var form = $("#update-form")[0];
     var data = new FormData();
     data.append("file", form[0].files[0]);
     $("#update-button").prop("disabled", true);
+    setIcons("spinner")
     $.ajax({
       type: "POST",
       enctype: "multipart/form-data",
@@ -18,14 +27,18 @@ $(document).ready(function() {
       contentType: false,
       cache: false,
       success: function(data) {
+        setIcons("check")
         $("#update-button").prop("disabled", true);
       },
       error: function(e) {
+        console.log(e);
+        setIcons("cross")
         $("#update-button").prop("disabled", false);
       }
     });
   });
   $("#delete-button").click(function(event) {
+    setIcons("spinner")
     event.preventDefault();
     $.ajax({
       type: "POST",
@@ -36,9 +49,12 @@ $(document).ready(function() {
       contentType: false,
       cache: false,
       success: function(data) {
+        setIcons("check")
         $("#delete-button").prop("disabled", true);
       },
       error: function(e) {
+        console.log(e);
+        setIcons("cross")
         $("#delete-button").prop("disabled", false);
       }
     });
@@ -94,22 +110,25 @@ $(document).ready(function() {
       .click();
   });
   $(document).on("click", ".profile-button", function(event) {
+    setIcons("spinner");
     $.ajax({
       type: "POST",
       url: "/api/profile?profile=" + $(this).val(),
       processData: false,
       contentType: false,
       success: function(data) {
+        setIcons("check");
         location.reload();
       },
       error: function(e) {
-        location.reload();
+        console.log(e);
+        setIcons("cross");
       }
     });
   });
   $(document).on("click", "#network-button", function(event) {
     var form = $("#network-form")[0];
-    if (typeof form[2] != undefined) {
+    if (typeof form[2] === undefined) {
       var data = {
         team: parseInt(form[0].valueAsNumber),
         static: form[1].checked,
@@ -122,19 +141,23 @@ $(document).ready(function() {
         nt_client: form[3].value == "client"
       };
     }
+    setIcons("spinner");
     $.ajax({
       type: "POST",
       url: "/api/network",
       data: JSON.stringify(data),
       contentType: "application/json",
       success: function(data) {
-        sleep(1500).then(() => {
+        sleep(5000).then(() => {
           location.reload();
+          setIcons("check");
         });
       },
       error: function(e) {
-        console.log("Failed to update network config");
+        console.log(e);
+        setIcons("cross");
       }
     });
   });
 });
+

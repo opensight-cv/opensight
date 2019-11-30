@@ -97,7 +97,7 @@ class Lifespan:
     def using_systemd(self):
         if not PYSTEMD_AVAIL:
             return False
-        if self._systemd:
+        if self._systemd is not None:
             return self._systemd
         self._unit = Unit(b"opensight.service", _autoload=True)
         self._systemd = self._unit.Unit.ActiveState == b"active"
@@ -148,12 +148,13 @@ class Lifespan:
         self.shutdown()
 
     def terminate(self):
-        LOGGER.error("CRITICAL: OpenSight failed to close gracefully. Terminating...")
+        LOGGER.critcal("OpenSight failed to close gracefully! Terminating...")
         os.kill(os.getpid(), signal.SIGKILL)
 
     def shutdown_threads(self):
         if not self._restart:
-            self.timer.start()
+            if not self.timer.is_alive():
+                self.timer.start()
         if NT_AVAIL and self.persist.network.nt_enabled:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")

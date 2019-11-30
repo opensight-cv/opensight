@@ -28,7 +28,8 @@ def get_static_hostname(prefix=""):
                 return addr
 
 
-def get_server_url(network, port=80, prefix="/"):
+def get_server_url(lifespan, port=80, prefix="/"):
+    network = lifespan.persist.network
     assert prefix.endswith("/")
 
     port_str = "" if port == 80 else f":{port}"
@@ -43,7 +44,10 @@ def get_server_url(network, port=80, prefix="/"):
         hostname = static if static else hostname  # ensure static isn't None
 
     if network.nt_enabled and not network.nt_client:
-        hostname = "localhost"
+        if lifespan.using_systemd:
+            hostname = "opensight.local"
+        else:
+            hostname = "localhost"
 
     return f"http://{hostname}{port_str}{prefix}"
 

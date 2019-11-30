@@ -24,7 +24,7 @@ class WebServer:
 
         self.app = Starlette(debug=True)
 
-        self.url = get_server_url(program.lifespan.persist.network, port, prefix)
+        self.url = get_server_url(program.lifespan, port, prefix)
         self.template = TemplateFolder(join(frontend, "templates"))
 
         self.app.add_route("/", self.template("nodetree.html"))

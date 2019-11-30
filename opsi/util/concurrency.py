@@ -88,7 +88,7 @@ class ThreadBase:
 
 
 class ShutdownThread(ThreadBase):
-    def __init__(self, target, args=(), timeout=3, **kwargs):
+    def __init__(self, target, args=(), timeout=5, **kwargs):
         self.timeout = timeout
         super().__init__(target, args, **kwargs)
 
@@ -133,7 +133,7 @@ class AsyncThread(ShutdownThread):
     def run_coro(self, coro):
         asyncio.run_coroutine_threadsafe(coro, self.loop)
 
-    def wait_for_task(self, task, timeout=0.1):
+    def wait_for_task(self, task, timeout=3):
         start = time.time()
         while True:
             if (time.time() - start) >= timeout:
@@ -147,8 +147,8 @@ class AsyncThread(ShutdownThread):
         timer.start()
         for task in asyncio.all_tasks(loop=self.loop):
             if not (task.done() or task.cancelled()):
-                task.cancel()
                 self.wait_for_task(task)
+                task.cancel()
             if self._terminate:
                 LOGGER.error("Failed to gracefully stop async thread %s", self.name)
                 return
