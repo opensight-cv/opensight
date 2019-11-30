@@ -1,8 +1,8 @@
 import logging
+import os
 import signal
 import subprocess
 import threading
-import os
 from os.path import isdir, isfile, splitext
 
 import opsi
