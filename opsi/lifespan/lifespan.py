@@ -148,7 +148,7 @@ class Lifespan:
         self.shutdown()
 
     def terminate(self):
-        LOGGER.critcal("OpenSight failed to close gracefully! Terminating...")
+        LOGGER.critical("OpenSight failed to close gracefully! Terminating...")
         os.kill(os.getpid(), signal.SIGKILL)
 
     def shutdown_threads(self):

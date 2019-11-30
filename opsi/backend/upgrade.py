@@ -30,8 +30,6 @@ def upgrade_opsi(archive, lifespan):
     if not ensure_apt():
         return
 
-    path = join(__file__, "upgrade.sh")
-
     tempdir = tempfile.mkdtemp()
     try:
         with tarfile.open(fileobj=archive.file) as tar:
@@ -39,6 +37,6 @@ def upgrade_opsi(archive, lifespan):
     except tarfile.ReadError:
         LOGGER.info("File provided is not a tar file", exc_info=True)
         return
-    command = f"{path} {tempdir}"
-    subprocess.Popen(command, shell=True)
+    command = f"{tempdir}/upgrade.sh"
+    subprocess.Popen(command, cwd=tempdir, shell=True)
     lifespan.shutdown()
