@@ -71,15 +71,15 @@ class Contour:
         M = self.moments
         area = M["m00"] + EPSILON
 
-        cx = (M["m10"] / area) / self.raw[1]
-        cy = (M["m01"] / area) / self.raw[0]
+        cx = (M["m10"] / area) / self.res[1]
+        cy = (M["m01"] / area) / self.res[0]
 
         return (cx, cy)
 
     @cached_property
     def perimeter(self):
         raw_perimeter = cv2.arcLength(self.raw, True)
-        full_perimeter = (self.res[0] + self.res[1]) + 1
+        full_perimeter = (self.res[0] + self.res[1]) * 2
         perimeter = raw_perimeter / full_perimeter  # percent of full_perimeter
 
         return perimeter
