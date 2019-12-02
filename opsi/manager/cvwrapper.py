@@ -35,10 +35,16 @@ class MatBW(ndarray):
         return self
 
 
+EPSILON = 1e-5
+
+
 class Contour:
+    # https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html
+    # https://docs.opencv.org/3.4/d0/d49/tutorial_moments.html
+
     def __init__(self, raw, res):
         self.raw = raw  # Raw ndarray
-        self.res = res  # Resolution
+        self.res = res  # Resolution Height x Width
 
     @cached_property
     def convex_hull(self):
@@ -47,6 +53,36 @@ class Contour:
         contour.convex_hull = contour
 
         return contour
+
+    @cached_property
+    def moments(self):
+        return cv2.moments(self.raw)
+
+    @cached_property
+    def area(self):
+        raw_area = self.moments["m00"]
+        full_area = self.res[0] * self.res[1]
+        area = raw_area / full_area  # percent of full_area
+
+        return area
+
+    @cached_property
+    def centroid(self):
+        M = self.moments
+        area = M["m00"] + EPSILON
+
+        cx = (M["m10"] / area) / self.raw[1]
+        cy = (M["m01"] / area) / self.raw[0]
+
+        return (cx, cy)
+
+    @cached_property
+    def perimeter(self):
+        raw_perimeter = cv2.arcLength(self.raw, True)
+        full_perimeter = (self.res[0] + self.res[1]) + 1
+        perimeter = raw_perimeter / full_perimeter  # percent of full_perimeter
+
+        return perimeter
 
 
 def blur(img: Mat, radius: int) -> Mat:
