@@ -1,5 +1,7 @@
 import cv2
 
+from opsi.util.cache import cached_property
+
 from .types import *
 
 OPENCV3 = False
@@ -31,6 +33,20 @@ class MatBW(ndarray):
     @property
     def matBW(self):
         return self
+
+
+class Contour:
+    def __init__(self, raw, res):
+        self.raw = raw  # Raw ndarray
+        self.res = res  # Resolution
+
+    @cached_property
+    def convex_hull(self):
+        raw_convex = cv2.convexHull(self.raw)
+        contour = Contour(raw_convex, self.res)
+        contour.convex_hull = contour
+
+        return contour
 
 
 def blur(img: Mat, radius: int) -> Mat:
@@ -107,6 +123,24 @@ def dilate(img: MatBW, size: int) -> MatBW:
 FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_LIST, "method": cv2.CHAIN_APPROX_SIMPLE}
 
 
+def _find_contours_raw(img: MatBW) -> List[ndarray]:
+    """
+    Internal use only
+    Modules: use find_contours()
+    Args:
+        img: Black+White Mat
+    Returns:
+        List of numpy.ndarray
+    """
+
+    vals = cv2.findContours(img, **FIND_CONTOURS_CONSTS)
+
+    if OPENCV3:
+        return vals[1]  # image, contours, hierarchy
+    else:
+        return vals[0]  # contours, hierarchy
+
+
 def find_contours(img: MatBW) -> "Contours":
     """
     Args:
@@ -114,12 +148,15 @@ def find_contours(img: MatBW) -> "Contours":
     Returns:
         Contours (list of numpy.ndarray)
     """
-    vals = cv2.findContours(img.matBW, **FIND_CONTOURS_CONSTS)
 
-    if OPENCV3:
-        return vals[1]  # image, contours, hierarchy
-    else:
-        return vals[0]  # contours, hierarchy
+    img = img.matBW
+    res = img.shape  # height, width
+
+    raw_contours = _find_contours_raw(img)
+
+    contours = [Contour(raw, res) for raw in raw_contours]
+
+    return contours
 
 
 def convex_hulls(contours: "Contours") -> "Contours":
@@ -129,7 +166,7 @@ def convex_hulls(contours: "Contours") -> "Contours":
     Returns:
         Contours (list of numpy.ndarray)
     """
-    return [cv2.convexHull(contour) for contour in contours]
+    return [contour.convex_hull for contour in contours]
 
 
 def matBW_to_mat(img: MatBW) -> Mat:

@@ -2,7 +2,7 @@ from typing import List, NamedTuple
 
 from numpy import ndarray
 
-from .cvwrapper import Mat, MatBW
+from .cvwrapper import Contour, Mat, MatBW
 
 
 class AnyType:
@@ -59,10 +59,6 @@ class RangeType(_RangeBaseType):
 # ndarray doesn't allow me to differentiate between Mat and MatBW
 # NewType is some funky object which is hard to parse
 # Making new classes allows me to do simple equality testing
-
-
-class Contour(ndarray):
-    pass
 
 
 class Contours(List[Contour]):
