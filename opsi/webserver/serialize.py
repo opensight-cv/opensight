@@ -194,7 +194,7 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
             node.pos = [] if node.pos is None else node.pos
         except AttributeError:
             node.pos = []
-            LOGGER.debug("Initalized default value for node", exc_info=True)
+            LOGGER.debug("Initalized default node position, %s", node.id)
         nodes.append(
             NodeN(
                 type=node.func_type.type,
