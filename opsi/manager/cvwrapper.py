@@ -42,7 +42,7 @@ class Contour:
     # https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html
     # https://docs.opencv.org/3.4/d0/d49/tutorial_moments.html
 
-    def __init__(self, raw, res):
+    def __init__(self, raw: ndarray, res):
         self.raw = raw  # Raw ndarray
         self.res = res  # Resolution Height x Width
 
@@ -83,6 +83,55 @@ class Contour:
         perimeter = raw_perimeter / full_perimeter  # percent of full_perimeter
 
         return perimeter
+
+
+class Contours:
+    def __init__(self):
+        raise TypeError("Contours class must be made using Contour.from_* classmethod")
+
+    @classmethod
+    def from_img(cls, img: MatBW):
+        img = img.matBW
+        res = img.shape  # height, width
+
+        inst = cls.from_raw(_find_contours_raw(img), res)
+
+        return inst
+
+    @classmethod
+    def from_raw(cls, raw: List[ndarray], res):
+        inst = cls.__new__(cls)
+
+        inst.raw = raw
+        inst.res = res
+
+        return inst
+
+    @classmethod
+    def from_contours(cls, contours: List[Contour], res=None):
+        inst = cls.__new__(cls)
+
+        inst.l = contours
+        inst.res = res
+
+        return inst
+
+    @cached_property
+    def raw(self):  # used when contours is supplied but not raw
+        return [contour.raw for contour in self.l]
+
+    @cached_property
+    def l(self):  # used when raw is supplied but not contour; must have self.res set
+        return [Contour(contour, self.res) for contour in self.raw]
+
+    @cached_property
+    def convex_hulls(self):
+        contours = [contour.convex_hull for contour in self.l]
+
+        inst = self.__class__.from_contours(contours, self.res)
+        inst.convex_hull = contours
+
+        return inst
 
 
 def blur(img: Mat, radius: int) -> Mat:
@@ -175,34 +224,6 @@ def _find_contours_raw(img: MatBW) -> List[ndarray]:
         return vals[1]  # image, contours, hierarchy
     else:
         return vals[0]  # contours, hierarchy
-
-
-def find_contours(img: MatBW) -> "Contours":
-    """
-    Args:
-        img: Black+White Mat
-    Returns:
-        Contours (list of numpy.ndarray)
-    """
-
-    img = img.matBW
-    res = img.shape  # height, width
-
-    raw_contours = _find_contours_raw(img)
-
-    contours = [Contour(raw, res) for raw in raw_contours]
-
-    return contours
-
-
-def convex_hulls(contours: "Contours") -> "Contours":
-    """
-    Args:
-        contours: Contours (list of numpy.ndarray)
-    Returns:
-        Contours (list of numpy.ndarray)
-    """
-    return [contour.convex_hull for contour in contours]
 
 
 def matBW_to_mat(img: MatBW) -> Mat:
