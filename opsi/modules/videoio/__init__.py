@@ -15,6 +15,8 @@ HookInstance = CamHook()
 
 
 class CameraInput(Function):
+    require_restart = True
+
     def on_start(self):
         camNum = parse_camstring(self.settings.mode)[0]
         if not UndupeInstance.add(camNum):

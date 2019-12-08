@@ -346,6 +346,14 @@ def _process_node_settings(program, node: NodeN):
     except ValueError as e:
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 
+    if LINKS_INSTEAD_OF_INPUTS:
+        if real_node.func_type.require_restart:
+            if real_node.settings is not None:
+                if not real_node.settings == settings:
+                    real_node.dispose()
+        if real_node.func:
+            real_node.func.settings = settings
+
     real_node.settings = settings
 
 
@@ -395,7 +403,7 @@ def import_nodetree(program, nodetree: NodeTreeN):
     nodetree = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
 
-    # todo: how to cache FifoLock in the stateless import_nodetree function?
+    # TODO : how to cache FifoLock in the stateless import_nodetree function?
     with FifoLock(program.queue):
         program.pipeline.prune_nodetree(ids)
 
@@ -424,6 +432,7 @@ def import_nodetree(program, nodetree: NodeTreeN):
                 raise NodeTreeImportError(
                     program, node, "Error creating Function"
                 ) from e
+
         try:
             program.pipeline.run()
         except Exception as e:

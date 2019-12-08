@@ -93,7 +93,7 @@ var makePostRequestFunc = function(time) {
   };
 };
 
-var postRequest = makePostRequestFunc(750);
+var postRequest = makePostRequestFunc(0);
 var slowPostRequest = makePostRequestFunc(2000);
 
 var body = document.querySelector("body");

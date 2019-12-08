@@ -154,7 +154,7 @@ def create_capture(settings):
     mode = parse_camstring(settings.mode)
     if len(mode) < 1:
         return None
-    cap = cv2.VideoCapture(mode[0])
+    cap = cv2.VideoCapture(mode[0], cv2.CAP_V4L)
     codec = get_codec(get_cam_info(mode[0]))
     set_property(cap, cv2.CAP_PROP_FOURCC, codec[0])
     if len(mode) >= 3:

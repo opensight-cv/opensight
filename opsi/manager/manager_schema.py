@@ -31,7 +31,7 @@ def does_match(cls, name: str, asserter: Callable[[Any], bool]) -> bool:
 
 class Function:
     has_sideeffect: bool = False
-    require_restart: FrozenSet[str] = frozenset()
+    require_restart: bool = False
     disabled = False
     force_enabled = False
 
@@ -66,11 +66,6 @@ class Function:
         cls.SettingTypes = fields(cls.Settings)
         cls.InputTypes = get_type_hints(cls.Inputs)
         cls.OutputTypes = get_type_hints(cls.Outputs)
-
-        cls.require_restart = frozenset(cls.require_restart)
-        for field in cls.require_restart:
-            if field not in cls.InputTypes:
-                error(f"field '{field}'")
 
         # Inject code that runs before the overridable methods
         # This patching is necessary to keep the api the same

@@ -161,21 +161,14 @@ class Pipeline:
             input_node.inputLinks[input_name] = NodeLink(output_node, conn.name)
 
     def clear(self):
-        self.adjList.clear()
         self.run_order.clear()
-
         for node in self.nodes.values():
             node.reset_links()
-            node.dispose()
-
-        self.nodes.clear()
 
     def prune_nodetree(self, new_node_ids):
         old_node_ids = set(self.nodes.keys())
         new_node_ids = set(new_node_ids)
         removed = old_node_ids - new_node_ids
-
-        self.clear()  # TODO: Find way to remove this for optimization
 
         # remove deleted nodes
         for uuid in removed:
