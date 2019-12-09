@@ -60,12 +60,13 @@ def hsv_threshold(img: Mat, hue: "Range", sat: "Range", lum: "Range") -> MatBW:
     """
     Args:
         img: Mat
-        hue: Hue range (min, max) (0 - 179)
+        hue: Hue range (min, max) (0 - 359)
         sat: Saturation range (min, max) (0 - 255)
         lum: Value range (min, max) (0 - 255)
     Returns:
         Black+White Mat
     """
+    hue = (hue[0] // 2, hue[1] // 2)
     ranges = tuple(zip(hue, lum, sat))
     return cv2.inRange(cv2.cvtColor(img.mat, cv2.COLOR_BGR2HSV), *ranges).view(MatBW)
 

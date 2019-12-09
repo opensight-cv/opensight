@@ -29,9 +29,9 @@ class Blur(Function):
 class HSVRange(Function):
     @dataclass
     class Settings:
-        hue: RangeType(0, 179, decimal=True)
-        sat: RangeType(0, 255, decimal=True)
-        val: RangeType(0, 255, decimal=True)
+        hue: RangeType(0, 359)
+        sat: RangeType(0, 255)
+        val: RangeType(0, 255)
 
     @dataclass
     class Inputs:
