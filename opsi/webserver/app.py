@@ -49,7 +49,9 @@ class WebServer:
 
     def make_hooks(self):
         PREFIX = "/hooks"
-        HOOKS = self.program.manager.hooks  # {package: app}
+        HOOKS = {
+            x[0]: x[1] for x in self.program.manager.hooks.items() if x[1].visible
+        }  # {package: app}
 
         self.app.add_route(
             PREFIX, self.template("hooks.html", prefix=PREFIX, packages=HOOKS.keys())

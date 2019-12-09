@@ -4,6 +4,7 @@ from dataclasses import fields
 from itertools import chain
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
+from queue import deque
 
 from toposort import toposort
 
@@ -33,6 +34,7 @@ class Node:
 
         self.results = None
         self.has_run: bool = False
+        self.skip: bool = False
 
         self.settings = None
 
@@ -105,6 +107,7 @@ class Pipeline:
         self.run_order: List[Node] = []
         self.lock = FifoLock(self.program.queue)
         self.broken = False
+        self.current: Node = None
 
     def run(self):
         if self.broken:
@@ -115,7 +118,10 @@ class Pipeline:
 
         for n in self.run_order:  # Each node to be processed
             n.next_frame()
-            n.run()
+            self.current = n
+            if not n.skip:
+                n.run()
+            n.skip = False
 
     def mainloop(self):
         while True:
@@ -135,6 +141,44 @@ class Pipeline:
             if had_problem or self.broken:
                 # avoid clogging logs with errors
                 time.sleep(0.5)
+
+    def cancel_dependents(self, node):
+        visited = set()
+        queue = deque()
+        path = {}
+
+        # First, add all side effect nodes to queue
+        for id, node in self.nodes.items():
+            if node.func_type.has_sideeffect:
+                queue.append(id)
+
+        # Then, do a DFS over queue, adding all reachable nodes to visited
+        # Store children in map, creating a "path"
+        while queue:
+            id = queue.pop()
+
+            if id in visited:
+                continue
+
+            if id == node.id:
+                break
+
+            for input in self.nodes[id].inputLinks.values():
+                link = input
+
+                if link is None:
+                    continue
+
+                queue.append(link.node.id)
+                path[link.node] = self.nodes[id]
+
+        # Iterate through path and skip all nodes which were visited
+        pathTemp = node
+        while pathTemp is not None:
+            # Don't skip supplied node, since that would be applied next run
+            if pathTemp is not node:
+                pathTemp.skip = True
+            pathTemp = path.get(pathTemp)
 
     def create_node(self, func: Type[Function], uuid: UUID):
         """

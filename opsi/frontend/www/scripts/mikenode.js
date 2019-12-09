@@ -160,7 +160,7 @@ if (c) {
 }
 
 function checkTypes(type1, type2) {
-  if (type2 == "any") {
+  if (type1 == "any" || type2 == "any") {
     return true;
   }
   if (type1 == "mbw" && type2 == "Mat") {

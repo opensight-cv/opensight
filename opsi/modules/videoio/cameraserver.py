@@ -249,7 +249,8 @@ class CamHook(Hook):
     CAMERA_NAME = "OpenSight: {func}"
     CAMERA_URL = f"mjpeg:{{url}}{STREAM_URL}?"
 
-    def __init__(self):
+    def __init__(self, visible=True):
+        self.visible = visible
         self.app = Router()
         if NT_AVAIL:
             self.netdict = NetworkDict("/CameraPublisher")

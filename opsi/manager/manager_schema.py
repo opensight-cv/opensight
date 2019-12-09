@@ -1,3 +1,5 @@
+import logging
+
 from dataclasses import Field, dataclass, fields, is_dataclass
 from typing import (
     Any,
@@ -11,6 +13,8 @@ from typing import (
 )
 
 from starlette.routing import Router
+
+LOGGER = logging.getLogger(__name__)
 
 
 def isinstance_partial(type: Type) -> Callable[[Any], bool]:
@@ -161,10 +165,17 @@ def isfunction(func):
 
 
 class Hook:
-    def __init__(self):
+    def __init__(self, visible=True):
         # self.app can be any ASGI app, but it must exist
+        self.visible = visible
         self.app = Router()
         self.url = ""  # will be replaced during webserver init
+
+    def cancel_dependents(self):
+        try:
+            self.pipeline.cancel_dependents(self.pipeline.current)
+        except:
+            raise ValueError("Pipeline not available! Cannot cancel dependents.")
 
 
 def ishook(hook):
