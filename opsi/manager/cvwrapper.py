@@ -59,30 +59,50 @@ class Contour:
         return cv2.moments(self.raw)
 
     @cached_property
-    def area(self):
+    def area(self):  # 0 - 1, percent of full area
         raw_area = self.moments["m00"]
         full_area = self.res[0] * self.res[1]
-        area = raw_area / full_area  # percent of full_area
+        area = raw_area / full_area
 
         return area
 
     @cached_property
-    def centroid(self):
+    def _centroid(self):  # (x, y), unscaled
         M = self.moments
         area = M["m00"] + EPSILON
 
-        cx = (M["m10"] / area) / self.res[1]
-        cy = (M["m01"] / area) / self.res[0]
+        cx = M["m10"] / area
+        cy = M["m01"] / area
 
         return (cx, cy)
 
     @cached_property
+    def centroid(self):  # (x, y), -1 to 1, where (0, 0) is the center
+        cx, cy = self._centroid
+
+        cx = ((cx * 2) / self.res[1]) - 1
+        cy = ((cy * 2) / self.res[0]) - 1
+
+        return (cx, cy)
+
+    @cached_property
+    def _arc_length(self):
+        return cv2.arcLength(self.raw, True)
+
+    @cached_property
     def perimeter(self):
-        raw_perimeter = cv2.arcLength(self.raw, True)
+        raw_perimeter = self._arc_length
         full_perimeter = (self.res[0] + self.res[1]) * 2
         perimeter = raw_perimeter / full_perimeter  # percent of full_perimeter
 
         return perimeter
+
+    # 4. Contour Approximation from tutorial_py_contour_features.html
+    def approximate(self, epsilon):  # epsilon is 0-1, percent of perimeter
+        length = epsilon * self._arc_length
+        contour = cv2.approxPolyDP(self.raw, length, True)
+
+        return contour
 
 
 class Contours:
