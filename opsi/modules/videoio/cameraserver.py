@@ -23,6 +23,7 @@ __package__ = "opsi.camserv"
 __version__ = "0.123"
 
 LOGGER = logging.getLogger(__name__)
+logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
