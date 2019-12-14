@@ -1,9 +1,13 @@
 from dataclasses import dataclass
 
-from opsi.manager.manager_schema import Function
+from networktables import NetworkTables
+
+from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import AnyType
+from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
+
 
 __package__ = "opsi.nt"
 __version__ = "0.123"
@@ -30,6 +34,26 @@ class Manager:
 
 
 UndupeInstance = Unduplicator()
+HookInstance = Hook(visible=False)
+
+
+def init_networktables():
+    network = HookInstance.persist.network
+    if network.nt_enabled:
+        if network.nt_client:
+            addr = get_nt_server(network)
+            NetworkTables.startClient(addr)
+        else:
+            NetworkTables.startServer()
+
+
+def deinit_networktables():
+    if HookInstance.persist.network.nt_enabled:
+        NetworkTables.shutdown()
+
+
+HookInstance.add_listener("startup", init_networktables)
+HookInstance.add_listener("shutdown", deinit_networktables)
 
 
 class PutNT(Function):

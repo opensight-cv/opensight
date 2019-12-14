@@ -99,6 +99,8 @@ class Manager:
             hook = hooks_tuple[0][1]
             self.hooks[info.package] = hook
             setattr(hook, "pipeline", self.pipeline)
+            setattr(hook, "persist", self.pipeline.program.lifespan.persist)
+            hook.startup()
         elif len(hooks_tuple) > 1:
             LOGGER.error(f"Only one Hook per module allowed: {info.package}")
             return
@@ -118,3 +120,7 @@ class Manager:
             self.funcs[func.type] = func
 
         self.modules[info.package] = ModuleItem(info, funcs)
+
+    def shutdown(self):
+        for hook in self.hooks.values():
+            hook.shutdown()

@@ -170,12 +170,43 @@ class Hook:
         self.visible = visible
         self.app = Router()
         self.url = ""  # will be replaced during webserver init
+        self.paths = {}
+        self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
+        self.lastPipeline = None
 
-    def cancel_dependents(self):
+    def get_path(self, node):
+        if not self.lastPipeline == self.pipeline.nodes:
+            self.paths = {}
+        self.lastPipeline = self.pipeline.nodes
+
+        path = self.paths.get(node)
+        if path is None:
+            path = self.pipeline.get_path(node)
+            self.paths[node] = path
+
+        return path
+
+    def cancel_current(self):
         try:
-            self.pipeline.cancel_dependents(self.pipeline.current)
+            # reset path cache if pipeline has changed
+            path = self.get_path(self.pipeline.current)
+            self.pipeline.cancel_dependents(self.pipeline.current, path)
         except:
             raise ValueError("Pipeline not available! Cannot cancel dependents.")
+
+    def add_listener(self, event: str, function: callable):
+        self.listeners[event].add(function)
+
+    def remove_listener(self, event: str, function: callable):
+        self.listeners[event].discard(function)
+
+    def startup(self):
+        for func in self.listeners["startup"]:
+            func()
+
+    def shutdown(self):
+        for func in self.listeners["shutdown"]:
+            func()
 
 
 def ishook(hook):

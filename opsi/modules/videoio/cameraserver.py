@@ -259,6 +259,7 @@ class CamHook(Hook):
         self.index_route = [
             Route("/", LiteralTemplate(self.TEMPLATE, funcs=self.funcs.keys()))
         ]
+        self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
 
         self._update()
 
