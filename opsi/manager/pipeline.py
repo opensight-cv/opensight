@@ -142,7 +142,7 @@ class Pipeline:
                 # avoid clogging logs with errors
                 time.sleep(0.5)
 
-    def get_path(self, node):
+    def get_dependents(self, node):
         visited = set()
         queue = deque()
         path = {}
@@ -169,15 +169,18 @@ class Pipeline:
                 queue.append(link.node.id)
                 path[link.node] = self.nodes[id]
 
-        return path
-
-    def cancel_dependents(self, node, path):
         pathTemp = node
+        skip_nodes = []
         while pathTemp is not None:
             # Don't skip supplied node, since that would be applied next run
             # if pathTemp is not node:
-            pathTemp.skip = True
+            skip_nodes.append(pathTemp)
             pathTemp = path.get(pathTemp)
+        return skip_nodes
+
+    def cancel_nodes(self, nodes):
+        for node in nodes:
+            node.skip = True
 
     # def cancel_dependents(self, node, path):
     # Iterate through path and skip all nodes which were visited
