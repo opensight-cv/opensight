@@ -4,9 +4,6 @@ import cv2
 
 from opsi.util.cache import cached_property
 
-from . import _wrappers
-
-
 # Also represents dimensions
 class Point(NamedTuple):
     # implicit classmethod Point._make - create from existing iterable
@@ -29,6 +26,13 @@ class Point(NamedTuple):
     @property
     def perimeter(self):
         return 2 * (self.x + self.y)
+
+    # usage: normalized = Point(width, height).normalize(Point(x, y))
+    def normalize(self, point: "Point") -> "Point":
+        x = (2 * point.x / self.x) - 1
+        y = (2 * point.y / self.y) - 1
+
+        return Point(x, y)
 
 
 class Shape:

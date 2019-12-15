@@ -2,9 +2,9 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
-
+import cv2
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Contours, Mat, MatBW, Slide
+from opsi.manager.types import Contours, Mat, MatBW, Point, Slide
 
 __package__ = "opsi.contours"
 __version__ = "0.123"
@@ -57,8 +57,6 @@ class ContourApproximate(Function):
 
 
 class FindCenter(Function):
-    disabled = True
-
     @dataclass
     class Settings:
         draw: bool
@@ -75,38 +73,21 @@ class FindCenter(Function):
         success: bool
 
     def run(self, inputs):
-        midpoint = None
-        offset = None
-        draw = None
-        cnt = None
-        mids = []
-        if len(inputs.contours) == 0:
+        if len(inputs.contours.l) == 0:
             return self.Outputs(center=(), success=False, visual=inputs.img)
-        for i in range(len(inputs.contours)):
-            cnt = inputs.contours[i]
-            x, y, w, h = cv2.boundingRect(cnt)
-            cx = (x + (x + w)) // 2
-            cy = (y + (y + h)) // 2
-            midpoint = (cx, cy)
-            mids.append(midpoint)
-            draw = inputs.img.mat
-            if self.settings.draw:
-                draw = np.copy(inputs.img.mat)
-                cv2.rectangle(draw, (x, y), (x + w, y + h), (234, 234, 0), thickness=2)
-                cv2.circle(draw, midpoint, 10, (0, 0, 255), 3)
-                if len(mids) > 1:
-                    mid1 = mids[0]
-                    mid2 = mids[-1]
-                    mx = (mid1[0] + mid2[0]) // 2
-                    my = (mid1[1] + mid2[1]) // 2
-                    midpoint = (mx, my)
-                    cv2.circle(draw, midpoint, 15, (90, 255, 255), 3)
-                    cv2.line(draw, mid1, mid2, (0, 255, 20), thickness=3)
-            imgh, imgw, _ = inputs.img.shape
-            imgh, imgw = (imgh // 2, imgw // 2)
 
-            offset = (imgw - midpoint[0], imgh - midpoint[1])
-            normalized = (offset[0] / -imgw, offset[1] / -imgh)
+        center = inputs.contours.centroid_of_all
+
+        if self.settings.draw:
+            img = np.copy(inputs.img.mat.img)
+
+            for contour in inputs.contours.l:
+                cv2.circle(img, contour.centroid, 5, (0, 0, 255), 3)
+
+            cv2.circle(img, center, 10, (255, 0, 0), 5)
+
+        normalized = inputs.contours.res.normalize(center)
+
         return self.Outputs(center=normalized, success=True, visual=draw)
 
 

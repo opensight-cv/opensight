@@ -7,8 +7,8 @@ from datetime import datetime
 import jinja2
 from starlette.routing import Route, Router
 
-import opsi.util.cv._wrappers as cvw
 from opsi.manager.manager_schema import Hook
+from opsi.manager.types import Mat, Point
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.templating import LiteralTemplate
 
@@ -300,7 +300,7 @@ class CameraSource:
         self.queue = queue.Queue()
         self.thread = AsyncThread(timeout=0.5, name="CameraSource")
         self.snippets = []
-        self._img = None
+        self._img: Mat = None
         self._shutdown = False
 
     @property
@@ -339,7 +339,7 @@ class CameraSource:
         if resolution:
             m = re.search("(\d+)x(\d+)", resolution)
             try:
-                res = (int(m.group(1)), int(m.group(2)))
+                res = Point(int(m.group(1)), int(m.group(2)))
             except (TypeError, AttributeError):
                 LOGGER.debug("Invalid resolution", exc_info=True)
 
@@ -364,8 +364,8 @@ class CameraSource:
                 break
 
             if res:
-                mat = cvw.resize(mat, res)
-            img = cvw.encode_jpg(mat, quality)
+                mat = mat.resize(res)
+            img = mat.encode_jpg(quality)
 
             yield img
 

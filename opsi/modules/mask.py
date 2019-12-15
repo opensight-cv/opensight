@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-import opsi.util.cv._wrappers as cvw
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import MatBW
 
@@ -30,7 +29,7 @@ class Erode(Function):
 
     @classmethod
     def _impl(cls, imgBW, size):
-        return cvw.erode(imgBW, size)
+        return imgBW.erode(size)
 
     def run(self, inputs):
         imgBW = self._impl(inputs.imgBW, self.settings.size)
@@ -40,7 +39,7 @@ class Erode(Function):
 class Dilate(Erode):
     @classmethod
     def _impl(cls, imgBW, size):
-        return cvw.dilate(imgBW, size)
+        return imgBW.dilate(size)
 
 
 class Invert(Function):
@@ -53,7 +52,7 @@ class Invert(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        imgBW = cvw.invert(inputs.imgBW)
+        imgBW = inputs.imgBW.invert
         return self.Outputs(imgBW=imgBW)
 
 
@@ -68,5 +67,5 @@ class Join(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        imgBW = cvw.joinBW(inputs.imgBW1, inputs.imgBW2)
+        imgBW = MatBW.join(inputs.imgBW1, inputs.imgBW2)
         return self.Outputs(imgBW=imgBW)

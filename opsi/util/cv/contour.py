@@ -17,6 +17,8 @@ class Contour:
         self.raw = raw  # Raw ndarray
         self.res = res
 
+    # Operations
+
     @cached_property
     def convex_hull(self):
         raw_convex = cv2.convexHull(self.raw)
@@ -40,7 +42,7 @@ class Contour:
     @cached_property
     def _centroid(self):  # (x, y), unscaled
         M = self.moments
-        area = M["m00"] + EPSILON
+        area = M["m00"] + 1e-5
 
         cx = M["m10"] / area
         cy = M["m01"] / area
@@ -80,16 +82,24 @@ class Contour:
         return Rect.from_contour(self.raw)
 
 
+FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_LIST, "method": cv2.CHAIN_APPROX_SIMPLE}
+
+
 class Contours:
+    raw: List[ndarray]
+    res: Point
+
     def __init__(self):
         raise TypeError("Contours class must be made using Contours.from_* classmethod")
 
     @classmethod
     def from_img(cls, img: MatBW):
-        img = img.matBW
-        res = Point._make_rev(img.shape)  # img.shape is (height, width),
+        vals = cv2.findContours(img.matBW.img, **FIND_CONTOURS_CONSTS)
 
-        inst = cls.from_raw(_find_contours_raw(img), res)
+        #  raw = vals[1]  # OPENCV3: image, contours, hierarchy
+        raw = vals[0]  # OPENCV4: contours, hierarchy
+
+        inst = cls.from_raw(raw, img.res)
 
         return inst
 
@@ -111,8 +121,6 @@ class Contours:
 
         return inst
 
-    # So the idea is that
-
     @cached_property
     def raw(self):  # used when contours is supplied but not raw
         return [contour.raw for contour in self.l]
@@ -120,6 +128,8 @@ class Contours:
     @cached_property
     def l(self):  # used when raw is supplied but not contour; must have self.res set
         return [Contour(contour, self.res) for contour in self.raw]
+
+    # Operations
 
     @cached_property
     def convex_hulls(self):
@@ -137,3 +147,14 @@ class Contours:
         inst.approximate = contours
 
         return inst
+
+    @cached_property
+    def _centroids(self):
+        return [contour._centroid for contour in self.l]
+
+    @cached_property
+    def _centroid_of_all(self):
+        cx = sum(centroid.x for centroid in self._centroids) / len(self._centroids)
+        cy = sum(centroid.y for centroid in self._centroids) / len(self._centroids)
+
+        return Point(cx, cy)

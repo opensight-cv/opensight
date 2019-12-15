@@ -23,9 +23,9 @@ class DrawContours(Function):
         img: Mat
 
     def run(self, inputs):
-        draw = np.copy(inputs.img.mat)
+        draw = np.copy(inputs.img.mat.img)
         cv2.drawContours(draw, inputs.contours, -1, (255, 255, 0), 3)
-        draw = draw.view(Mat)
+        draw = Mat(draw)
         return self.Outputs(img=draw)
 
 
@@ -40,7 +40,9 @@ class BitwiseAND(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cv2.bitwise_and(
-            inputs.img.mat, inputs.img.mat, mask=inputs.mask.matBW
-        ).view(Mat)
-        return self.Outputs(img=img)
+        img = inputs.img.mat.img
+        mask = inputs.mask.matBW.img
+
+        out = Mat(cv2.bitwise_and(np.copy(img), img, mask))
+
+        return self.Outputs(img=out)

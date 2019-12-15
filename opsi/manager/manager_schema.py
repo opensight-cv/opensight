@@ -170,6 +170,10 @@ class Hook:
         # self.app can be any ASGI app, but it must exist
         self.app = Router()
         self.url = ""  # will be replaced during webserver init
+        self.pipeline = None  # will be replaced
+
+    def fps(self):
+        return self.pipeline.fps.fps
 
 
 def ishook(hook):

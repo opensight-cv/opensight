@@ -2,7 +2,7 @@ from typing import List, NamedTuple
 
 from numpy import ndarray
 
-from opsi.util.cv import Contour, Contours, Mat, MatBW
+from opsi.util.cv import Contour, Contours, Mat, MatBW, Point
 
 
 class AnyType:

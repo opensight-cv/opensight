@@ -9,7 +9,6 @@ from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
 from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
-from opsi.manager.types import RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
 from .schema import *

@@ -72,7 +72,7 @@ class CameraServer(Function):
         img: Mat
 
     def run(self, inputs):
-        self.src.img = inputs.img.img
+        self.src.img = inputs.img
         return self.Outputs()
 
     def dispose(self):

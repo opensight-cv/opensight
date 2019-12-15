@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-import opsi.util.cv._wrappers as cvw
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Mat, MatBW, RangeType
 
@@ -22,7 +21,7 @@ class Blur(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cvw.blur(inputs.img, self.settings.radius)
+        img = inputs.img.blur(self.settings.radius)
         return self.Outputs(img=img)
 
 
@@ -42,8 +41,8 @@ class HSVRange(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        imgBW = cvw.hsv_threshold(
-            inputs.img, self.settings.hue, self.settings.sat, self.settings.val
+        imgBW = inputs.img.hsv_threshold(
+            self.settings.hue, self.settings.sat, self.settings.val
         )
         return self.Outputs(imgBW=imgBW)
 
@@ -58,5 +57,5 @@ class Greyscale(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cvw.greyscale(inputs.img)
+        img = inputs.img.mat.greyscale
         return self.Outputs(img=img)

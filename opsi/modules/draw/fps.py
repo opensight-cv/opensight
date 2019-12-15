@@ -49,7 +49,7 @@ class DrawFPS(Function):
     def run(self, inputs):
         self.f.update()
         fps_str = str(round(self.f.fps(), 1))
-        img = np.copy(inputs.img.mat)
+        img = np.copy(inputs.img.mat.img)
         cv2.putText(
             img,
             fps_str,
@@ -59,4 +59,5 @@ class DrawFPS(Function):
             (255, 255, 255),
             lineType=cv2.LINE_AA,
         )
+        img = Mat(img)
         return self.Outputs(img=img)
