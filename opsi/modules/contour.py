@@ -1,10 +1,8 @@
 import math
 from dataclasses import dataclass
 
-import cv2
 import numpy as np
 
-import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW, Slide
 
@@ -22,7 +20,7 @@ class FindContours(Function):
         contours: Contours
 
     def run(self, inputs):
-        contours = cvw.Contours.from_img(inputs)
+        contours = Contours.from_img(inputs.imgBW)
         return self.Outputs(contours=contours)
 
 
@@ -36,7 +34,7 @@ class ConvexHulls(Function):
         contours: Contours
 
     def run(self, inputs):
-        contours = contours.convex_hulls
+        contours = inputs.contours.convex_hulls
         return self.Outputs(contours=contours)
 
 
@@ -52,14 +50,15 @@ class ContourApproximate(Function):
     @dataclass
     class Outputs:
         contours: Contours
-    
+
     def run(self, inputs):
-        contours = contours.convex_hulls
+        contours = inputs.contours.approximate(self.settings.epsilon)
         return self.Outputs(contours=contours)
 
 
-
 class FindCenter(Function):
+    disabled = True
+
     @dataclass
     class Settings:
         draw: bool

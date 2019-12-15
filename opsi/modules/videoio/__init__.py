@@ -42,7 +42,7 @@ class CameraInput(Function):
         frame = None
         if self.cap:
             ret, frame = self.cap.read()
-            frame = frame.view(Mat)
+            frame = Mat(frame)
         return self.Outputs(img=frame)
 
     def dispose(self):
@@ -72,7 +72,7 @@ class CameraServer(Function):
         img: Mat
 
     def run(self, inputs):
-        self.src.img = inputs.img
+        self.src.img = inputs.img.img
         return self.Outputs()
 
     def dispose(self):

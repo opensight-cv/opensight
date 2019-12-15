@@ -7,7 +7,7 @@ from datetime import datetime
 import jinja2
 from starlette.routing import Route, Router
 
-import opsi.manager.cvwrapper as cvw
+import opsi.util.cv._wrappers as cvw
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.templating import LiteralTemplate
