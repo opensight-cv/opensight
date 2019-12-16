@@ -1,8 +1,9 @@
 import math
 from dataclasses import dataclass
 
-import numpy as np
 import cv2
+import numpy as np
+
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW, Point, Slide
 
@@ -68,13 +69,13 @@ class FindCenter(Function):
 
     @dataclass
     class Outputs:
-        center: ()
+        center: Point
         visual: Mat
         success: bool
 
     def run(self, inputs):
         if len(inputs.contours.l) == 0:
-            return self.Outputs(center=(), success=False, visual=inputs.img)
+            return self.Outputs(center=None, success=False, visual=inputs.img)
 
         center = inputs.contours.centroid_of_all
 
@@ -100,7 +101,7 @@ class FindAngle(Function):
 
     @dataclass
     class Inputs:
-        pnt: ()
+        pnt: Point
         img: Mat
 
     @dataclass

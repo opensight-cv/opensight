@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
 from opsi.manager.netdict import NetworkDict
-from opsi.manager.types import AnyType
+from opsi.manager.types import AnyType, Point
 from opsi.util.unduplicator import Unduplicator
 
 __package__ = "opsi.nt"
@@ -90,7 +90,7 @@ class PutCoordinate(PutNT):
 
     @dataclass
     class Inputs:
-        val: tuple()
+        val: Point
 
     def run(self, inputs):
         if inputs.val:

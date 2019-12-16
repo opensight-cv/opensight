@@ -2,7 +2,7 @@ import logging
 import sys
 from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
@@ -44,7 +44,7 @@ def _tuple_serialize(type):
     if not isinstance(type, tuple):
         return None
 
-    return InputOutputF(type="box", params={"options": type})
+    return InputOutputF(type="tup", params={"options": type})
 
 
 _type_name: Dict[Type, str] = {
@@ -53,6 +53,7 @@ _type_name: Dict[Type, str] = {
     MatBW: "mbw",
     Contour: "cnt",
     Contours: "cts",
+    Point: "pnt",
     AnyType: "any",
 }
 _normal_types = {int, str, Mat}

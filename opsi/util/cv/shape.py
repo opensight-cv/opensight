@@ -4,6 +4,7 @@ import cv2
 
 from opsi.util.cache import cached_property
 
+
 # Also represents dimensions
 class Point(NamedTuple):
     # implicit classmethod Point._make - create from existing iterable
