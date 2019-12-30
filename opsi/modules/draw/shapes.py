@@ -1,0 +1,42 @@
+import datetime
+from dataclasses import dataclass
+
+import numpy as np
+
+import cv2
+from opsi.manager.manager_schema import Function
+from opsi.manager.types import Circles, Mat
+
+
+class DrawCircles(Function):
+    force_enabled = True
+
+    @dataclass
+    class Inputs:
+        circles: Circles
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        img: Mat
+
+    def run(self, inputs):
+        # If there are no circles return the input image
+        if inputs.circles is None:
+            return self.Outputs(img=inputs.img)
+
+        draw = np.copy(inputs.img.mat)
+
+        int_circles = np.uint16(np.around(inputs.circles))
+
+        for pt in int_circles[0, :]:
+            a, b, r = pt[0], pt[1], pt[2]
+
+            # Draw the circumference of the circle.
+            cv2.circle(draw, (a, b), r, (0, 255, 0), 2)
+
+            # Draw a small circle (of radius 1) to show the center.
+            cv2.circle(draw, (a, b), 1, (0, 0, 255), 3)
+
+        draw = draw.view(Mat)
+        return self.Outputs(img=draw)
