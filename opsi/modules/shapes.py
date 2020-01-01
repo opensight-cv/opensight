@@ -11,9 +11,9 @@ __version__ = "0.123"
 class FindCircles(Function):
     @dataclass
     class Settings:
-        dp: int
+        resolution_divisor: int
         min_dist: int
-        param: RangeType(0, 255)
+        edge_detection_threshold: RangeType(0, 255)
         min_radius: int
         max_radius: int
 
