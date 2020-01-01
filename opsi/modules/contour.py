@@ -2,9 +2,9 @@ import math
 from dataclasses import dataclass
 from functools import lru_cache
 
-import cv2
 import numpy as np
 
+import cv2
 import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW

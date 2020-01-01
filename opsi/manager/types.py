@@ -61,6 +61,10 @@ class RangeType(_RangeBaseType):
 # Making new classes allows me to do simple equality testing
 
 
+class Circles(ndarray):
+    pass
+
+
 class Contour(ndarray):
     pass
 

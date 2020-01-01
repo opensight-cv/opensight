@@ -71,6 +71,31 @@ def hsv_threshold(img: Mat, hue: "Range", sat: "Range", lum: "Range") -> MatBW:
     return cv2.inRange(cv2.cvtColor(img.mat, cv2.COLOR_BGR2HSV), *ranges).view(MatBW)
 
 
+def v_threshold(img: MatBW, val: "Range") -> MatBW:
+    """
+       Args:
+           val: Value range (min, max) (0 - 255)
+       Returns:
+           Black+White Mat
+       """
+    return cv2.inRange(img.mat, val[0], val[1]).view(MatBW)
+
+
+def hough_circles(
+    img: MatBW, dp: int, min_dist: int, param: "Range", min_radius: int, max_radius: int
+) -> "Circles":
+    return cv2.HoughCircles(
+        img,
+        method=cv2.HOUGH_GRADIENT,
+        dp=dp,
+        minDist=min_dist,
+        param1=param[1],
+        param2=param[0],
+        minRadius=min_radius,
+        maxRadius=max_radius,
+    )
+
+
 ERODE_DILATE_CONSTS = {
     "kernel": None,
     "anchor": (-1, -1),
