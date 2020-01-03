@@ -148,9 +148,10 @@ class AbsoluteDifferenceHSV(Function):
             np.array(
                 [self.settings.hue, self.settings.sat, self.settings.val],
                 dtype=np.float,
-            )[None],
+            )[None], # [None] adds a dimension to the ndarray object created by np.array() -
+                     # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
         ).view(Mat)
-
+        
         scaled_diff = np.multiply(
             diff_hsv,
             np.array(

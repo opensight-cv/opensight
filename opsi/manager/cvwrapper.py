@@ -221,5 +221,5 @@ def bgr_to_hsv(img: Mat) -> Mat:
     return cv2.cvtColor(img.mat, cv2.COLOR_BGR2HSV)
 
 
-def abs_diff(img, scalar):
+def abs_diff(img: Mat, scalar: ndarray):
     return cv2.absdiff(img, scalar)
