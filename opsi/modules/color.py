@@ -4,7 +4,7 @@ import numpy as np
 
 import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat, MatBW, RangeType
+from opsi.manager.types import Mat, MatBW, RangeType, Slide
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -88,12 +88,12 @@ class Canny(Function):
 class AbsoluteDifferenceRGB(Function):
     @dataclass
     class Settings:
-        red: int
-        green: int
-        blue: int
+        red: Slide(min=0, max=255, decimal=False)
+        green: Slide(min=0, max=255, decimal=False)
+        blue: Slide(min=0, max=255, decimal=False)
         to_greyscale: bool
         clamp_max: bool
-        clamp_value: int
+        clamp_value: Slide(min=0, max=255, decimal=False)
 
     @dataclass
     class Inputs:
@@ -124,14 +124,14 @@ class AbsoluteDifferenceRGB(Function):
 class AbsoluteDifferenceHSV(Function):
     @dataclass
     class Settings:
-        hue: int
+        hue: Slide(min=0, max=359, decimal=False)
         hue_sensitivity: int
-        sat: int
+        sat: Slide(min=0, max=255, decimal=False)
         sat_sensitivity: int
-        val: int
+        val: Slide(min=0, max=255, decimal=False)
         val_sensitivity: int
         clamp_max: bool
-        clamp_value: int
+        clamp_value: Slide(min=0, max=255, decimal=False)
 
     @dataclass
     class Inputs:
@@ -178,7 +178,7 @@ class AbsoluteDifferenceHSV(Function):
 class ClampMax(Function):
     @dataclass
     class Settings:
-        max_value: int
+        max_value: Slide(min=0, max=255, decimal=False)
 
     @dataclass
     class Inputs:
@@ -195,7 +195,7 @@ class ClampMax(Function):
 class ClampMin(Function):
     @dataclass
     class Settings:
-        min_value: int
+        min_value: Slide(min=0, max=255, decimal=False)
 
     @dataclass
     class Inputs:
