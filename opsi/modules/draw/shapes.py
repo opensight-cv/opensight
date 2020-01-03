@@ -1,11 +1,11 @@
 import datetime
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
-import cv2
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Circles, Mat
+from opsi.manager.types import Circles, Mat, Segments
 
 
 class DrawCircles(Function):
@@ -37,6 +37,33 @@ class DrawCircles(Function):
 
             # Draw a small circle (of radius 1) to show the center.
             cv2.circle(draw, (a, b), 1, (0, 0, 255), 3)
+
+        draw = draw.view(Mat)
+        return self.Outputs(img=draw)
+
+
+class DrawSegments(Function):
+    force_enabled = True
+
+    @dataclass
+    class Inputs:
+        lines: Segments
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        img: Mat
+
+    def run(self, inputs):
+        # If there are no circles return the input image
+        if inputs.lines is None:
+            return self.Outputs(img=inputs.img)
+
+        draw = np.copy(inputs.img.mat)
+
+        for line in inputs.lines:
+            x1, y1, x2, y2 = line[0]
+            cv2.line(draw, (x1, y1), (x2, y2), (255, 0, 0), 3)
 
         draw = draw.view(Mat)
         return self.Outputs(img=draw)

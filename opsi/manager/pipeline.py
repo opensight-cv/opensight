@@ -6,8 +6,9 @@ from queue import deque
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
 
-from opsi.util.concurrency import FifoLock
 from toposort import toposort
+
+from opsi.util.concurrency import FifoLock
 
 from .link import Link, NodeLink, StaticLink
 from .manager_schema import Function

@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
-import cv2
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW
 
 from .fps import DrawFPS
-from .shapes import DrawCircles
+from .shapes import DrawCircles, DrawSegments
 
 __package__ = "opsi.draw"
 __version__ = "0.123"

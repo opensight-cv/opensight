@@ -65,6 +65,14 @@ class Circles(ndarray):
     pass
 
 
+class Segments(ndarray):
+    pass
+
+
+class Lines(ndarray):
+    pass
+
+
 class Contour(ndarray):
     pass
 

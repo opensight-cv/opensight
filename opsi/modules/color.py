@@ -60,3 +60,24 @@ class Greyscale(Function):
     def run(self, inputs):
         img = cvw.greyscale(inputs.img)
         return self.Outputs(img=img)
+
+
+class Canny(Function):
+    @dataclass
+    class Settings:
+        threshold: RangeType(0, 255)
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        imgBW: MatBW
+
+    def run(self, inputs):
+        return self.Outputs(
+            imgBW=cvw.canny(
+                inputs.img, self.settings.threshold[0], self.settings.threshold[1]
+            )
+        )
