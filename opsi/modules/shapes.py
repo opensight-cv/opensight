@@ -13,7 +13,8 @@ class FindCircles(Function):
     class Settings:
         resolution_divisor: int
         min_dist: int
-        edge_detection_threshold: RangeType(0, 255)
+        edge_detection_threshold: int
+        circle_detection_threshold: int
         min_radius: int
         max_radius: int
 
@@ -32,6 +33,7 @@ class FindCircles(Function):
                 self.settings.resolution_divisor,
                 self.settings.min_dist,
                 self.settings.edge_detection_threshold,
+                self.settings.circle_detection_threshold,
                 self.settings.min_radius,
                 self.settings.max_radius,
             )

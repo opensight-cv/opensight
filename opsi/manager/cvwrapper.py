@@ -85,15 +85,21 @@ def v_threshold(img: Mat, val: "Range") -> MatBW:
 
 
 def hough_circles(
-    img: Mat, dp: int, min_dist: int, param: "Range", min_radius: int, max_radius: int
+    img: Mat,
+    dp: int,
+    min_dist: int,
+    param1: int,
+    param2: int,
+    min_radius: int,
+    max_radius: int,
 ) -> "Circles":
     return cv2.HoughCircles(
         img,
         method=cv2.HOUGH_GRADIENT,
         dp=dp,
         minDist=min_dist,
-        param1=param[1],
-        param2=param[0],
+        param1=param1,
+        param2=param2,
         minRadius=min_radius,
         maxRadius=max_radius,
     )
