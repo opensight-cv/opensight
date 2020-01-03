@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
-import cv2
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import Contours, Mat, MatBW
 

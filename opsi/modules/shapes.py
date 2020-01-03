@@ -61,6 +61,6 @@ class FindLines(Function):
                 self.settings.resolution_divisor,
                 self.settings.threshold,
                 self.settings.min_length,
-                self.settings.max_gap
+                self.settings.max_gap,
             )
         )

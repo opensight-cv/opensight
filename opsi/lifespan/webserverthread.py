@@ -3,6 +3,7 @@ import logging
 import threading
 
 import uvicorn
+
 from opsi.util.concurrency import AsyncThread
 
 LOGGER = logging.getLogger(__name__)

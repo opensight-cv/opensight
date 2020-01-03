@@ -76,4 +76,8 @@ class Canny(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        return self.Outputs(imgBW=cvw.canny(inputs.img, self.settings.threshold[0], self.settings.threshold[1]))
+        return self.Outputs(
+            imgBW=cvw.canny(
+                inputs.img, self.settings.threshold[0], self.settings.threshold[1]
+            )
+        )
