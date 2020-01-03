@@ -215,3 +215,11 @@ def joinBW(img1: MatBW, img2: MatBW) -> MatBW:
 
 def greyscale(img: Mat) -> Mat:
     return cv2.cvtColor(img.mat, cv2.COLOR_BGR2GRAY).view(Mat).mat
+
+
+def bgr_to_hsv(img: Mat) -> Mat:
+    return cv2.cvtColor(img.mat, cv2.COLOR_BGR2HSV)
+
+
+def abs_diff(img, scalar):
+    return cv2.absdiff(img, scalar)
