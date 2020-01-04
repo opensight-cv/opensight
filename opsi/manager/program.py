@@ -46,4 +46,5 @@ class Program:
             task.run()  # won't send exceptions because runs in seperate thead
         LOGGER.info("Program main loop is shutting down...")
         self.pipeline.clear()
+        self.manager.shutdown()
         self.shutdown.clear()

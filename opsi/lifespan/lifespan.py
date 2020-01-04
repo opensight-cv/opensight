@@ -9,7 +9,7 @@ import opsi
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.util.concurrency import AsyncThread, ShutdownThread
-from opsi.util.networking import choose_port, get_nt_server
+from opsi.util.networking import choose_port
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
@@ -17,13 +17,15 @@ from opsi.webserver.serialize import import_nodetree
 
 from .webserverthread import WebserverThread
 
-# import optional dependencies
 try:
     from networktables import NetworkTables
 
     NT_AVAIL = True
 except ImportError:
     NT_AVAIL = False
+
+
+# import optional dependencies
 
 try:
     from pystemd.systemd1 import Unit
@@ -56,14 +58,6 @@ def register_modules(program, module_path):
         program.manager.register_module(ModulePath(moddir, path))
 
 
-def init_networktables(network):
-    if network.nt_client:
-        addr = get_nt_server(network)
-        NetworkTables.startClient(addr)
-    else:
-        NetworkTables.startServer()
-
-
 class Lifespan:
     PORTS = (80, 8000)
     NT_AVAIL = NT_AVAIL
@@ -83,6 +77,7 @@ class Lifespan:
         self.persist = Persistence(path=args.persist) if load_persist else None
 
         if catch_signal:
+            self.signalCount = 0
             signal.signal(signal.SIGINT, self.catch_signal)
             signal.signal(signal.SIGTERM, self.catch_signal)
 
@@ -104,8 +99,6 @@ class Lifespan:
         return self._systemd
 
     def make_threads(self):
-        if self.NT_AVAIL and self.persist.network.nt_enabled:
-            init_networktables(self.persist.network)
         program = Program(self)
 
         path = opsi.__file__
@@ -146,6 +139,9 @@ class Lifespan:
 
     def catch_signal(self, signum, frame):
         self.shutdown()
+        self.signalCount += 1
+        if self.signalCount >= 2:
+            self.terminate()
 
     def terminate(self):
         LOGGER.critical("OpenSight failed to close gracefully! Terminating...")
@@ -158,8 +154,6 @@ class Lifespan:
                     self.timer.start()
                 except RuntimeError:
                     pass
-        if NT_AVAIL and self.persist.network.nt_enabled:
-            NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
         self.event.set()
 
