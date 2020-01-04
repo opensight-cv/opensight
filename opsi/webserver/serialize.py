@@ -20,6 +20,8 @@ __all__ = (
     "NodeTreeImportError",
 )
 
+from ..util.cv import Point
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -406,11 +408,7 @@ def import_nodetree(program, nodetree: NodeTreeN):
     nodetree = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
 
-<<<<<<< HEAD
-    # todo: how to cache FifoLock in the stateless import_nodetree function?
-=======
     # TODO : how to cache FifoLock in the stateless import_nodetree function?
->>>>>>> origin/dev
     with FifoLock(program.queue):
         program.pipeline.prune_nodetree(ids)
 
