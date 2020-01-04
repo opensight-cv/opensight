@@ -9,10 +9,10 @@ __version__ = "0.123"
 HookInstance = Hook(visible=False)
 
 
-class Switch(Function):
+class Freeze(Function):
     @dataclass
     class Settings:
-        state: bool
+        freeze: bool
 
     @dataclass
     class Inputs:
@@ -20,12 +20,10 @@ class Switch(Function):
 
     @dataclass
     class Outputs:
-        on: AnyType = None
-        off: AnyType = None
+        out: AnyType = None
 
     def run(self, inputs):
-        if self.settings.state:
-            HookInstance.cancel_output("off")
-            return self.Outputs(on=inputs.thru)
-        HookInstance.cancel_output("on")
-        return self.Outputs(off=inputs.thru)
+        if not self.settings.freeze:
+            return self.Outputs(out=inputs.thru)
+        HookInstance.cancel_dependents()
+        return self.Outputs()
