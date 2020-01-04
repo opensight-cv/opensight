@@ -130,23 +130,30 @@ class PutCoordinate(PutNT):
         UndupeInstance.remove(x)
         UndupeInstance.remove(y)
 
+
 class GetNT(PutNT):
     def on_start(self):
         self.table = NetworkDict(self.settings.path)
-    
+        self.validate_paths()
+
+    def validate_paths(self):
+        try:
+            val = self.table[self.settings.key]
+        except KeyError:
+            raise ValueError(f"Key does {self.settings.key} not exist.")
+
     @dataclass
     class Inputs:
         pass
 
     @dataclass
     class Outputs:
-        val: AnyType
+        val: AnyType = None
 
     def run(self, inputs):
         val = self.table.get(self.settings.key, None)
-
-        # for debug, print value and type
-        # remove before merge to master
-        val = f"{val}: {type(val)}"
+        if val is None:
+            HookInstance.cancel_output("val")
+            return self.Outputs()
 
         return self.Outputs(val=val)
