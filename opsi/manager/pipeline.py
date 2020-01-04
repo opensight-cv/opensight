@@ -2,9 +2,9 @@ import logging
 import time
 from dataclasses import fields
 from itertools import chain
+from queue import deque
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
-from queue import deque
 
 from toposort import toposort
 

@@ -15,6 +15,8 @@ from opsi.util.persistence import Persistence
 from opsi.webserver import WebServer
 from opsi.webserver.serialize import import_nodetree
 
+from .webserverthread import WebserverThread
+
 try:
     from networktables import NetworkTables
 
@@ -22,7 +24,6 @@ try:
 except ImportError:
     NT_AVAIL = False
 
-from .webserverthread import WebserverThread
 
 # import optional dependencies
 

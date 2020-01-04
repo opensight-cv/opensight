@@ -1,5 +1,4 @@
 import logging
-
 from dataclasses import Field, dataclass, fields, is_dataclass
 from typing import (
     Any,

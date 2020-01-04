@@ -8,7 +8,6 @@ from opsi.manager.types import AnyType
 from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
 
-
 __package__ = "opsi.nt"
 __version__ = "0.123"
 
