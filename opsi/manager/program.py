@@ -16,8 +16,8 @@ class Program:
         self.queue = queue.Queue()
         self.lifespan = lifespan
 
-        self.manager = Manager()
         self.pipeline = Pipeline(self)
+        self.manager = Manager(self.pipeline)
 
         self.p_thread = None
 

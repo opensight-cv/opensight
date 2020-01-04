@@ -28,9 +28,9 @@ class Blur(Function):
 class HSVRange(Function):
     @dataclass
     class Settings:
-        hue: RangeType(0, 179, decimal=True)
-        sat: RangeType(0, 255, decimal=True)
-        val: RangeType(0, 255, decimal=True)
+        hue: RangeType(0, 359)
+        sat: RangeType(0, 255)
+        val: RangeType(0, 255)
 
     @dataclass
     class Inputs:
@@ -59,3 +59,24 @@ class Greyscale(Function):
     def run(self, inputs):
         img = inputs.img.mat.greyscale
         return self.Outputs(img=img)
+
+
+class Canny(Function):
+    @dataclass
+    class Settings:
+        threshold: RangeType(0, 255)
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        imgBW: MatBW
+
+    def run(self, inputs):
+        return self.Outputs(
+            imgBW=cvw.canny(
+                inputs.img, self.settings.threshold[0], self.settings.threshold[1]
+            )
+        )

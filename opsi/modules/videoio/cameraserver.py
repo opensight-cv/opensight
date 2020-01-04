@@ -8,8 +8,10 @@ import jinja2
 from starlette.routing import Route, Router
 
 from opsi.manager.manager_schema import Hook
-from opsi.manager.types import Mat, Point
+from opsi.manager.types import Mat
+
 from opsi.util.concurrency import AsyncThread, Snippet
+from opsi.util.cv import Point
 from opsi.util.templating import LiteralTemplate
 
 try:
@@ -23,6 +25,7 @@ __package__ = "opsi.camserv"
 __version__ = "0.123"
 
 LOGGER = logging.getLogger(__name__)
+logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
@@ -249,7 +252,8 @@ class CamHook(Hook):
     CAMERA_NAME = "OpenSight: {func}"
     CAMERA_URL = f"mjpeg:{{url}}{STREAM_URL}?"
 
-    def __init__(self):
+    def __init__(self, visible=True):
+        self.visible = visible
         self.app = Router()
         if NT_AVAIL:
             self.netdict = NetworkDict("/CameraPublisher")

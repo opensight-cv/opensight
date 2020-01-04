@@ -47,19 +47,11 @@ class WebServer:
             "/", CacheControlMiddleware(StaticFiles(directory=join(frontend, "www")))
         )
 
-    def __check_port__(self, port):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("0.0.0.0", port))
-            except socket.error as e:
-                LOGGER.debug(f"Could not bind to port {port}.", exc_info=True)
-                port = 8000
-                LOGGER.debug(f"Binding to port {port} instead")
-        return port
-
     def make_hooks(self):
         PREFIX = "/hooks"
-        HOOKS = self.program.manager.hooks  # {package: app}
+        HOOKS = {
+            x[0]: x[1] for x in self.program.manager.hooks.items() if x[1].visible
+        }  # {package: app}
 
         self.app.add_route(
             PREFIX, self.template("hooks.html", prefix=PREFIX, packages=HOOKS.keys())

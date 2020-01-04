@@ -93,7 +93,7 @@ var makePostRequestFunc = function(time) {
   };
 };
 
-var postRequest = makePostRequestFunc(750);
+var postRequest = makePostRequestFunc(0);
 var slowPostRequest = makePostRequestFunc(2000);
 
 var body = document.querySelector("body");
@@ -160,7 +160,7 @@ if (c) {
 }
 
 function checkTypes(type1, type2) {
-  if (type2 == "any") {
+  if (type1 == "any" || type2 == "any") {
     return true;
   }
   if (type1 == "mbw" && type2 == "Mat") {

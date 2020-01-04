@@ -13,7 +13,7 @@ def is_port_open(port):
             s.bind(("0.0.0.0", port))
             return True
         except OSError:
-            LOGGER.debug(f"Couldn't bind to port {port}", exc_info=True)
+            LOGGER.debug(f"Port taken: %s", port)
             return False
 
 

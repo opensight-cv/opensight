@@ -1,3 +1,4 @@
+import logging
 from dataclasses import Field, dataclass, fields, is_dataclass
 from typing import (
     Any,
@@ -11,6 +12,8 @@ from typing import (
 )
 
 from starlette.routing import Router
+
+LOGGER = logging.getLogger(__name__)
 
 
 def isinstance_partial(type: Type) -> Callable[[Any], bool]:
@@ -31,7 +34,7 @@ def does_match(cls, name: str, asserter: Callable[[Any], bool]) -> bool:
 
 class Function:
     has_sideeffect: bool = False
-    require_restart: FrozenSet[str] = frozenset()
+    require_restart: bool = False
     disabled = False
     force_enabled = False
 
@@ -66,11 +69,6 @@ class Function:
         cls.SettingTypes = fields(cls.Settings)
         cls.InputTypes = get_type_hints(cls.Inputs)
         cls.OutputTypes = get_type_hints(cls.Outputs)
-
-        cls.require_restart = frozenset(cls.require_restart)
-        for field in cls.require_restart:
-            if field not in cls.InputTypes:
-                error(f"field '{field}'")
 
         # Inject code that runs before the overridable methods
         # This patching is necessary to keep the api the same
@@ -166,14 +164,21 @@ def isfunction(func):
 
 
 class Hook:
-    def __init__(self):
+    def __init__(self, visible=True):
         # self.app can be any ASGI app, but it must exist
+        self.visible = visible
         self.app = Router()
         self.url = ""  # will be replaced during webserver init
         self.pipeline = None  # will be replaced
 
     def fps(self):
         return self.pipeline.fps.fps
+
+    def cancel_dependents(self):
+        try:
+            self.pipeline.cancel_dependents(self.pipeline.current)
+        except:
+            raise ValueError("Pipeline not available! Cannot cancel dependents.")
 
 
 def ishook(hook):

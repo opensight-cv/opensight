@@ -52,7 +52,7 @@ class Persistence:
                 (path / "preferences.json").touch()
 
             except OSError:
-                LOGGER.debug("Skipping path", exc_info=True)
+                LOGGER.debug("Skipping path %s", path)
                 continue
 
             else:
@@ -71,8 +71,7 @@ class Persistence:
             self._nodetree = NodeTreeN.parse_file(self.nodetree_path)
             return self._nodetree
         except (ValidationError, JSONDecodeError, ValueError) as e:
-            LOGGER.warning("Nodetree persistence invalid")
-            LOGGER.debug(e, exc_info=True)
+            LOGGER.warning("Unable to parse nodetree persistence")
         except OSError:
             LOGGER.exception("Failed to read from nodetree persistence")
 
@@ -98,12 +97,11 @@ class Persistence:
             self._prefs = Preferences.parse_file(self.base_path / "preferences.json")
             return self.prefs
         except (ValidationError, JSONDecodeError, ValueError) as e:
-            LOGGER.warning("Preferences persistence invalid")
-            LOGGER.debug(e, exc_info=True)
+            LOGGER.warning("Unable to parse preferences persistence")
         except OSError:
             LOGGER.exception("Failed to read from preferences persistence")
 
-        LOGGER.warning("Creating new preferences file.")
+        LOGGER.warning("Creating new preferences")
         self.prefs = Preferences()  # set default preferences in schema.py
         return self._prefs
 

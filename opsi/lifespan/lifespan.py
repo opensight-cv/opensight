@@ -154,7 +154,10 @@ class Lifespan:
     def shutdown_threads(self):
         if not self._restart:
             if not self.timer.is_alive():
-                self.timer.start()
+                try:
+                    self.timer.start()
+                except RuntimeError:
+                    pass
         if NT_AVAIL and self.persist.network.nt_enabled:
             NetworkTables.shutdown()
         LOGGER.info("Waiting for threads to shut down...")
