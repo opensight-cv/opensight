@@ -23,6 +23,7 @@ __package__ = "opsi.camserv"
 __version__ = "0.123"
 
 LOGGER = logging.getLogger(__name__)
+logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
@@ -258,6 +259,7 @@ class CamHook(Hook):
         self.index_route = [
             Route("/", LiteralTemplate(self.TEMPLATE, funcs=self.funcs.keys()))
         ]
+        self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
 
         self._update()
 

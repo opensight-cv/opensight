@@ -22,6 +22,7 @@ NT_TYPES = Union[
     List[str],
 ]
 
+_missing = object()
 
 class NetworkDict:
     def __init__(self, table: str, networktable: NetworkTablesInstance = NetworkTables):
@@ -65,11 +66,11 @@ class NetworkDict:
 
     # Getters and setters
 
-    def get(self, name: str, default: NT_TYPES = None) -> NT_TYPES:
+    def get(self, name: str, default: NT_TYPES = _missing) -> NT_TYPES:
         entry = self._get_entry(name)
 
         if entry is None:
-            if default is not None:  # If a default is specified
+            if default is not _missing:  # If a default is specified
                 return default
 
             raise KeyError(name)

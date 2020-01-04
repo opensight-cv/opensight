@@ -2,9 +2,9 @@ import logging
 import time
 from dataclasses import fields
 from itertools import chain
+from queue import deque
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 from uuid import UUID
-from queue import deque
 
 from toposort import toposort
 
@@ -142,14 +142,14 @@ class Pipeline:
                 # avoid clogging logs with errors
                 time.sleep(0.5)
 
-    def cancel_dependents(self, node):
+    def get_dependents(self, node):
         visited = set()
         queue = deque()
         path = {}
 
         # First, add all side effect nodes to queue
-        for id, node in self.nodes.items():
-            if node.func_type.has_sideeffect:
+        for id, i in self.nodes.items():
+            if i.func_type.has_sideeffect:
                 queue.append(id)
 
         # Then, do a DFS over queue, adding all reachable nodes to visited
@@ -159,26 +159,31 @@ class Pipeline:
 
             if id in visited:
                 continue
-
             if id == node.id:
                 break
 
             for input in self.nodes[id].inputLinks.values():
                 link = input
-
                 if link is None:
                     continue
-
                 queue.append(link.node.id)
                 path[link.node] = self.nodes[id]
 
-        # Iterate through path and skip all nodes which were visited
         pathTemp = node
+        skip_nodes = []
         while pathTemp is not None:
             # Don't skip supplied node, since that would be applied next run
-            if pathTemp is not node:
-                pathTemp.skip = True
+            # if pathTemp is not node:
+            skip_nodes.append(pathTemp)
             pathTemp = path.get(pathTemp)
+        return skip_nodes
+
+    def cancel_nodes(self, nodes):
+        for node in nodes:
+            node.skip = True
+
+    # def cancel_dependents(self, node, path):
+    # Iterate through path and skip all nodes which were visited
 
     def create_node(self, func: Type[Function], uuid: UUID):
         """
@@ -214,10 +219,12 @@ class Pipeline:
         new_node_ids = set(new_node_ids)
         removed = old_node_ids - new_node_ids
 
+        self.clear()
         # remove deleted nodes
         for uuid in removed:
             try:
                 self.nodes[uuid].dispose()
+                del self.adjList[self.nodes[uuid]]
                 del self.nodes[uuid]
             except KeyError:
                 pass

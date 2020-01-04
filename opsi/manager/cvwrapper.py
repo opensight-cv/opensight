@@ -1,3 +1,5 @@
+import math
+
 import cv2
 
 from .types import *
@@ -69,6 +71,60 @@ def hsv_threshold(img: Mat, hue: "Range", sat: "Range", lum: "Range") -> MatBW:
     hue = (hue[0] // 2, hue[1] // 2)
     ranges = tuple(zip(hue, lum, sat))
     return cv2.inRange(cv2.cvtColor(img.mat, cv2.COLOR_BGR2HSV), *ranges).view(MatBW)
+
+
+def v_threshold(img: Mat, val: "Range") -> MatBW:
+    """
+       Args:
+           img: Mat
+           val: Value range (min, max) (0 - 255)
+       Returns:
+           Black+White Mat
+       """
+    return cv2.inRange(img.mat, val[0], val[1]).view(MatBW)
+
+
+def hough_circles(
+    img: Mat,
+    dp: int,
+    min_dist: int,
+    param1: int,
+    param2: int,
+    min_radius: int,
+    max_radius: int,
+) -> "Circles":
+    return cv2.HoughCircles(
+        img,
+        method=cv2.HOUGH_GRADIENT,
+        dp=dp,
+        minDist=min_dist,
+        param1=param1,
+        param2=param2,
+        minRadius=min_radius,
+        maxRadius=max_radius,
+    )
+
+
+def hough_lines(
+    img: Mat,
+    rho: int,
+    threshold: int,
+    min_length: int,
+    max_gap: int,
+    theta: float = math.pi / 180.0,
+) -> "Segments":
+    return cv2.HoughLinesP(
+        img,
+        rho=rho,
+        theta=theta,
+        threshold=threshold,
+        minLineLength=min_length,
+        maxLineGap=max_gap,
+    )
+
+
+def canny(img: Mat, threshold_lower, threshold_upper) -> MatBW:
+    return cv2.Canny(img, threshold_lower, threshold_upper)
 
 
 ERODE_DILATE_CONSTS = {
@@ -159,3 +215,11 @@ def joinBW(img1: MatBW, img2: MatBW) -> MatBW:
 
 def greyscale(img: Mat) -> Mat:
     return cv2.cvtColor(img.mat, cv2.COLOR_BGR2GRAY).view(Mat).mat
+
+
+def bgr_to_hsv(img: Mat) -> Mat:
+    return cv2.cvtColor(img.mat, cv2.COLOR_BGR2HSV)
+
+
+def abs_diff(img: Mat, scalar: ndarray):
+    return cv2.absdiff(img, scalar)
