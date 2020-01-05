@@ -4,13 +4,49 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.util.cv import Contours, Mat, MatBW
+from opsi.manager.types import AnyType, Contours, Mat, MatBW, Slide
 
 from .fps import DrawFPS
 from .shapes import DrawCircles, DrawSegments
 
 __package__ = "opsi.draw"
 __version__ = "0.123"
+
+
+class DrawText(Function):
+    @dataclass
+    class Settings:
+        x_pct: Slide(min=0, max=100)
+        y_pct: Slide(min=0, max=100)
+        scale: float
+
+    @dataclass
+    class Inputs:
+        img: Mat
+        text: AnyType
+
+    @dataclass
+    class Outputs:
+        img: Mat
+
+    def run(self, inputs):
+        draw = np.copy(inputs.img.mat)
+        height, width = draw.shape[:2]
+        text_coords = (
+            int(width * self.settings.x_pct / 100.0),
+            int(height * self.settings.y_pct / 100.0),
+        )
+        cv2.putText(
+            draw,
+            str(inputs.text),
+            text_coords,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 255, 255),
+            lineType=cv2.LINE_AA,
+        )
+        draw = draw.view(Mat)
+        return self.Outputs(img=draw)
 
 
 class DrawContours(Function):
