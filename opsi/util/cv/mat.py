@@ -1,3 +1,5 @@
+import math
+
 import cv2
 from numpy import ndarray
 
@@ -75,7 +77,47 @@ class Mat:
         return Mat(a)
 
     def resize(self, res: Point) -> "Mat":
-        return Mat(cv2.resize(img, res))
+        return Mat(cv2.resize(self, res))
+
+    def canny(self, threshold_lower, threshold_upper) -> "MatBW":
+        return cv2.Canny(self, threshold_lower, threshold_upper)
+
+    def hough_circles(
+            self,
+            dp: int,
+            min_dist: int,
+            param1: int,
+            param2: int,
+            min_radius: int,
+            max_radius: int,
+    ) -> "Circles":
+        return cv2.HoughCircles(
+            self,
+            method=cv2.HOUGH_GRADIENT,
+            dp=dp,
+            minDist=min_dist,
+            param1=param1,
+            param2=param2,
+            minRadius=min_radius,
+            maxRadius=max_radius,
+        )
+
+    def hough_lines(
+            self,
+            rho: int,
+            threshold: int,
+            min_length: int,
+            max_gap: int,
+            theta: float = math.pi / 180.0,
+    ) -> "Segments":
+        return cv2.HoughLinesP(
+            self,
+            rho=rho,
+            theta=theta,
+            threshold=threshold,
+            minLineLength=min_length,
+            maxLineGap=max_gap,
+        )
 
 
 class MatBW:
@@ -97,10 +139,10 @@ class MatBW:
     # Operations
 
     def erode(self, size: int) -> "MatBW":
-        return MatBW(cv2.erode(img, iterations=round(size), **ERODE_DILATE_CONSTS))
+        return MatBW(cv2.erode(self, iterations=round(size), **_ERODE_DILATE_CONSTS))
 
     def dilate(self, size: int) -> "MatBW":
-        return MatBW(cv2.dilate(img, iterations=round(size), **ERODE_DILATE_CONSTS))
+        return MatBW(cv2.dilate(self, iterations=round(size), **_ERODE_DILATE_CONSTS))
 
     @cached_property
     def invert(self) -> "MatBW":

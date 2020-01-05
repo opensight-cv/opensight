@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Point, Slide
+from opsi.manager.types import Slide
 
 __package__ = "demo.eight"
+
+from opsi.util.cv import Point
 
 
 class TupleTest(Function):

@@ -5,7 +5,8 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Circles, Mat, Segments
+from opsi.util.cv import Mat
+from opsi.util.cv.shape import Circles, Segments
 
 
 class DrawCircles(Function):

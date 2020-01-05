@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat, MatBW, RangeType
+from opsi.manager.types import RangeType
+
+from opsi.util.cv import Mat, MatBW
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -76,7 +78,7 @@ class Canny(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            imgBW=cvw.canny(
-                inputs.img, self.settings.threshold[0], self.settings.threshold[1]
+            imgBW=inputs.img.canny(
+                self.settings.threshold[0], self.settings.threshold[1]
             )
         )

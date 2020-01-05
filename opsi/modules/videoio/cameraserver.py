@@ -8,10 +8,9 @@ import jinja2
 from starlette.routing import Route, Router
 
 from opsi.manager.manager_schema import Hook
-from opsi.manager.types import Mat
 
 from opsi.util.concurrency import AsyncThread, Snippet
-from opsi.util.cv import Point
+from opsi.util.cv import Point, Mat
 from opsi.util.templating import LiteralTemplate
 
 try:

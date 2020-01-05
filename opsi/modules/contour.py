@@ -6,10 +6,12 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Contours, Mat, MatBW, Point, Slide
+from opsi.manager.types import Slide
 
 __package__ = "opsi.contours"
 __version__ = "0.123"
+
+from opsi.util.cv import MatBW, Contours, Mat, Point
 
 
 class FindContours(Function):

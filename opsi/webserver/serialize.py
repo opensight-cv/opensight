@@ -2,7 +2,7 @@ import logging
 import sys
 from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Type
+from typing import Callable, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
@@ -20,7 +20,8 @@ __all__ = (
     "NodeTreeImportError",
 )
 
-from ..util.cv import Point
+from ..util.cv import Point, MatBW, Contour, Contours, Mat
+from ..util.cv.shape import Circles, Segments, Lines
 
 LOGGER = logging.getLogger(__name__)
 

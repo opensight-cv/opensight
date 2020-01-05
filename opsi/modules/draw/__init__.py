@@ -4,13 +4,14 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Contours, Mat, MatBW
 
 from .fps import DrawFPS
 from .shapes import DrawCircles, DrawSegments
 
 __package__ = "opsi.draw"
 __version__ = "0.123"
+
+from opsi.util.cv import Mat, MatBW, Contours
 
 
 class DrawContours(Function):

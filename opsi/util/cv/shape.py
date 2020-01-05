@@ -1,6 +1,7 @@
 from typing import NamedTuple
 
 import cv2
+from numpy.core._multiarray_umath import ndarray
 
 from opsi.util.cache import cached_property
 
@@ -85,3 +86,15 @@ class Rect(Shape):
     @cached_property
     def area(self):
         return self.dim.area
+
+
+class Circles(ndarray):
+    pass
+
+
+class Segments(ndarray):
+    pass
+
+
+class Lines(ndarray):
+    pass
