@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
+from opsi.util.cv import MatBW
 
 __package__ = "opsi.mask"
 __version__ = "0.123"
 
-from opsi.util.cv import MatBW
 
 
 class Erode(Function):

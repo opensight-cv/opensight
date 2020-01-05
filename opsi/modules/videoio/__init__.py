@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
+from opsi.util.cv import Mat
 from opsi.util.unduplicator import Unduplicator
 
 from .cameraserver import CameraSource, CamHook
@@ -9,7 +10,6 @@ from .input import controls, create_capture, get_modes, parse_camstring
 __package__ = "opsi.videoio"
 __version__ = "0.123"
 
-from opsi.util.cv import Mat
 
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()

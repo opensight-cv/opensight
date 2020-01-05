@@ -83,13 +83,13 @@ class Mat:
         return cv2.Canny(self, threshold_lower, threshold_upper)
 
     def hough_circles(
-            self,
-            dp: int,
-            min_dist: int,
-            param1: int,
-            param2: int,
-            min_radius: int,
-            max_radius: int,
+        self,
+        dp: int,
+        min_dist: int,
+        param1: int,
+        param2: int,
+        min_radius: int,
+        max_radius: int,
     ) -> "Circles":
         return cv2.HoughCircles(
             self,
@@ -103,12 +103,12 @@ class Mat:
         )
 
     def hough_lines(
-            self,
-            rho: int,
-            threshold: int,
-            min_length: int,
-            max_gap: int,
-            theta: float = math.pi / 180.0,
+        self,
+        rho: int,
+        threshold: int,
+        min_length: int,
+        max_gap: int,
+        theta: float = math.pi / 180.0,
     ) -> "Segments":
         return cv2.HoughLinesP(
             self,

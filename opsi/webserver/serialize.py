@@ -11,6 +11,8 @@ from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
 from opsi.util.concurrency import FifoLock
 
+from ..util.cv import Contour, Contours, Mat, MatBW, Point
+from ..util.cv.shape import Circles, Lines, Segments
 from .schema import *
 
 __all__ = (
@@ -20,8 +22,6 @@ __all__ = (
     "NodeTreeImportError",
 )
 
-from ..util.cv import Point, MatBW, Contour, Contours, Mat
-from ..util.cv.shape import Circles, Segments, Lines
 
 LOGGER = logging.getLogger(__name__)
 

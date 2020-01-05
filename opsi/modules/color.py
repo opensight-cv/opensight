@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import RangeType
-
 from opsi.util.cv import Mat, MatBW
 
 __package__ = "opsi.colorops"
