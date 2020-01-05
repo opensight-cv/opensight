@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import RangeType, Slide
-from opsi.util.cv import Mat, MatBW
+from opsi.manager.types import Color, Mat, MatBW, RangeType, Slide
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -147,11 +147,17 @@ class AbsoluteDifferenceHSV(Function):
             np.array(
                 [self.settings.hue, self.settings.sat, self.settings.val],
                 dtype=np.float,
+<<<<<<< HEAD
             )[
                 None
             ],  # [None] adds a dimension to the ndarray object created by np.array() -
             # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
         )
+=======
+            )[None],  # [None] adds a dimension to the ndarray object created by np.array() -
+            # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
+        ).view(Mat)
+>>>>>>> Added ColorSampler node
 
         scaled_diff = np.multiply(
             diff_hsv,
@@ -209,3 +215,30 @@ class ClampMin(Function):
 
     def run(self, inputs):
         return self.Outputs(img=np.maximum(inputs.img, self.settings.min_value))
+
+
+class ColorSampler(Function):
+    @dataclass
+    class Settings:
+        x: int
+        y: int
+        draw_point: bool
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        color: Color
+        img: Mat
+
+    def run(self, inputs):
+        draw = None
+        if self.settings.draw_point:
+            draw = np.copy(inputs.img.mat)
+            # Draw a small circle (of radius 5) to show the point.
+            cv2.circle(draw, (self.settings.x, self.settings.y), 5, (0, 0, 255), 3)
+            draw = draw.view(Mat)
+
+        return self.Outputs(color=inputs.img[self.settings.y, self.settings.x], img=draw)

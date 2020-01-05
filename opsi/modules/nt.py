@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
 from networktables import NetworkTables
-
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
-from opsi.manager.types import AnyType
+from opsi.manager.types import AnyType, Color
 from opsi.util.cv import Point
 from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
@@ -158,3 +157,39 @@ class GetNT(PutNT):
             return self.Outputs()
 
         return self.Outputs(val=val)
+
+
+class PutColor(PutNT):
+    def validate_paths(self):
+        r = (self.settings.path, f"{self.settings.key}-r")
+        g = (self.settings.path, f"{self.settings.key}-g")
+        b = (self.settings.path, f"{self.settings.key}-b")
+        r_success = UndupeInstance.add(r)
+        g_success = UndupeInstance.add(g)
+        b_success = UndupeInstance.add(b)
+        if not (r_success and g_success and b_success):
+            raise ValueError("Cannot have duplicate NetworkTables paths")
+
+    @dataclass
+    class Inputs:
+        val: Color
+
+    def run(self, inputs):
+        if inputs.val.all():
+            red = inputs.val["red"]
+            green = inputs.val["green"]
+            blue = inputs.val["blue"]
+
+            self.table[f"{self.settings.key}-r"] = red
+            self.table[f"{self.settings.key}-g"] = green
+            self.table[f"{self.settings.key}-b"] = blue
+
+        return self.Outputs()
+
+    def dispose(self):
+        r = (self.settings.path, f"{self.settings.key}-r")
+        g = (self.settings.path, f"{self.settings.key}-g")
+        b = (self.settings.path, f"{self.settings.key}-b")
+        UndupeInstance.remove(r)
+        UndupeInstance.remove(g)
+        UndupeInstance.remove(b)

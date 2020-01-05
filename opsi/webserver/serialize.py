@@ -55,6 +55,7 @@ _type_name: Dict[Type, str] = {
     bool: "bol",
     MatBW: "mbw",
     Circles: "cls",
+    Color: "col",
     Segments: "seg",
     Lines: "lin",
     Contour: "cnt",

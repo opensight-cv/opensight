@@ -42,6 +42,12 @@ class Range(NamedTuple):
     max: float
 
 
+class Color(NamedTuple):
+    red: int
+    green: int
+    blue: int
+
+
 class RangeType(_RangeBaseType):
     def create(self, min, max):
         min = self.ensure_in_range(min, "min")
