@@ -147,17 +147,11 @@ class AbsoluteDifferenceHSV(Function):
             np.array(
                 [self.settings.hue, self.settings.sat, self.settings.val],
                 dtype=np.float,
-<<<<<<< HEAD
             )[
                 None
             ],  # [None] adds a dimension to the ndarray object created by np.array() -
             # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
-        )
-=======
-            )[None],  # [None] adds a dimension to the ndarray object created by np.array() -
-            # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
         ).view(Mat)
->>>>>>> Added ColorSampler node
 
         scaled_diff = np.multiply(
             diff_hsv,
@@ -237,7 +231,10 @@ class ColorSampler(Function):
     def run(self, inputs):
         # Find the pixel coordinates to sample in the image
         height, width = inputs.img.shape[:2]
-        sample_coords = (int(width * self.settings.x_pct / 100.0 + 10), int(height * self.settings.y_pct / 100.0 + 10))
+        sample_coords = (
+            int(width * self.settings.x_pct / 100.0 + 10),
+            int(height * self.settings.y_pct / 100.0 + 10),
+        )
         color_bgr = inputs.img[sample_coords[1], sample_coords[0]]
         draw = None
         if self.settings.draw_color:
@@ -252,12 +249,16 @@ class ColorSampler(Function):
 
             # Create a string to represent the color in either RGB or HSV
             if self.settings.draw_hsv:
-                color_str = 'H{} S{} V{}'.format(*color_hsv)
+                color_str = "H{} S{} V{}".format(*color_hsv)
             else:
-                color_str = 'B{} G{} R{}'.format(*color_bgr)
+                color_str = "B{} G{} R{}".format(*color_bgr)
 
             # Choose a (Hopefully) Contrasting color
-            draw_color = (int(255 - color_bgr[0]), int(255 - color_bgr[1]), int(255 - color_bgr[2]))
+            draw_color = (
+                int(255 - color_bgr[0]),
+                int(255 - color_bgr[1]),
+                int(255 - color_bgr[2]),
+            )
 
             cv2.putText(
                 draw,
@@ -276,7 +277,6 @@ class ColorSampler(Function):
 
 
 class ColorDetector(Function):
-
     @dataclass
     class Settings:
         red_hue: Slide(min=0, max=359, decimal=False)
@@ -296,16 +296,23 @@ class ColorDetector(Function):
         def hue_dist(test: int, reference: int):
             return min(abs(reference - test), abs(reference + 360 - test))
 
-        color_hue = cvw.bgr_to_hsv(np.uint8([[[inputs.color.blue, inputs.color.green, inputs.color.red]]]).view(Mat))[0][0][0] * 2
+        color_hue = (
+            cvw.bgr_to_hsv(
+                np.uint8(
+                    [[[inputs.color.blue, inputs.color.green, inputs.color.red]]]
+                ).view(Mat)
+            )[0][0][0]
+            * 2
+        )
 
         hue_strings = {
-            self.settings.red_hue: 'R',
-            self.settings.yellow_hue: 'Y',
-            self.settings.green_hue: 'G',
-            self.settings.blue_hue: 'B',
+            self.settings.red_hue: "R",
+            self.settings.yellow_hue: "Y",
+            self.settings.green_hue: "G",
+            self.settings.blue_hue: "B",
         }
 
-        output_str = ''
+        output_str = ""
 
         min_dist = 360
 
