@@ -5,7 +5,7 @@ from numpy import ndarray
 
 from opsi.util.cache import cached_property
 
-from .shape import Point
+from .shape import Point, Segments, Circles
 
 _ERODE_DILATE_CONSTS = {
     "kernel": None,

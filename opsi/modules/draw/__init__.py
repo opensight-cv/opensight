@@ -13,8 +13,12 @@ __package__ = "opsi.draw"
 __version__ = "0.123"
 
 
-
 class DrawContours(Function):
+    @dataclass
+    class Settings:
+        bounding_rect: bool
+        min_area_rect: bool
+
     @dataclass
     class Inputs:
         contours: Contours
@@ -26,7 +30,25 @@ class DrawContours(Function):
 
     def run(self, inputs):
         draw = np.copy(inputs.img.mat.img)
-        cv2.drawContours(draw, inputs.contours, -1, (255, 255, 0), 3)
+
+        # Draw the outline of the contours
+        cv2.drawContours(draw, inputs.contours.raw, -1, (255, 255, 0), 2)
+
+        # Draw the non-rotated rectangle bounding each contour
+        if self.settings.bounding_rect:
+            for contour in inputs.contours.l:
+                rect = contour.to_rect
+                cv2.rectangle(draw,
+                              (int(rect.tl.x), int(rect.tl.y)),  # Top left coord
+                              (int(rect.tl.x + rect.dim.x), int(rect.tl.y + rect.dim.y)),  # Bottom right coord
+                              (0, 0, 255), 2)
+
+        # Draw the smallest possible (rotated) rectangle bounding each contour
+        if self.settings.min_area_rect:
+            for contour in inputs.contours.l:
+                points = np.int0(contour.to_min_area_rect.box_points)
+                cv2.drawContours(draw, [points], -1, (0, 255, 255), 2)
+
         draw = Mat(draw)
         return self.Outputs(img=draw)
 

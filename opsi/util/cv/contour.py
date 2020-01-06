@@ -6,7 +6,7 @@ from numpy import ndarray
 from opsi.util.cache import cached_property
 
 from .mat import Mat, MatBW
-from .shape import Point, Rect
+from .shape import Point, Rect, RotatedRect
 
 
 class Contour:
@@ -40,7 +40,7 @@ class Contour:
         return area
 
     @cached_property
-    def _centroid(self):  # (x, y), unscaled
+    def pixel_centroid(self):  # (x, y), unscaled
         M = self.moments
         area = M["m00"] + 1e-5
 
@@ -51,7 +51,7 @@ class Contour:
 
     @cached_property
     def centroid(self):  # (x, y), -1 to 1, where (0, 0) is the center
-        cx, cy = self._centroid
+        cx, cy = self.pixel_centroid
 
         cx = ((cx * 2) / self.res.x) - 1
         cy = ((cy * 2) / self.res.y) - 1
@@ -78,11 +78,15 @@ class Contour:
         return contour
 
     @cached_property
-    def to_rect(self):
+    def to_rect(self) -> Rect:
         return Rect.from_contour(self.raw)
 
+    @cached_property
+    def to_min_area_rect(self) -> RotatedRect:
+        return RotatedRect.from_contour(self.raw)
 
-FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_LIST, "method": cv2.CHAIN_APPROX_SIMPLE}
+
+FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_EXTERNAL, "method": cv2.CHAIN_APPROX_SIMPLE}
 
 
 class Contours:
@@ -149,12 +153,12 @@ class Contours:
         return inst
 
     @cached_property
-    def _centroids(self):
-        return [contour._centroid for contour in self.l]
+    def centroids(self):
+        return [contour.pixel_centroid for contour in self.l]
 
     @cached_property
-    def _centroid_of_all(self):
-        cx = sum(centroid.x for centroid in self._centroids) / len(self._centroids)
-        cy = sum(centroid.y for centroid in self._centroids) / len(self._centroids)
+    def centroid_of_all(self):
+        cx = sum(centroid[0] for centroid in self.centroids) / len(self.centroids)
+        cy = sum(centroid[1] for centroid in self.centroids) / len(self.centroids)
 
         return Point(cx, cy)
