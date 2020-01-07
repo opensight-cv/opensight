@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Slide, Range, RangeType
-from opsi.util.cv import Contours, Mat, MatBW, Point, Contour
+from opsi.manager.types import Range, RangeType, Slide
+from opsi.util.cv import Contour, Contours, Mat, MatBW, Point
 
 __package__ = "opsi.contour-filter-ops"
 __version__ = "0.123"
@@ -30,9 +30,7 @@ class ContourFilter(Function):
             return self.Outputs(contours=Contours.from_contours([]))
 
         return self.Outputs(
-            contours=Contours.from_contours(
-                list(filter(self.check_contour, contours))
-            )
+            contours=Contours.from_contours(list(filter(self.check_contour, contours)))
         )
 
 
@@ -66,7 +64,11 @@ class BoundingRectFilter(ContourFilter):
 
         area_pct = (contour_area_pct / rect_area_pct) * 100.0
 
-        return self.settings.bounding_rectangle_pct.min < area_pct < self.settings.bounding_rectangle_pct.max
+        return (
+            self.settings.bounding_rectangle_pct.min
+            < area_pct
+            < self.settings.bounding_rectangle_pct.max
+        )
 
 
 class MinRectFilter(ContourFilter):
@@ -83,7 +85,9 @@ class MinRectFilter(ContourFilter):
         contour_area_pct = contour.area
 
         area_pct = (contour_area_pct / rect_area_pct) * 100.0
-        return self.settings.rectangle_pct.min < area_pct < self.settings.rectangle_pct.max
+        return (
+            self.settings.rectangle_pct.min < area_pct < self.settings.rectangle_pct.max
+        )
 
 
 class SpeckleFilter(Function):
@@ -112,11 +116,7 @@ class SpeckleFilter(Function):
 
         filtered = filter(lambda contour: contour.area > speckle_threshold, contours)
 
-        return self.Outputs(
-            contours=Contours.from_contours(
-                list(filtered)
-            )
-        )
+        return self.Outputs(contours=Contours.from_contours(list(filtered)))
 
 
 class AspectRatioFilter(ContourFilter):
@@ -137,7 +137,11 @@ class AspectRatioFilter(ContourFilter):
         else:
             aspect_ratio = dim[1] / dim[0]
 
-        return self.settings.aspect_ratio_min < aspect_ratio < self.settings.aspect_ratio_max
+        return (
+            self.settings.aspect_ratio_min
+            < aspect_ratio
+            < self.settings.aspect_ratio_max
+        )
 
 
 class OrientationFilter(ContourFilter):
@@ -151,9 +155,9 @@ class OrientationFilter(ContourFilter):
         # angle from vertical of the minimum area rectangle
         angle = contour.to_min_area_rect.vertical_angle
 
-        if self.settings.orientation == 'Vertical':
+        if self.settings.orientation == "Vertical":
             return -45 <= angle <= 45
-        elif self.settings.orientation == 'Horizontal':
+        elif self.settings.orientation == "Horizontal":
             return angle <= -45 or angle >= 45
         else:
             return False
@@ -184,7 +188,7 @@ class Sort(Function):
         "Right": lambda cnt: cnt.centroid.x,
         "Center": lambda cnt: -cnt.centroid.hypot,
         "Largest": lambda cnt: cnt.area,
-        "Smallest": lambda cnt: -cnt.area
+        "Smallest": lambda cnt: -cnt.area,
     }
 
     @dataclass
@@ -218,10 +222,6 @@ class Sort(Function):
             if self.settings.keep_amount > len(sorted_contours):
                 contours_out = sorted_contours
             else:
-                contours_out = sorted_contours[:self.settings.keep_amount]
+                contours_out = sorted_contours[: self.settings.keep_amount]
 
-        return self.Outputs(
-            contours=Contours.from_contours(
-                contours_out
-            )
-        )
+        return self.Outputs(contours=Contours.from_contours(contours_out))

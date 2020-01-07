@@ -7,7 +7,6 @@ from opsi.util.cv import Point
 __package__ = "demo.eight"
 
 
-
 class TupleTest(Function):
     @dataclass
     class Settings:

@@ -702,6 +702,7 @@ const slide = function(min, max, name, def) {
 const box = function(options, name, def) {
   this.options = options;
   this.value = options[0];
+  def = this.value; // TODO: Create proper interface for defaults on backend
   this.id = "";
   let loopy = function() {
     let going = "";

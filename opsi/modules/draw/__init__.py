@@ -38,10 +38,16 @@ class DrawContours(Function):
         if self.settings.bounding_rect:
             for contour in inputs.contours.l:
                 rect = contour.to_rect
-                cv2.rectangle(draw,
-                              (int(rect.tl.x), int(rect.tl.y)),  # Top left coord
-                              (int(rect.tl.x + rect.dim.x), int(rect.tl.y + rect.dim.y)),  # Bottom right coord
-                              (0, 0, 255), 2)
+                cv2.rectangle(
+                    draw,
+                    (int(rect.tl.x), int(rect.tl.y)),  # Top left coord
+                    (
+                        int(rect.tl.x + rect.dim.x),
+                        int(rect.tl.y + rect.dim.y),
+                    ),  # Bottom right coord
+                    (0, 0, 255),
+                    2,
+                )
 
         # Draw the smallest possible (rotated) rectangle bounding each contour
         if self.settings.min_area_rect:

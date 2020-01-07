@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import RangeType
-from opsi.util.cv import Mat
+from opsi.util.cv import Mat, MatBW
 from opsi.util.cv.shape import Circles, Segments
 
 __package__ = "opsi.shapeops"
@@ -50,7 +50,7 @@ class FindLines(Function):
 
     @dataclass
     class Inputs:
-        img: Mat
+        imgBW: MatBW
 
     @dataclass
     class Outputs:
@@ -58,8 +58,7 @@ class FindLines(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            segments=inputs.img.hough_lines(
-                self,
+            segments=inputs.imgBW.hough_lines(
                 self.settings.resolution_divisor,
                 self.settings.threshold,
                 self.settings.min_length,

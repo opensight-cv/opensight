@@ -85,7 +85,13 @@ class FindCenter(Function):
             img = np.copy(inputs.img.mat.img)
 
             for contour in inputs.contours.l:
-                cv2.circle(img, (int(contour.pixel_centroid[0]), int(contour.pixel_centroid[1])), 5, (0, 0, 255), 3)
+                cv2.circle(
+                    img,
+                    (int(contour.pixel_centroid[0]), int(contour.pixel_centroid[1])),
+                    5,
+                    (0, 0, 255),
+                    3,
+                )
 
             cv2.circle(img, (int(center.x), int(center.y)), 10, (255, 0, 0), 5)
             img = img.view(Mat)

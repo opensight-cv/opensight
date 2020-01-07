@@ -169,16 +169,71 @@ class Hook:
         self.visible = visible
         self.app = Router()
         self.url = ""  # will be replaced during webserver init
-        self.pipeline = None  # will be replaced
+        self.cache = {"skip": {}, "deps": {}}
+        self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
+        self.lastPipeline = None
 
-    def fps(self):
-        return self.pipeline.fps.fps
+    def update_cache(self):
+        if not self.lastPipeline == self.pipeline.nodes:
+            self.cache = {"skip": {}, "deps": {}}
+        self.lastPipeline = self.pipeline.nodes
 
-    def cancel_dependents(self):
+    def get_skips(self, node):
+        self.update_cache()
+        skip = self.cache["skip"].get(node)
+        if skip is None:
+            skip = self.pipeline.get_dependents(node)
+            self.cache["skip"][node] = skip
+        return skip
+
+    def get_output_deps(self, node, output):
+        self.update_cache()
+
+        if node not in self.cache["deps"]:
+            self.cache["deps"][node] = {}
+
+        deps = self.cache["deps"][node].get(output)
+
+        if deps is None:
+            deps = []
+            for i in self.pipeline.nodes.values():
+                for link in i.inputLinks.values():
+                    if link.node is node and link.name == output:
+                        deps.append(i)
+            self.cache["deps"][node][output] = deps
+
+        return deps
+
+    def cancel_node(self, node):
         try:
-            self.pipeline.cancel_dependents(self.pipeline.current)
+            # reset path cache if pipeline has changed
+            skip = self.get_skips(node)
+            self.pipeline.cancel_nodes(skip)
         except:
             raise ValueError("Pipeline not available! Cannot cancel dependents.")
+
+    def cancel_current(self):
+        self.cancel_node(self.pipeline.current)
+
+    def cancel_output(self, output: str):
+        node = self.pipeline.current
+        deps = self.get_output_deps(node, output)
+        for dep in deps:
+            self.cancel_node(dep)
+
+    def add_listener(self, event: str, function: callable):
+        self.listeners[event].add(function)
+
+    def remove_listener(self, event: str, function: callable):
+        self.listeners[event].discard(function)
+
+    def startup(self):
+        for func in self.listeners["startup"]:
+            func()
+
+    def shutdown(self):
+        for func in self.listeners["shutdown"]:
+            func()
 
 
 def ishook(hook):

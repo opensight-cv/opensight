@@ -7,7 +7,6 @@ __package__ = "opsi.mask"
 __version__ = "0.123"
 
 
-
 class Erode(Function):
     @dataclass
     class Settings:

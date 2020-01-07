@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.util.cv import Mat
+from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
 from .cameraserver import CameraSource, CamHook
@@ -75,7 +75,10 @@ class CameraServer(Function):
         img: Mat
 
     def run(self, inputs):
-        self.src.img = inputs.img
+        if isinstance(inputs.img, MatBW):
+            self.src.img = inputs.img.mat
+        else:
+            self.src.img = inputs.img
         return self.Outputs()
 
     def dispose(self):

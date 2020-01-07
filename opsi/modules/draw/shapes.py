@@ -26,7 +26,7 @@ class DrawCircles(Function):
         if inputs.circles is None:
             return self.Outputs(img=inputs.img)
 
-        draw = np.copy(inputs.img.mat)
+        draw = np.copy(inputs.img.mat.img)
 
         int_circles = np.uint16(np.around(inputs.circles))
 
@@ -39,7 +39,7 @@ class DrawCircles(Function):
             # Draw a small circle (of radius 1) to show the center.
             cv2.circle(draw, (a, b), 1, (0, 0, 255), 3)
 
-        draw = draw.view(Mat)
+        draw = Mat(draw)
         return self.Outputs(img=draw)
 
 
@@ -60,11 +60,11 @@ class DrawSegments(Function):
         if inputs.lines is None:
             return self.Outputs(img=inputs.img)
 
-        draw = np.copy(inputs.img.mat)
+        draw = np.copy(inputs.img.mat.img)
 
         for line in inputs.lines:
             x1, y1, x2, y2 = line[0]
             cv2.line(draw, (x1, y1), (x2, y2), (255, 0, 0), 3)
 
-        draw = draw.view(Mat)
+        draw = Mat(draw)
         return self.Outputs(img=draw)

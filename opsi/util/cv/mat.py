@@ -5,7 +5,7 @@ from numpy import ndarray
 
 from opsi.util.cache import cached_property
 
-from .shape import Point, Segments, Circles
+from .shape import Circles, Point, Segments
 
 _ERODE_DILATE_CONSTS = {
     "kernel": None,
@@ -76,11 +76,16 @@ class Mat:
         a = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
         return Mat(a)
 
+    @cached_property
+    def hsv(self) -> "Mat":
+        a = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
+        return Mat(a)
+
     def resize(self, res: Point) -> "Mat":
         return Mat(cv2.resize(self, res))
 
     def canny(self, threshold_lower, threshold_upper) -> "MatBW":
-        return cv2.Canny(self, threshold_lower, threshold_upper)
+        return MatBW(cv2.Canny(self.img, threshold_lower, threshold_upper))
 
     def hough_circles(
         self,
@@ -92,7 +97,7 @@ class Mat:
         max_radius: int,
     ) -> "Circles":
         return cv2.HoughCircles(
-            self,
+            self.img,
             method=cv2.HOUGH_GRADIENT,
             dp=dp,
             minDist=min_dist,
@@ -102,22 +107,8 @@ class Mat:
             maxRadius=max_radius,
         )
 
-    def hough_lines(
-        self,
-        rho: int,
-        threshold: int,
-        min_length: int,
-        max_gap: int,
-        theta: float = math.pi / 180.0,
-    ) -> "Segments":
-        return cv2.HoughLinesP(
-            self,
-            rho=rho,
-            theta=theta,
-            threshold=threshold,
-            minLineLength=min_length,
-            maxLineGap=max_gap,
-        )
+    def abs_diff(self, scalar: ndarray) -> "Mat":
+        return Mat(cv2.absdiff(self.img, scalar))
 
 
 class MatBW:
@@ -139,10 +130,10 @@ class MatBW:
     # Operations
 
     def erode(self, size: int) -> "MatBW":
-        return MatBW(cv2.erode(self, iterations=round(size), **_ERODE_DILATE_CONSTS))
+        return MatBW(cv2.erode(self.img, iterations=round(size), **_ERODE_DILATE_CONSTS))
 
     def dilate(self, size: int) -> "MatBW":
-        return MatBW(cv2.dilate(self, iterations=round(size), **_ERODE_DILATE_CONSTS))
+        return MatBW(cv2.dilate(self.img, iterations=round(size), **_ERODE_DILATE_CONSTS))
 
     @cached_property
     def invert(self) -> "MatBW":
@@ -150,4 +141,21 @@ class MatBW:
 
     @classmethod
     def join(cls, img1: "MatBW", img2: "MatBW") -> "MatBW":
-        return MatBW(cv2.bitwise_or(img1, img2))
+        return MatBW(cv2.bitwise_or(img1.img, img2.img))
+
+    def hough_lines(
+        self,
+        rho: int,
+        threshold: int,
+        min_length: int,
+        max_gap: int,
+        theta: float = math.pi / 180.0,
+    ) -> "Segments":
+        return cv2.HoughLinesP(
+            self.img,
+            rho=rho,
+            theta=theta,
+            threshold=threshold,
+            minLineLength=min_length,
+            maxLineGap=max_gap,
+        )
