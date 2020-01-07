@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 
-from opsi.manager.types import RangeType, Slide
-from opsi.util.cv import Mat, MatBW
-
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-
+from opsi.manager.types import RangeType, Slide
+from opsi.util.cv import Mat, MatBW
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -144,15 +142,17 @@ class AbsoluteDifferenceHSV(Function):
 
     def run(self, inputs):
         img_hsv = inputs.img.hsv
-        #cvw.bgr_to_hsv(inputs.img)
+        # cvw.bgr_to_hsv(inputs.img)
         diff_hsv = img_hsv.abs_diff(
             np.array(
                 [self.settings.hue, self.settings.sat, self.settings.val],
                 dtype=np.float,
-            )[None], # [None] adds a dimension to the ndarray object created by np.array() -
-                     # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
+            )[
+                None
+            ],  # [None] adds a dimension to the ndarray object created by np.array() -
+            # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
         )
-        
+
         scaled_diff = np.multiply(
             diff_hsv,
             np.array(
@@ -168,9 +168,9 @@ class AbsoluteDifferenceHSV(Function):
         greyscale = Mat(scaled_diff).greyscale
 
         if self.settings.clamp_max:
-            greyscale = Mat(np.minimum(greyscale.img, self.settings.clamp_value).astype(
-                np.uint8
-            ))
+            greyscale = Mat(
+                np.minimum(greyscale.img, self.settings.clamp_value).astype(np.uint8)
+            )
         else:
             greyscale = Mat(np.minimum(greyscale.img, 255).astype(np.uint8))
 

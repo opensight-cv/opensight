@@ -130,10 +130,14 @@ class MatBW:
     # Operations
 
     def erode(self, size: int) -> "MatBW":
-        return MatBW(cv2.erode(self.img, iterations=round(size), **_ERODE_DILATE_CONSTS))
+        return MatBW(
+            cv2.erode(self.img, iterations=round(size), **_ERODE_DILATE_CONSTS)
+        )
 
     def dilate(self, size: int) -> "MatBW":
-        return MatBW(cv2.dilate(self.img, iterations=round(size), **_ERODE_DILATE_CONSTS))
+        return MatBW(
+            cv2.dilate(self.img, iterations=round(size), **_ERODE_DILATE_CONSTS)
+        )
 
     @cached_property
     def invert(self) -> "MatBW":

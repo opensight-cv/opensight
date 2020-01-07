@@ -94,7 +94,7 @@ class FindCenter(Function):
                 )
 
             cv2.circle(img, (int(center.x), int(center.y)), 10, (255, 0, 0), 5)
-            img = img.view(Mat)
+            img = Mat(img)
         else:
             img = None
 
