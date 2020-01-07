@@ -44,7 +44,8 @@ class ConvexHulls(Function):
 class ContourApproximate(Function):
     @dataclass
     class Settings:
-        epsilon: Slide(0, 1)
+        # TODO: Make a slide once slides can do non-integer values
+        epsilon: float  # Slide(0, 1)
 
     @dataclass
     class Inputs:

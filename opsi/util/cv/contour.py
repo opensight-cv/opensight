@@ -73,9 +73,9 @@ class Contour:
     # 4. Contour Approximation from tutorial_py_contour_features.html
     def approximate(self, epsilon):  # epsilon is 0-1, percent of perimeter
         length = epsilon * self._arc_length
-        contour = cv2.approxPolyDP(self.raw, length, True)
+        raw_contour = cv2.approxPolyDP(self.raw, length, True)
 
-        return contour
+        return Contour(raw_contour, self.res)
 
     @cached_property
     def to_rect(self) -> Rect:
