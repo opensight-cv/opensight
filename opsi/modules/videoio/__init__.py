@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat
+from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
 from .cameraserver import CameraSource, CamHook
@@ -9,6 +9,7 @@ from .input import controls, create_capture, get_modes, parse_camstring
 
 __package__ = "opsi.videoio"
 __version__ = "0.123"
+
 
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
@@ -44,7 +45,7 @@ class CameraInput(Function):
         frame = None
         if self.cap:
             ret, frame = self.cap.read()
-            frame = frame.view(Mat)
+            frame = Mat(frame)
         return self.Outputs(img=frame)
 
     def dispose(self):
@@ -74,7 +75,10 @@ class CameraServer(Function):
         img: Mat
 
     def run(self, inputs):
-        self.src.img = inputs.img
+        if isinstance(inputs.img, MatBW):
+            self.src.img = inputs.img.mat
+        else:
+            self.src.img = inputs.img
         return self.Outputs()
 
     def dispose(self):

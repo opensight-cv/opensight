@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Circles, Mat, MatBW, RangeType, Segments
+from opsi.manager.types import RangeType
+from opsi.util.cv import Mat, MatBW
+from opsi.util.cv.shape import Circles, Segments
 
 __package__ = "opsi.shapeops"
 __version__ = "0.123"
@@ -28,8 +29,7 @@ class FindCircles(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            circles=cvw.hough_circles(
-                inputs.img,
+            circles=inputs.img.hough_circles(
                 self.settings.resolution_divisor,
                 self.settings.min_dist,
                 self.settings.edge_detection_threshold,
@@ -50,7 +50,7 @@ class FindLines(Function):
 
     @dataclass
     class Inputs:
-        img: Mat
+        imgBW: MatBW
 
     @dataclass
     class Outputs:
@@ -58,8 +58,7 @@ class FindLines(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            segments=cvw.hough_lines(
-                inputs.img,
+            segments=inputs.imgBW.hough_lines(
                 self.settings.resolution_divisor,
                 self.settings.threshold,
                 self.settings.min_length,

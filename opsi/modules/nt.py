@@ -5,6 +5,7 @@ from networktables import NetworkTables
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import AnyType
+from opsi.util.cv import Point
 from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
 
@@ -113,7 +114,7 @@ class PutCoordinate(PutNT):
 
     @dataclass
     class Inputs:
-        val: tuple()
+        val: Point
 
     def run(self, inputs):
         if inputs.val:

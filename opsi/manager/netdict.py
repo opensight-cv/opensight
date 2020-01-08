@@ -24,6 +24,7 @@ NT_TYPES = Union[
 
 _missing = object()
 
+
 class NetworkDict:
     def __init__(self, table: str, networktable: NetworkTablesInstance = NetworkTables):
         self.networktable = networktable

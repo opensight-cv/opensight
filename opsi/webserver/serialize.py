@@ -2,16 +2,17 @@ import logging
 import sys
 from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Callable, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
 from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
-from opsi.manager.types import RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
+from ..util.cv import Contour, Contours, Mat, MatBW, Point
+from ..util.cv.shape import Circles, Lines, Segments
 from .schema import *
 
 __all__ = (
@@ -20,6 +21,7 @@ __all__ = (
     "import_nodetree",
     "NodeTreeImportError",
 )
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +47,7 @@ def _tuple_serialize(type):
     if not isinstance(type, tuple):
         return None
 
-    return InputOutputF(type="box", params={"options": type})
+    return InputOutputF(type="tup", params={"options": type})
 
 
 _type_name: Dict[Type, str] = {
@@ -57,6 +59,7 @@ _type_name: Dict[Type, str] = {
     Lines: "lin",
     Contour: "cnt",
     Contours: "cts",
+    Point: "pnt",
     AnyType: "any",
 }
 _normal_types = {int, str, Mat}

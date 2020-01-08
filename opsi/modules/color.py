@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
-import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Mat, MatBW, RangeType, Slide
+from opsi.manager.types import RangeType, Slide
+from opsi.util.cv import Mat, MatBW
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -24,7 +24,7 @@ class Blur(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cvw.blur(inputs.img, self.settings.radius)
+        img = inputs.img.blur(self.settings.radius)
         return self.Outputs(img=img)
 
 
@@ -44,8 +44,8 @@ class HSVRange(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        imgBW = cvw.hsv_threshold(
-            inputs.img, self.settings.hue, self.settings.sat, self.settings.val
+        imgBW = inputs.img.hsv_threshold(
+            self.settings.hue, self.settings.sat, self.settings.val
         )
         return self.Outputs(imgBW=imgBW)
 
@@ -60,7 +60,7 @@ class Greyscale(Function):
         img: Mat
 
     def run(self, inputs):
-        img = cvw.greyscale(inputs.img)
+        img = inputs.img.mat.greyscale
         return self.Outputs(img=img)
 
 
@@ -79,8 +79,8 @@ class Canny(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            imgBW=cvw.canny(
-                inputs.img, self.settings.threshold[0], self.settings.threshold[1]
+            imgBW=inputs.img.canny(
+                self.settings.threshold[0], self.settings.threshold[1]
             )
         )
 
@@ -104,19 +104,18 @@ class AbsoluteDifferenceRGB(Function):
         img: Mat
 
     def run(self, inputs):
-        diff = cvw.abs_diff(
-            inputs.img,
+        diff = inputs.img.abs_diff(
             np.array(
                 [self.settings.blue, self.settings.green, self.settings.red],
                 dtype=np.float,
             )[None],
-        ).view(Mat)
+        )
 
         if self.settings.to_greyscale:
-            diff = cvw.greyscale(diff)
+            diff = diff.greyscale
 
         if self.settings.clamp_max:
-            diff = np.minimum(diff, self.settings.clamp_value)
+            diff = Mat(np.minimum(diff.img, self.settings.clamp_value))
 
         return self.Outputs(img=diff)
 
@@ -142,16 +141,18 @@ class AbsoluteDifferenceHSV(Function):
         img: Mat
 
     def run(self, inputs):
-        img_hsv = cvw.bgr_to_hsv(inputs.img)
-        diff_hsv = cvw.abs_diff(
-            inputs.img,
+        img_hsv = inputs.img.hsv
+        # cvw.bgr_to_hsv(inputs.img)
+        diff_hsv = img_hsv.abs_diff(
             np.array(
                 [self.settings.hue, self.settings.sat, self.settings.val],
                 dtype=np.float,
-            )[None], # [None] adds a dimension to the ndarray object created by np.array() -
-                     # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
-        ).view(Mat)
-        
+            )[
+                None
+            ],  # [None] adds a dimension to the ndarray object created by np.array() -
+            # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
+        )
+
         scaled_diff = np.multiply(
             diff_hsv,
             np.array(
@@ -164,14 +165,14 @@ class AbsoluteDifferenceHSV(Function):
             ),
         ).astype(np.uint16)
 
-        greyscale = cvw.greyscale(scaled_diff)
+        greyscale = Mat(scaled_diff).greyscale
 
         if self.settings.clamp_max:
-            greyscale = np.minimum(greyscale, self.settings.clamp_value).astype(
-                np.uint8
+            greyscale = Mat(
+                np.minimum(greyscale.img, self.settings.clamp_value).astype(np.uint8)
             )
         else:
-            greyscale = np.minimum(greyscale, 255).astype(np.uint8)
+            greyscale = Mat(np.minimum(greyscale.img, 255).astype(np.uint8))
 
         return self.Outputs(img=greyscale)
 

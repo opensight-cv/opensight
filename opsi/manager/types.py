@@ -1,8 +1,4 @@
-from typing import List, NamedTuple
-
-from numpy import ndarray
-
-from .cvwrapper import Mat, MatBW
+from typing import NamedTuple
 
 
 class AnyType:
@@ -52,30 +48,3 @@ class RangeType(_RangeBaseType):
         max = self.ensure_in_range(max, "max")
 
         return Range(min, max)
-
-
-# There's a reason why I'm declaring classes here and not doing simply
-# `Mat = ndarray` or `Mat = NewType("Mat", ndarray)`
-# ndarray doesn't allow me to differentiate between Mat and MatBW
-# NewType is some funky object which is hard to parse
-# Making new classes allows me to do simple equality testing
-
-
-class Circles(ndarray):
-    pass
-
-
-class Segments(ndarray):
-    pass
-
-
-class Lines(ndarray):
-    pass
-
-
-class Contour(ndarray):
-    pass
-
-
-class Contours(List[Contour]):
-    pass
