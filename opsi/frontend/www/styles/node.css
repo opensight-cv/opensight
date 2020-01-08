@@ -508,7 +508,7 @@ input[type="button"]:active {
 }
 .sliderOut {
   width: 10%;
-  float: left;
+  margin-bottom: 0;
 }
 .sliderOut2 {
   width: 10%;
