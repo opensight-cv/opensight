@@ -31,7 +31,7 @@ class DrawText(Function):
         img: Mat
 
     def run(self, inputs):
-        draw = np.copy(inputs.img.mat)
+        draw = np.copy(inputs.img.mat.img)
         height, width = draw.shape[:2]
         text_coords = (
             int(width * self.settings.x_pct / 100.0),
@@ -46,7 +46,7 @@ class DrawText(Function):
             (255, 255, 255),
             lineType=cv2.LINE_AA,
         )
-        draw = draw.view(Mat)
+        draw = Mat(draw)
         return self.Outputs(img=draw)
 
 

@@ -4,8 +4,9 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Color, RangeType, Slide
+from opsi.manager.types import RangeType, Slide
 from opsi.util.cv import Mat, MatBW
+from opsi.util.cv.mat import Color
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -231,20 +232,21 @@ class ColorSampler(Function):
 
     def run(self, inputs):
         # Find the pixel coordinates to sample in the image
-        height, width = inputs.img.shape[:2]
+        height, width = inputs.img.img.shape[:2]
+
         sample_coords = (
             int(width * self.settings.x_pct / 100.0 + 10),
             int(height * self.settings.y_pct / 100.0 + 10),
         )
-        color_bgr = inputs.img[sample_coords[1], sample_coords[0]]
+        color_bgr = inputs.img.img[sample_coords[1], sample_coords[0]]
         draw = None
         if self.settings.draw_color:
-            draw = np.copy(inputs.img.mat)
+            draw = np.copy(inputs.img.mat.img)
             # Draw a small circle (of radius 5) to show the point.
             cv2.circle(draw, sample_coords, 5, (0, 0, 255), 3)
 
             # Find the color in HSV to make a contrasting color
-            color_hsv = cvw.bgr_to_hsv(np.uint8([[color_bgr]]).view(Mat))[0][0]
+            color_hsv = Mat(np.uint8([[color_bgr]])).img[0][0]
 
             color_hsv[0] *= 2  # Scale the hue value to be in a range of 0-359
 
@@ -271,7 +273,7 @@ class ColorSampler(Function):
                 lineType=cv2.LINE_AA,
             )
 
-            draw = draw.view(Mat)
+            draw = Mat(draw)
 
         color = Color(color_bgr[2], color_bgr[1], color_bgr[0])
         return self.Outputs(color=color, img=draw)
@@ -298,11 +300,9 @@ class ColorDetector(Function):
             return min(abs(reference - test), abs(reference + 360 - test))
 
         color_hue = (
-            cvw.bgr_to_hsv(
-                np.uint8(
-                    [[[inputs.color.blue, inputs.color.green, inputs.color.red]]]
-                ).view(Mat)
-            )[0][0][0]
+            Mat(
+                np.uint8([[[inputs.color.blue, inputs.color.green, inputs.color.red]]])
+            ).hsv.img[0][0][0]
             * 2
         )
 
