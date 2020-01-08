@@ -1,4 +1,5 @@
 import math
+from typing import NamedTuple
 
 import cv2
 from numpy import ndarray
@@ -163,3 +164,9 @@ class MatBW:
             minLineLength=min_length,
             maxLineGap=max_gap,
         )
+
+
+class Color(NamedTuple):
+    red: int
+    green: int
+    blue: int

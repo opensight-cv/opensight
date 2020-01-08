@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import RangeType, Slide
 from opsi.util.cv import Mat, MatBW
+from opsi.util.cv.mat import Color
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -151,7 +153,7 @@ class AbsoluteDifferenceHSV(Function):
                 None
             ],  # [None] adds a dimension to the ndarray object created by np.array() -
             # See https://stackoverflow.com/questions/37867354/in-numpy-what-does-selection-by-none-do
-        )
+        ).view(Mat)
 
         scaled_diff = np.multiply(
             diff_hsv,
@@ -209,3 +211,116 @@ class ClampMin(Function):
 
     def run(self, inputs):
         return self.Outputs(img=np.maximum(inputs.img, self.settings.min_value))
+
+
+class ColorSampler(Function):
+    @dataclass
+    class Settings:
+        x_pct: Slide(min=0, max=100)
+        y_pct: Slide(min=0, max=100)
+        draw_color: bool
+        draw_hsv: bool
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        color: Color
+        img: Mat
+
+    def run(self, inputs):
+        # Find the pixel coordinates to sample in the image
+        height, width = inputs.img.img.shape[:2]
+
+        sample_coords = (
+            int(width * self.settings.x_pct / 100.0 + 10),
+            int(height * self.settings.y_pct / 100.0 + 10),
+        )
+        color_bgr = inputs.img.img[sample_coords[1], sample_coords[0]]
+        draw = None
+        if self.settings.draw_color:
+            draw = np.copy(inputs.img.mat.img)
+            # Draw a small circle (of radius 5) to show the point.
+            cv2.circle(draw, sample_coords, 5, (0, 0, 255), 3)
+
+            # Find the color in HSV to make a contrasting color
+            color_hsv = Mat(np.uint8([[color_bgr]])).img[0][0]
+
+            color_hsv[0] *= 2  # Scale the hue value to be in a range of 0-359
+
+            # Create a string to represent the color in either RGB or HSV
+            if self.settings.draw_hsv:
+                color_str = "H{} S{} V{}".format(*color_hsv)
+            else:
+                color_str = "B{} G{} R{}".format(*color_bgr)
+
+            # Choose a (Hopefully) Contrasting color
+            draw_color = (
+                int(255 - color_bgr[0]),
+                int(255 - color_bgr[1]),
+                int(255 - color_bgr[2]),
+            )
+
+            cv2.putText(
+                draw,
+                color_str,
+                (sample_coords[0] + 10, sample_coords[1] + 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                draw_color,
+                lineType=cv2.LINE_AA,
+            )
+
+            draw = Mat(draw)
+
+        color = Color(color_bgr[2], color_bgr[1], color_bgr[0])
+        return self.Outputs(color=color, img=draw)
+
+
+class ColorDetector(Function):
+    @dataclass
+    class Settings:
+        red_hue: Slide(min=0, max=359, decimal=False)
+        yellow_hue: Slide(min=0, max=359, decimal=False)
+        green_hue: Slide(min=0, max=359, decimal=False)
+        blue_hue: Slide(min=0, max=359, decimal=False)
+
+    @dataclass
+    class Inputs:
+        color: Color
+
+    @dataclass
+    class Outputs:
+        color_string: str
+
+    def run(self, inputs):
+        def hue_dist(test: int, reference: int):
+            return min(abs(reference - test), abs(reference + 360 - test))
+
+        color_hue = (
+            Mat(
+                np.uint8([[[inputs.color.blue, inputs.color.green, inputs.color.red]]])
+            ).hsv.img[0][0][0]
+            * 2
+        )
+
+        hue_strings = {
+            self.settings.red_hue: "R",
+            self.settings.yellow_hue: "Y",
+            self.settings.green_hue: "G",
+            self.settings.blue_hue: "B",
+        }
+
+        output_str = ""
+
+        min_dist = 360
+
+        for hue in hue_strings.keys():
+            dist = hue_dist(hue, color_hue)
+            if dist < min_dist:
+                min_dist = dist
+                output_str = hue_strings[hue]
+
+        return self.Outputs(color_string=output_str)

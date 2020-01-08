@@ -1,5 +1,4 @@
 import logging
-import socket
 from os.path import join
 
 from starlette.applications import Starlette

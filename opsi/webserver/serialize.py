@@ -12,6 +12,7 @@ from opsi.manager.types import *
 from opsi.util.concurrency import FifoLock
 
 from ..util.cv import Contour, Contours, Mat, MatBW, Point
+from ..util.cv.mat import Color
 from ..util.cv.shape import Circles, Lines, Segments
 from .schema import *
 
@@ -55,6 +56,7 @@ _type_name: Dict[Type, str] = {
     bool: "bol",
     MatBW: "mbw",
     Circles: "cls",
+    Color: "col",
     Segments: "seg",
     Lines: "lin",
     Contour: "cnt",
