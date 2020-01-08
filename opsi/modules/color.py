@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Color, Mat, MatBW, RangeType, Slide
+from opsi.manager.types import Color, RangeType, Slide
+from opsi.util.cv import Mat, MatBW
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"

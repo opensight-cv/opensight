@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import AnyType, Contours, Mat, MatBW, Slide
+from opsi.manager.types import AnyType, Slide
+from opsi.util.cv import Contours, Mat, MatBW
 
 from .fps import DrawFPS
 from .shapes import DrawCircles, DrawSegments
