@@ -5,7 +5,7 @@ from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .cameraserver import CameraSource, CamHook, H264CameraServer, MjpegCameraServer
+from .cameraserver import CamHook, H264CameraServer, MjpegCameraServer
 from .input import controls, create_capture, get_modes, parse_camstring
 
 __package__ = "opsi.videoio"
@@ -56,15 +56,16 @@ class CameraInput(Function):
 class CameraServer(Function):
     has_sideeffect = True
     always_restart = False
+    require_restart = True
 
     @classmethod
     def validate_settings(cls, settings):
         settings.name = settings.name.strip()
-
         return settings
 
     def on_start(self):
         if self.settings.backend == "MjpegCameraServer":
+            HookInstance.register(self)
             self.always_restart = False
             self.src = MjpegCameraServer()
         elif self.settings.backend == "H264CameraServer":
@@ -73,8 +74,8 @@ class CameraServer(Function):
 
     @dataclass
     class Settings:
-        backend: ("MjpegCameraServer", "H264CameraServer")
         name: str = "camera"
+        backend: ("MjpegCameraServer", "H264CameraServer") = "MjpegCameraServer"
 
     @dataclass
     class Inputs:
@@ -85,6 +86,8 @@ class CameraServer(Function):
         return self.Outputs()
 
     def dispose(self):
+        if self.settings.backend == "MjpegCameraServer":
+            HookInstance.unregister(self)
         self.src.dispose()
 
     # Returns a unique string for each CameraServer instance

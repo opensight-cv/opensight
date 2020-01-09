@@ -269,7 +269,7 @@ class CamHook(Hook):
 
     def endpoint(self, func):
         def image(request):
-            return MjpegResponse(request, func.src)
+            return MjpegResponse(request, func.src.src)
 
         return image
 
@@ -387,15 +387,12 @@ class CameraSource:
 class MjpegCameraServer:
     def __init__(self):
         self.src = CameraSource()
-        HookInstance.register(self)
 
     def run(self, inputs):
         self.src.img = inputs.img.mat
 
     def dispose(self):
-        super().dispose()
         self.src.shutdown()
-        HookInstance.unregister(self)
 
 
 class H264CameraServer:
