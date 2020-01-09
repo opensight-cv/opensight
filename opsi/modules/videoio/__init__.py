@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-import engine
 from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .cameraserver import CameraSource, CamHook
+from .cameraserver import CameraSource, CamHook, H264CameraServer, MjpegCameraServer
 from .input import controls, create_capture, get_modes, parse_camstring
 
 __package__ = "opsi.videoio"
@@ -92,38 +91,3 @@ class CameraServer(Function):
     @property
     def id(self):
         return self.settings.name
-
-
-class MjpegCameraServer:
-    def __init__(self):
-        self.src = CameraSource()
-        HookInstance.register(self)
-
-    def run(self, inputs):
-        self.src.img = inputs.img.mat
-
-    def dispose(self):
-        super().dispose()
-        self.src.shutdown()
-        HookInstance.unregister(self)
-
-
-class H264CameraServer:
-    def __init__(self):
-        self.engine: engine.GStreamerEngineWriter = None
-
-    def run(self, inputs: "CameraServer.Inputs"):
-        if self.engine is None:
-            # we need to set up engine
-            shape = inputs.img.img.shape
-            size: Tuple[int, int, int] = (shape[1], shape[0], 30)
-            self.engine = engine.GStreamerEngineWriter(
-                video_size=size, repeat_frames=True
-            )
-            return
-        else:
-            img = inputs.img.mat.img
-            self.engine.write_frame(img)
-
-    def dispose(self):
-        self.engine.end()

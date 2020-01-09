@@ -7,6 +7,7 @@ from datetime import datetime
 import jinja2
 from starlette.routing import Route, Router
 
+import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
@@ -381,3 +382,38 @@ class CameraSource:
         self._shutdown = True
         self.img = None
         self.thread.shutdown()
+
+
+class MjpegCameraServer:
+    def __init__(self):
+        self.src = CameraSource()
+        HookInstance.register(self)
+
+    def run(self, inputs):
+        self.src.img = inputs.img.mat
+
+    def dispose(self):
+        super().dispose()
+        self.src.shutdown()
+        HookInstance.unregister(self)
+
+
+class H264CameraServer:
+    def __init__(self):
+        self.engine: engine.GStreamerEngineWriter = None
+
+    def run(self, inputs: "CameraServer.Inputs"):
+        if self.engine is None:
+            # we need to set up engine
+            shape = inputs.img.img.shape
+            size: Tuple[int, int, int] = (shape[1], shape[0], 30)
+            self.engine = engine.GStreamerEngineWriter(
+                video_size=size, repeat_frames=True
+            )
+            return
+        else:
+            img = inputs.img.mat.img
+            self.engine.write_frame(img)
+
+    def dispose(self):
+        self.engine.end()
