@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Tuple
 
 import engine
-
 from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
@@ -57,6 +56,7 @@ class CameraInput(Function):
 
 class CameraServer(Function):
     has_sideeffect = True
+    always_restart = False
 
     @classmethod
     def validate_settings(cls, settings):
@@ -66,8 +66,10 @@ class CameraServer(Function):
 
     def on_start(self):
         if self.settings.backend == "MjpegCameraServer":
+            self.always_restart = False
             self.src = MjpegCameraServer()
         elif self.settings.backend == "H264CameraServer":
+            self.always_restart = True
             self.src = H264CameraServer()
 
     @dataclass
@@ -98,12 +100,10 @@ class MjpegCameraServer:
         HookInstance.register(self)
 
     def run(self, inputs):
-        if isinstance(inputs.img, MatBW):
-            self.src.img = inputs.img.mat
-        else:
-            self.src.img = inputs.img
+        self.src.img = inputs.img.mat
 
     def dispose(self):
+        super().dispose()
         self.src.shutdown()
         HookInstance.unregister(self)
 
@@ -115,16 +115,14 @@ class H264CameraServer:
     def run(self, inputs: "CameraServer.Inputs"):
         if self.engine is None:
             # we need to set up engine
-            size: Tuple[int, int, int] = (*inputs.img.img.size, 30)
+            shape = inputs.img.img.shape
+            size: Tuple[int, int, int] = (shape[1], shape[0], 30)
             self.engine = engine.GStreamerEngineWriter(
                 video_size=size, repeat_frames=True
             )
             return
         else:
-            if isinstance(inputs.img, MatBW):
-                img = inputs.img.mat
-            else:
-                img = inputs.img
+            img = inputs.img.mat.img
             self.engine.write_frame(img)
 
     def dispose(self):

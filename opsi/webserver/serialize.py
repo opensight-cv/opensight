@@ -355,10 +355,18 @@ def _process_node_settings(program, node: NodeN):
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 
     if LINKS_INSTEAD_OF_INPUTS:
+        restart = False
         if real_node.func_type.require_restart:
             if real_node.settings is not None:
                 if not real_node.settings == settings:
-                    real_node.dispose()
+                    restart = True
+        try:
+            if real_node.func.always_restart:
+                restart = True
+        except AttributeError:
+            pass
+        if restart:
+            real_node.dispose()
         if real_node.func:
             real_node.func.settings = settings
 

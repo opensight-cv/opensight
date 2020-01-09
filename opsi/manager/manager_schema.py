@@ -35,6 +35,7 @@ def does_match(cls, name: str, asserter: Callable[[Any], bool]) -> bool:
 class Function:
     has_sideeffect: bool = False
     require_restart: bool = False
+    always_restart: bool = False
     disabled = False
     force_enabled = False
 
@@ -62,6 +63,9 @@ class Function:
 
         if not hasattr(cls, "require_restart"):
             error("property 'require_restart'")
+
+        if not hasattr(cls, "always_restart"):
+            error("property 'always_restart'")
 
         if not does_match(cls, "disabled", is_bool):
             error("bool property 'disabled'")
