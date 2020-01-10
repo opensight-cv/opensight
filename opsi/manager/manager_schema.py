@@ -239,6 +239,10 @@ class Hook:
         for func in self.listeners["shutdown"]:
             func()
 
+    def pipeline_update(self):
+        for func in self.listeners["pipeline_update"]:
+            func()
+
 
 def ishook(hook):
     return isinstance(hook, Hook)

@@ -451,6 +451,7 @@ def import_nodetree(program, nodetree: NodeTreeN):
 
         try:
             program.pipeline.run()
+            program.manager.pipeline_update()
         except Exception as e:
             program.pipeline.broken = True
             raise NodeTreeImportError(program, node, f"Failed test run due to '{e}'")
