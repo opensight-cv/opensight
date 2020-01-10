@@ -2,18 +2,16 @@ import logging
 import sys
 from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
-from typing import Callable, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
 from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
+from opsi.manager.types import RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
-from ..util.cv import Contour, Contours, Mat, MatBW, Point
-from ..util.cv.mat import Color
-from ..util.cv.shape import Circles, Lines, Segments
 from .schema import *
 
 __all__ = (
@@ -22,7 +20,6 @@ __all__ = (
     "import_nodetree",
     "NodeTreeImportError",
 )
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +45,7 @@ def _tuple_serialize(type):
     if not isinstance(type, tuple):
         return None
 
-    return InputOutputF(type="tup", params={"options": type})
+    return InputOutputF(type="box", params={"options": type})
 
 
 _type_name: Dict[Type, str] = {
@@ -56,12 +53,10 @@ _type_name: Dict[Type, str] = {
     bool: "bol",
     MatBW: "mbw",
     Circles: "cls",
-    Color: "col",
     Segments: "seg",
     Lines: "lin",
     Contour: "cnt",
     Contours: "cts",
-    Point: "pnt",
     AnyType: "any",
 }
 _normal_types = {int, str, Mat}
@@ -355,18 +350,10 @@ def _process_node_settings(program, node: NodeN):
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 
     if LINKS_INSTEAD_OF_INPUTS:
-        restart = False
         if real_node.func_type.require_restart:
             if real_node.settings is not None:
                 if not real_node.settings == settings:
-                    restart = True
-        try:
-            if real_node.func.always_restart:
-                restart = True
-        except AttributeError:
-            pass
-        if restart:
-            real_node.dispose()
+                    real_node.dispose()
         if real_node.func:
             real_node.func.settings = settings
 
@@ -451,7 +438,6 @@ def import_nodetree(program, nodetree: NodeTreeN):
 
         try:
             program.pipeline.run()
-            program.manager.pipeline_update()
         except Exception as e:
             program.pipeline.broken = True
             raise NodeTreeImportError(program, node, f"Failed test run due to '{e}'")

@@ -3,13 +3,15 @@ import json
 import logging
 import queue
 import re
+import subprocess
 from datetime import datetime
+from shlex import split
 from typing import Tuple
 
-import engine
 import jinja2
 from starlette.routing import Route, Router
 
+import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
@@ -398,24 +400,24 @@ class MjpegCameraServer:
         self.src.shutdown()
 
 
-class EngineManager(Hook):
+class EngineManager:
     """
     Manages coordinating a single Engine to be used by every output.
     """
 
     def __init__(self):
-        super().__init__(visible=False)
         self._on = False
         self.pipelines = {}
         self.engine: engine.Engine = None
-        self.add_listener("pipeline_update", self.restart_engine)
 
     def register(self, func: "H264CameraServer"):
         if func.name in self.pipelines:
             raise ValueError("Cannot have duplicate name")
         self.pipelines[func.name] = func.pipeline
         if NT_AVAIL:
-            NetworkDict("/GStreamer")[func.name] = "rtsp://opensight.local/{}".format(func.name)
+            NetworkDict("/GStreamer")[func.name] = "rtsp://opensight.local/{}".format(
+                func.name
+            )
 
     def unregister(self, func: "H264CameraServer"):
         try:
@@ -428,21 +430,21 @@ class EngineManager(Hook):
     def start(self):
         # turn pipelines into JSON
         pipes = json.dumps([v for k, v in self.pipelines.items()])
-        launch = [engine.core.DEFAULT_EXEC, "--pipes-as-json", pipes]
+        launch = engine.core.DEFAULT_EXEC + ["--pipes-as-json", pipes]
         self.engine = engine.Engine(launch)
         self.engine.start()
         self._on = True
 
     def restart_engine(self):
-        self.engine.stop()
+        if self.engine:
+            self.engine.stop()
         if len(self.pipelines) > 0:
             self.start()
 
 
 class H264CameraServer:
-    def __init__(self, name: str, accelerate: bool = False):
+    def __init__(self, name: str):
         self.name = name
-        self.omx = accelerate
         self.size: Tuple[int, int, int] = (0, 0, 0)
         self.engine: engine.GStreamerEngineWriter = None
 
@@ -463,19 +465,31 @@ class H264CameraServer:
             self.engine.write_frame(img)
 
     def dispose(self):
-        self.engine.stop()
+        if self.engine:
+            self.engine.stop()
 
     @property
     def shmem_socket(self):
         return "/tmp/{}".format(self.name)
 
     @property
+    def encoder(self):
+        command = split("gst-inspect-1.0 omxh264enc")
+        out = subprocess.run(
+            command,
+            env={"PAGER": "cat"},
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )  # ensure gst-inspect doesn't lock up with more/less
+
+        return "OpenMAX" if not out.returncode else "Software"
+
+    @property
     def pipeline(self):
-        encoder = "OpenMAX" if self.omx else "Software"
-        url = "/".format(self.name)
+        url = "/{}".format(self.name)
         return {
             "input": {"SharedMemory": self.shmem_socket},
-            "encoder": encoder,
+            "encoder": self.encoder,
             "size": {"width": 320, "height": 240, "framerate": 30},
             "url": url,
         }

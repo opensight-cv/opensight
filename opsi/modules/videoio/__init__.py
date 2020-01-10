@@ -14,6 +14,7 @@ __version__ = "0.123"
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
 EngineInstance = EngineManager()
+HookInstance.add_listener("pipeline_update", EngineInstance.restart_engine)
 
 
 class CameraInput(Function):
@@ -65,20 +66,19 @@ class CameraServer(Function):
         return settings
 
     def on_start(self):
-        if self.settings.backend == "MjpegCameraServer":
+        if self.settings.backend == "MJPEG":
             HookInstance.register(self)
             self.always_restart = False
             self.src = MjpegCameraServer()
-        elif self.settings.backend == "H264CameraServer":
+        elif self.settings.backend == "H.264":
             self.always_restart = True
-            self.src = H264CameraServer(self.settings.name, self.settings.h264_acceleration)
-            EngineInstance.add(self.src.pipeline)
+            self.src = H264CameraServer(self.settings.name)
+            EngineInstance.register(self.src)
 
     @dataclass
     class Settings:
         name: str = "camera"
-        h264_acceleration: bool = False
-        backend: ("MjpegCameraServer", "H264CameraServer") = "MjpegCameraServer"
+        backend: ("MJPEG", "H.264") = "MJPEG"
 
     @dataclass
     class Inputs:
@@ -89,8 +89,10 @@ class CameraServer(Function):
         return self.Outputs()
 
     def dispose(self):
-        if self.settings.backend == "MjpegCameraServer":
+        if self.settings.backend == "MJPEG":
             HookInstance.unregister(self)
+        elif self.settings.backend == "H.264":
+            EngineInstance.unregister(self.src)
         self.src.dispose()
 
     # Returns a unique string for each CameraServer instance
