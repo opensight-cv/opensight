@@ -454,3 +454,18 @@ class H264CameraServer:
 
     def dispose(self):
         self.engine.stop()
+
+    @property
+    def shmem_socket(self):
+        return "/tmp/{}".format(self.name)
+
+    @property
+    def pipeline(self):
+        encoder = "OpenMAX" if self.omx else "Software"
+        url = "/".format(self.name)
+        return {
+            "input": {"SharedMemory": self.shmem_socket},
+            "encoder": encoder,
+            "size": {"width": 320, "height": 240, "framerate": 30},
+            "url": url,
+        }
