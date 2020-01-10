@@ -436,16 +436,22 @@ class EngineManager(Hook):
 
 
 class H264CameraServer:
-    def __init__(self):
+    def __init__(self, name: str, accelerate: bool = False):
+        self.name = name
+        self.omx = accelerate
+        self.size: Tuple[int, int, int] = (0, 0, 0)
         self.engine: engine.GStreamerEngineWriter = None
 
     def run(self, inputs: "CameraServer.Inputs"):
         if self.engine is None:
             # we need to set up engine
             shape = inputs.img.img.shape
-            size: Tuple[int, int, int] = (shape[1], shape[0], 30)
+            self.size: Tuple[int, int, int] = (shape[1], shape[0], 30)
             self.engine = engine.GStreamerEngineWriter(
-                video_size=size, repeat_frames=True
+                socket_path=self.shmem_socket,
+                video_size=self.size,
+                repeat_frames=True,
+                autostart=False,
             )
             return
         else:
