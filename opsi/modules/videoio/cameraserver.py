@@ -453,4 +453,4 @@ class H264CameraServer:
             self.engine.write_frame(img)
 
     def dispose(self):
-        self.engine.end()
+        self.engine.stop()
