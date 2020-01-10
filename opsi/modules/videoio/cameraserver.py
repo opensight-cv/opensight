@@ -1,13 +1,15 @@
 import asyncio
+import json
 import logging
 import queue
 import re
 from datetime import datetime
+from typing import Tuple
 
+import engine
 import jinja2
 from starlette.routing import Route, Router
 
-import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
@@ -25,6 +27,7 @@ __version__ = "0.123"
 
 LOGGER = logging.getLogger(__name__)
 logging.getLogger("asyncio").setLevel(logging.ERROR)
+
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
