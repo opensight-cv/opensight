@@ -75,6 +75,7 @@ class CameraServer(Function):
     @dataclass
     class Settings:
         name: str = "camera"
+        h264_acceleration: bool = False
         backend: ("MjpegCameraServer", "H264CameraServer") = "MjpegCameraServer"
 
     @dataclass
