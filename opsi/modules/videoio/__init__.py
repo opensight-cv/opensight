@@ -5,7 +5,7 @@ from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .cameraserver import CamHook, H264CameraServer, MjpegCameraServer
+from .cameraserver import CamHook, EngineManager, H264CameraServer, MjpegCameraServer
 from .input import controls, create_capture, get_modes, parse_camstring
 
 __package__ = "opsi.videoio"
@@ -13,6 +13,7 @@ __version__ = "0.123"
 
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
+EngineInstance = EngineManager()
 
 
 class CameraInput(Function):
@@ -70,7 +71,8 @@ class CameraServer(Function):
             self.src = MjpegCameraServer()
         elif self.settings.backend == "H264CameraServer":
             self.always_restart = True
-            self.src = H264CameraServer()
+            self.src = H264CameraServer(self.settings.name, self.settings.h264_acceleration)
+            EngineInstance.add(self.src.pipeline)
 
     @dataclass
     class Settings:
