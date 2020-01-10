@@ -395,6 +395,46 @@ class MjpegCameraServer:
         self.src.shutdown()
 
 
+class EngineManager(Hook):
+    """
+    Manages coordinating a single Engine to be used by every output.
+    """
+
+    def __init__(self):
+        super().__init__(visible=False)
+        self._on = False
+        self.pipelines = {}
+        self.engine: engine.Engine = None
+        self.add_listener("pipeline_update", self.restart_engine)
+
+    def register(self, func: "H264CameraServer"):
+        if func.name in self.pipelines:
+            raise ValueError("Cannot have duplicate name")
+        self.pipelines[func.name] = func.pipeline
+        if NT_AVAIL:
+            NetworkDict("/GStreamer")[func.name] = "rtsp://opensight.local/{}".format(func.name)
+
+    def unregister(self, func: "H264CameraServer"):
+        try:
+            del self.pipelines[func.name]
+            if NT_AVAIL:
+                NetworkDict("/GStreamer").delete(func.name)
+        except KeyError:
+            pass
+
+    def start(self):
+        # turn pipelines into JSON
+        pipes = json.dumps([v for k, v in self.pipelines.items()])
+        launch = [engine.core.DEFAULT_EXEC, "--pipes-as-json", pipes]
+        self.engine = engine.Engine(launch)
+        self.engine.start()
+        self._on = True
+
+    def restart_engine(self):
+        self.engine.stop()
+        self.start()
+
+
 class H264CameraServer:
     def __init__(self):
         self.engine: engine.GStreamerEngineWriter = None
