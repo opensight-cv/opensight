@@ -435,7 +435,8 @@ class EngineManager(Hook):
 
     def restart_engine(self):
         self.engine.stop()
-        self.start()
+        if len(self.pipelines) > 0:
+            self.start()
 
 
 class H264CameraServer:
