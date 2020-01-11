@@ -3,6 +3,7 @@ import json
 import logging
 import queue
 import re
+import shlex
 import subprocess
 from datetime import datetime
 from shlex import split
@@ -430,8 +431,10 @@ class EngineManager:
     def start(self):
         # turn pipelines into JSON
         pipes = json.dumps([v for k, v in self.pipelines.items()])
-        launch = engine.core.DEFAULT_EXEC_PATH + "--pipes-as-json" + pipes
-        self.engine = engine.Engine(launch)
+        launch = "{exec_} {arg} {pipes}".format(
+            exec_=engine.core.DEFAULT_EXEC_PATH, arg="--pipes-as-json", pipes=pipes
+        )
+        self.engine = engine.Engine(shlex.split(launch))
         self.engine.start()
         self._on = True
 
