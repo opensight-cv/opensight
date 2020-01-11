@@ -450,6 +450,7 @@ class H264CameraServer:
         self.name = name
         self.size: Tuple[int, int, int] = (0, 0, 0)
         self.engine: engine.GStreamerEngineWriter = None
+        self.registered: bool = False
 
     def run(self, inputs: "CameraServer.Inputs"):
         if self.engine is None:
@@ -470,6 +471,18 @@ class H264CameraServer:
     def dispose(self):
         if self.engine:
             self.engine.stop()
+
+    def register(self, EngineInstance):
+        if self.registered:
+            return
+        EngineInstance.register(self)
+        self.registered = True
+
+    def unregister(self, EngineInstance):
+        if not self.registered:
+            return
+        EngineInstance.unregister(self)
+        self.registered = False
 
     @property
     def shmem_socket(self):
@@ -493,6 +506,6 @@ class H264CameraServer:
         return {
             "input": {"SharedMemory": self.shmem_socket},
             "encoder": self.encoder,
-            "size": {"width": 320, "height": 240, "framerate": 30},
+            "size": {"width": self.size[0], "height": self.size[1], "framerate": 30},
             "url": url,
         }

@@ -73,7 +73,6 @@ class CameraServer(Function):
         elif self.settings.backend == "H.264":
             self.always_restart = True
             self.src = H264CameraServer(self.settings.name)
-            EngineInstance.register(self.src)
 
     @dataclass
     class Settings:
@@ -86,13 +85,15 @@ class CameraServer(Function):
 
     def run(self, inputs):
         self.src.run(inputs)
+        if self.settings.backend == "H.264":
+            self.src.register(EngineInstance)
         return self.Outputs()
 
     def dispose(self):
         if self.settings.backend == "MJPEG":
             HookInstance.unregister(self)
         elif self.settings.backend == "H.264":
-            EngineInstance.unregister(self.src)
+            self.src.unregister(EngineInstance)
         self.src.dispose()
 
     # Returns a unique string for each CameraServer instance
