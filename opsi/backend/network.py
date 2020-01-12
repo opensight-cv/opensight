@@ -1,9 +1,7 @@
 from typing import Optional
 
-from opsi.lifespan.lifespan import Lifespan
 
-
-def set_network_mode(dhcp: bool, team_number: Optional[int], static_ip_extension: Optional[int], lifespan: Lifespan):
+def set_network_mode(dhcp: bool, team_number: Optional[int], static_ip_extension: Optional[int], lifespan: "Lifespan"):
     if dhcp:
         with open('templates/dhcp.conf', 'r') as template:
             data = template.read()
