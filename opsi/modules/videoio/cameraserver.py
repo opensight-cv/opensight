@@ -426,7 +426,7 @@ class EngineManager:
         self.pipelines[func.name] = pipeline
         if NT_AVAIL:
             url = self.hook.url.split("/")[2].split(":")[0]
-            NetworkDict(f"/GStreamer/{func.name}")["/sources"] = [
+            NetworkDict(f"/GStreamer/{func.name}")["/streams"] = [
                 f"rtsp://{url}:{self.port}/{func.name}",
             ]
 
