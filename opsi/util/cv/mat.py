@@ -83,7 +83,7 @@ class Mat:
         return Mat(a)
 
     def resize(self, res: Point) -> "Mat":
-        return Mat(cv2.resize(self, res))
+        return Mat(cv2.resize(self.img, res))
 
     def canny(self, threshold_lower, threshold_upper) -> "MatBW":
         return MatBW(cv2.Canny(self.img, threshold_lower, threshold_upper))

@@ -1,18 +1,20 @@
 from dataclasses import dataclass
+from typing import Tuple
 
 from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .cameraserver import CameraSource, CamHook
+from .cameraserver import CamHook, EngineManager, H264CameraServer, MjpegCameraServer
 from .input import controls, create_capture, get_modes, parse_camstring
 
 __package__ = "opsi.videoio"
 __version__ = "0.123"
 
-
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
+EngineInstance = EngineManager(HookInstance)
+HookInstance.add_listener("pipeline_update", EngineInstance.restart_engine)
 
 
 class CameraInput(Function):
@@ -55,35 +57,47 @@ class CameraInput(Function):
 
 class CameraServer(Function):
     has_sideeffect = True
+    always_restart = False
+    require_restart = True
 
     @classmethod
     def validate_settings(cls, settings):
         settings.name = settings.name.strip()
-
         return settings
 
     def on_start(self):
-        self.src = CameraSource()
-        HookInstance.register(self)
+        if self.settings.backend == "MJPEG":
+            HookInstance.register(self)
+            self.always_restart = False
+            self.src = MjpegCameraServer()
+        elif self.settings.backend == "H.264 (30 FPS)":
+            self.always_restart = True
+            self.src = H264CameraServer(self.settings.name, 30)
+        elif self.settings.backend == "H.264 (60 FPS)":
+            self.always_restart = True
+            self.src = H264CameraServer(self.settings.name, 60)
 
     @dataclass
     class Settings:
         name: str = "camera"
+        backend: ("MJPEG", "H.264 (30 FPS)", "H.264 (60 FPS)") = "MJPEG"
 
     @dataclass
     class Inputs:
         img: Mat
 
     def run(self, inputs):
-        if isinstance(inputs.img, MatBW):
-            self.src.img = inputs.img.mat
-        else:
-            self.src.img = inputs.img
+        self.src.run(inputs)
+        if "H.264" in self.settings.backend:
+            self.src.register(EngineInstance)
         return self.Outputs()
 
     def dispose(self):
-        self.src.shutdown()
-        HookInstance.unregister(self)
+        if self.settings.backend == "MJPEG":
+            HookInstance.unregister(self)
+        elif "H.264" in self.settings.backend:
+            self.src.unregister(EngineInstance)
+        self.src.dispose()
 
     # Returns a unique string for each CameraServer instance
     @property

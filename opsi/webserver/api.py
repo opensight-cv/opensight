@@ -41,7 +41,7 @@ class Api:
         json = {"error": "Invalid Nodetree", "message": exc.args[0]}
 
         if exc.node:
-            json.update({"node": str(exc.node.id), "type": exc.node.type})
+            json.update({"node": str(exc.node.id), "type": exc.type})
 
         return JSONResponse(status_code=400, content=json)
 
