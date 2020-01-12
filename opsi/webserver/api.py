@@ -4,6 +4,7 @@ from fastapi import FastAPI, File, UploadFile
 from starlette.responses import JSONResponse
 
 import opsi
+from opsi.backend.network import set_network_mode
 from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
 
@@ -88,5 +89,11 @@ class Api:
     def network(self, *, network: Network):
         self.program.lifespan.persist.network = network
         self.program.lifespan.persist.update_nodetree()
+        opsi.backend.network.set_network_mode(
+            dhcp=not network.static,
+            team_number=int(network.team),
+            static_ip_extension=None,
+            lifespan=self.program.lifespan,
+        )
         self.program.lifespan.restart()
         return {"team": network.team, "static": network.static}
