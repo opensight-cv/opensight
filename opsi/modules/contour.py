@@ -5,9 +5,9 @@ from functools import lru_cache
 import cv2
 import numpy as np
 
-import opsi.manager.cvwrapper as cvw
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Contours, Mat, MatBW
+from opsi.manager.types import Slide
+from opsi.util.cv import Contours, Mat, MatBW, Point
 
 __package__ = "opsi.contours"
 __version__ = "0.123"
@@ -23,7 +23,7 @@ class FindContours(Function):
         contours: Contours
 
     def run(self, inputs):
-        contours = cvw.find_contours(inputs.imgBW)
+        contours = Contours.from_img(inputs.imgBW)
         return self.Outputs(contours=contours)
 
 
@@ -37,7 +37,26 @@ class ConvexHulls(Function):
         contours: Contours
 
     def run(self, inputs):
-        contours = cvw.convex_hulls(inputs.contours)
+        contours = inputs.contours.convex_hulls
+        return self.Outputs(contours=contours)
+
+
+class ContourApproximate(Function):
+    @dataclass
+    class Settings:
+        # TODO: Make a slide once slides can do non-integer values
+        epsilon: float  # Slide(0, 1)
+
+    @dataclass
+    class Inputs:
+        contours: Contours
+
+    @dataclass
+    class Outputs:
+        contours: Contours
+
+    def run(self, inputs):
+        contours = inputs.contours.approximate(self.settings.epsilon)
         return self.Outputs(contours=contours)
 
 
@@ -53,44 +72,34 @@ class FindCenter(Function):
 
     @dataclass
     class Outputs:
-        center: ()
+        center: Point
         visual: Mat
         success: bool
 
     def run(self, inputs):
-        midpoint = None
-        offset = None
-        draw = None
-        cnt = None
-        mids = []
-        if len(inputs.contours) == 0:
-            return self.Outputs(center=(), success=False, visual=inputs.img)
-        for i in range(len(inputs.contours)):
-            cnt = inputs.contours[i]
-            x, y, w, h = cv2.boundingRect(cnt)
-            cx = (x + (x + w)) // 2
-            cy = (y + (y + h)) // 2
-            midpoint = (cx, cy)
-            mids.append(midpoint)
-            draw = inputs.img.mat
-            if self.settings.draw:
-                draw = np.copy(inputs.img.mat)
-                cv2.rectangle(draw, (x, y), (x + w, y + h), (234, 234, 0), thickness=2)
-                cv2.circle(draw, midpoint, 10, (0, 0, 255), 3)
-                if len(mids) > 1:
-                    mid1 = mids[0]
-                    mid2 = mids[-1]
-                    mx = (mid1[0] + mid2[0]) // 2
-                    my = (mid1[1] + mid2[1]) // 2
-                    midpoint = (mx, my)
-                    cv2.circle(draw, midpoint, 15, (90, 255, 255), 3)
-                    cv2.line(draw, mid1, mid2, (0, 255, 20), thickness=3)
-            imgh, imgw, _ = inputs.img.shape
-            imgh, imgw = (imgh // 2, imgw // 2)
+        if len(inputs.contours.l) == 0:
+            return self.Outputs(center=None, success=False, visual=inputs.img)
 
-            offset = (imgw - midpoint[0], imgh - midpoint[1])
-            normalized = (offset[0] / -imgw, offset[1] / -imgh)
-        return self.Outputs(center=normalized, success=True, visual=draw)
+        center = inputs.contours.centroid_of_all
+
+        if self.settings.draw:
+            img = np.copy(inputs.img.mat.img)
+
+            for contour in inputs.contours.l:
+                cv2.circle(
+                    img,
+                    (int(contour.pixel_centroid[0]), int(contour.pixel_centroid[1])),
+                    5,
+                    (0, 0, 255),
+                    3,
+                )
+
+            cv2.circle(img, (int(center.x), int(center.y)), 10, (255, 0, 0), 5)
+            img = Mat(img)
+        else:
+            img = None
+
+        return self.Outputs(center=center, success=True, visual=img)
 
 
 class FindAngle(Function):
@@ -125,7 +134,7 @@ class FindAngle(Function):
 
     @dataclass
     class Inputs:
-        point: ()
+        pnt: Point
         img: Mat
 
     @dataclass

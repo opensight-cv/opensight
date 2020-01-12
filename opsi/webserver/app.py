@@ -1,5 +1,4 @@
 import logging
-import socket
 from os.path import join
 
 from starlette.applications import Starlette
@@ -35,6 +34,7 @@ class WebServer:
                 persist=self.program.lifespan.persist,
                 daemon=self.program.lifespan.using_systemd,
                 nt=self.program.lifespan.NT_AVAIL,
+                netconf=self.program.lifespan.netconf_writable,
                 version=opsi.__version__,
             ),
         )

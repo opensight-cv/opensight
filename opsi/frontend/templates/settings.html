@@ -28,28 +28,50 @@
         <input id="import-button" type="button" value="Import" />
         <input id="export-button" type="button" value="Export" />
     </div>
-    <div class="preference">
+    <div class="preference network-settings">
         <h2>Network Config</h2>
-        <form id="network-form" enctype="multipart/form-data" method="post" name="import-form">
+        <div id="net-normal-settings">
             <h3>General</h3>
             <label for="team-number">Team Number:</label>
             <input id="team-number" type="number" min="1" max="9999" step="1" required
                 value="{{persist.network.team | int}}" />
             <br>
-            <label for="nt-enabled">Use Static IP:</label>
-            <input id="static" type="checkbox" {{"checked" if persist.network.static}} />
-            {% if nt %}
+            <label for="dns-mode">DNS Mode:</label>
+            <select id="dns-mode">
+                <option value="mDNS" {{"selected" if persist.network.mdns}}>mDNS</option>
+                <option value="Static" {{"selected" if not persist.network.mdns}}>Static</option>
+            </select>
+            <br>
+        </div>
+        {% if netconf %}
+        <div id="net-pi-settings">
+            <label for="ip-assign">IP Assignment Mode:</label>
+            <select id="ip-assign">
+                <option value="DHCP" {{"selected" if not persist.network.ip_assign}}>DHCP</option>
+                <option value="Static" {{"selected" if persist.network.ip_assign}}>Static</option>
+            </select>
+            <br>
+            <div id="static-ext-div">
+            <label for="static-ext">Static IP Extension:</label>
+            <input id="static-ext" type="number" min="2" max="255" step="1" required
+                value="{{persist.network.static_ext | int}}" />
+            <br>
+            </div>
+        </div>
+        {% endif %}
+        {% if nt %}
+        <div id="net-nt-settings">
             <h3>NetworkTables</h3>
             <label for="nt-enabled">Enabled:</label>
             <input id="nt-enabled" type="checkbox" {{"checked" if persist.network.nt_enabled}} />
             <br>
-            <label for="nt-mode">Mode:</label>
+            <label for="nt-mode">NetworkTables Mode:</label>
             <select id="nt-mode">
                 <option value="client" {{"selected" if persist.network.nt_client}}>Client</option>
                 <option value="server" {{"selected" if not persist.network.nt_client}}>Server</option>
             </select>
-            {% endif %}
-        </form>
+        </div>
+        {% endif %}
         <input id="network-button" type="button" value="Submit" />
     </div>
     <div class="preference">

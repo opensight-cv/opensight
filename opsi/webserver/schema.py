@@ -71,7 +71,9 @@ class SchemaF(BaseModel):
 
 class Network(BaseModel):
     team: str = 9999
-    static: bool = False
+    mDNS: bool = True
+    dhcp: bool = True
+    static_ext: str = 100
     nt_enabled: bool = True
     nt_client: bool = True
 
@@ -86,6 +88,15 @@ class Network(BaseModel):
         assert 1 <= len(team_str) <= 4
 
         return team_str
+
+    @validator("static_ext", always=True)
+    def static_ext_str_formatter(cls, static_ext):
+        static_ext = int(static_ext)
+
+        if not 2 <= static_ext <= 255:
+            raise ValueError("Static extension number must be between 1 and 255")
+
+        return static_ext
 
 
 class Preferences(BaseModel):

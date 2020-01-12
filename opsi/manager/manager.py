@@ -121,6 +121,10 @@ class Manager:
 
         self.modules[info.package] = ModuleItem(info, funcs)
 
+    def pipeline_update(self):
+        for hook in self.hooks.values():
+            hook.pipeline_update()
+
     def shutdown(self):
         for hook in self.hooks.values():
             hook.shutdown()

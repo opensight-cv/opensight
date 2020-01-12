@@ -1045,7 +1045,7 @@ const functions = function(jsonData) {
             ]);
           }
           break;
-        case "box":
+        case "tup":
           if (typeof this.rawArr[i][2][x].params.default != "undefined") {
             this.settings[this.settingsCount].push([
               x,
@@ -1308,7 +1308,7 @@ const importNodeTree = function(nodetree, functions) {
             );
             // $('#' + nodetree.nodes[i].id + x).maxVal(nodetree.nodes[i].settings[x].max);
             break;
-          case "box":
+          case "tup":
             $("#" + nodetree.nodes[i].id + x).val(
               nodetree.nodes[i].settings[x]
             );

@@ -6,6 +6,7 @@ import threading
 from os.path import isdir, isfile, splitext
 
 import opsi
+from opsi.backend.network import dhcpcd_writable
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
 from opsi.util.concurrency import AsyncThread, ShutdownThread
@@ -72,6 +73,7 @@ class Lifespan:
 
         self._systemd = None
         self._unit = None
+        self._netconf = None
 
         self.ports = args.port or self.PORTS
         self.persist = Persistence(path=args.persist) if load_persist else None
@@ -97,6 +99,15 @@ class Lifespan:
         self._unit = Unit(b"opensight.service", _autoload=True)
         self._systemd = self._unit.Unit.ActiveState == b"active"
         return self._systemd
+
+    @property
+    def netconf_writable(self):
+        if self._netconf is not None:
+            return self._netconf
+        self._netconf = False
+        if self.using_systemd and dhcpcd_writable():
+            self._netconf = True
+        return self._netconf
 
     def make_threads(self):
         program = Program(self)

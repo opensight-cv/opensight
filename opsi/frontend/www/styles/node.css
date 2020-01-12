@@ -95,8 +95,11 @@ p {
     margin: 5px auto;
 }
 
-#network-form input {
+.network-settings input {
     display: inline;
+    max-width: 25%;
+}
+.network-settings input[type="number"] {
     max-width: 18%;
 }
 /* https://stackoverflow.com/a/4298216 */
@@ -508,7 +511,7 @@ input[type="button"]:active {
 }
 .sliderOut {
   width: 10%;
-  float: left;
+  margin-bottom: 0;
 }
 .sliderOut2 {
   width: 10%;

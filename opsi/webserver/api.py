@@ -4,6 +4,7 @@ from fastapi import FastAPI, File, UploadFile
 from starlette.responses import JSONResponse
 
 import opsi
+from opsi.backend.network import dhcpcd_writable, set_network_mode
 from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
 
@@ -40,7 +41,7 @@ class Api:
         json = {"error": "Invalid Nodetree", "message": exc.args[0]}
 
         if exc.node:
-            json.update({"node": str(exc.node.id), "type": exc.node.type})
+            json.update({"node": str(exc.node.id), "type": exc.type})
 
         return JSONResponse(status_code=400, content=json)
 
@@ -88,5 +89,17 @@ class Api:
     def network(self, *, network: Network):
         self.program.lifespan.persist.network = network
         self.program.lifespan.persist.update_nodetree()
-        self.program.lifespan.restart()
-        return {"team": network.team, "static": network.static}
+        if dhcpcd_writable():
+            set_network_mode(
+                team_number=int(network.team),
+                dhcp=network.dhcp,
+                static_ip_extension=int(network.static_ext),
+                lifespan=self.program.lifespan,
+            )
+        else:
+            self.program.lifespan.restart()
+        return {
+            "team": network.team,
+            "dhcp": network.dhcp,
+            "static_ext": network.static_ext,
+        }
