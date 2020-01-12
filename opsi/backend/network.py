@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Optional
 
 
 def set_network_mode(

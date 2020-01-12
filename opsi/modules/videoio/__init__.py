@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Tuple
 
 from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW

@@ -87,7 +87,6 @@ class Api:
         return profile
 
     def network(self, *, network: Network):
-        print(network)
         self.program.lifespan.persist.network = network
         self.program.lifespan.persist.update_nodetree()
         if dhcpcd_writable():

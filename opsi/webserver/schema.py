@@ -91,7 +91,6 @@ class Network(BaseModel):
 
     @validator("static_ext", always=True)
     def static_ext_str_formatter(cls, static_ext):
-        print(static_ext)
         static_ext = int(static_ext)
 
         if not 2 <= static_ext <= 255:
