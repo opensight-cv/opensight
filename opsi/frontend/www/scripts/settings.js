@@ -138,7 +138,7 @@ $(document).ready(function() {
         team: parseInt(form[0].valueAsNumber),
         static: form[1].checked,
         nt_enabled: form[2].checked,
-        nt_client: form[3].value == "client"
+        nt_client: form[3].value === "client"
       };
     }
     setIcons("spinner");
