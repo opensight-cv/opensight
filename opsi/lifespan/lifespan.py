@@ -169,7 +169,6 @@ class Lifespan:
         self.event.set()
 
     def restart(self, host=False):
-        return
         if host:
             self._restart = False
             self.shutdown_threads()
