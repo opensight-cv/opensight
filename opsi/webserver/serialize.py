@@ -227,7 +227,9 @@ def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
 
 
 class NodeTreeImportError(ValueError):
-    def __init__(self, program, node: NodeN = None, msg="", *, exc_info=True):
+    def __init__(
+        self, program, node: NodeN = None, msg="", *, exc_info=True, real_node=False
+    ):
         program.pipeline.clear()
         program.pipeline.broken = True
 
@@ -242,9 +244,14 @@ class NodeTreeImportError(ValueError):
 
             msg += ": " + str(exc_info[1])
 
+        if real_node:
+            self.type = str(self.node.func_type)
+        else:
+            self.type = self.node.type
+
         logMsg = msg
         if self.node:
-            msg = f"{self.node.type}: {msg}"
+            msg = f"{self.type}: {msg}"
             logMsg = f"Node '{self.node.id}' returned error {msg}"
 
         super().__init__(msg)
@@ -454,6 +461,11 @@ def import_nodetree(program, nodetree: NodeTreeN):
             program.manager.pipeline_update()
         except Exception as e:
             program.pipeline.broken = True
-            raise NodeTreeImportError(program, node, f"Failed test run due to '{e}'")
+            raise NodeTreeImportError(
+                program,
+                program.pipeline.current,
+                f"Failed test run due to",
+                real_node=True,
+            )
 
         program.pipeline.broken = False

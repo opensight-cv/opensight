@@ -7,6 +7,7 @@ from opsi.manager.manager_schema import Function
 from opsi.manager.types import RangeType, Slide
 from opsi.util.cv import Mat, MatBW
 from opsi.util.cv.mat import Color
+from opsi.util.cv.shape import Point
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
@@ -324,3 +325,22 @@ class ColorDetector(Function):
                 output_str = hue_strings[hue]
 
         return self.Outputs(color_string=output_str)
+
+
+class Resize(Function):
+    @dataclass
+    class Settings:
+        width: int
+        height: int
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        img: Mat
+
+    def run(self, inputs):
+        img = inputs.img.resize(Point(self.settings.width, self.settings.height))
+        return self.Outputs(img=img)

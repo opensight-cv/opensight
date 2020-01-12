@@ -16,6 +16,7 @@ import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
+from opsi.util.networking import choose_port
 from opsi.util.templating import LiteralTemplate
 
 try:
@@ -406,19 +407,28 @@ class EngineManager:
     Manages coordinating a single Engine to be used by every output.
     """
 
-    def __init__(self):
+    def __init__(self, hook):
         self._on = False
+        self.hook = hook
         self.pipelines = {}
         self.engine: engine.Engine = None
+
+        ports = [554, 1181]
+        self.port = choose_port(ports)
+        if not self.port:
+            raise ValueError("Unable to bind to any of ports {}".format(ports))
 
     def register(self, func: "H264CameraServer"):
         if func.name in self.pipelines:
             raise ValueError("Cannot have duplicate name")
-        self.pipelines[func.name] = func.pipeline
+        pipeline = func.pipeline
+        pipeline["port"] = self.port
+        self.pipelines[func.name] = pipeline
         if NT_AVAIL:
-            NetworkDict("/GStreamer")[func.name] = "rtsp://opensight.local/{}".format(
-                func.name
-            )
+            url = self.hook.url.split("/")[2].split(":")[0]
+            NetworkDict(f"/GStreamer/{func.name}")["/sources"] = [
+                f"rtsp://{url}:{self.port}/{func.name}",
+            ]
 
     def unregister(self, func: "H264CameraServer"):
         try:
@@ -431,9 +441,7 @@ class EngineManager:
     def start(self):
         # turn pipelines into JSON
         pipes = json.dumps([v for k, v in self.pipelines.items()])
-        launch = "{exec_} {arg} '{pipes}'".format(
-            exec_=engine.core.DEFAULT_EXEC_PATH, arg="--pipes-as-json", pipes=pipes
-        )
+        launch = f"{engine.core.DEFAULT_EXEC_PATH} --pipes-as-json '{pipes}'"
         self.engine = engine.Engine(shlex.split(launch))
         self.engine.start()
         self._on = True
@@ -446,8 +454,9 @@ class EngineManager:
 
 
 class H264CameraServer:
-    def __init__(self, name: str):
+    def __init__(self, name: str, fps: int):
         self.name = name
+        self.fps = fps
         self.size: Tuple[int, int, int] = (0, 0, 0)
         self.engine: engine.GStreamerEngineWriter = None
         self.registered: bool = False
@@ -456,7 +465,7 @@ class H264CameraServer:
         if self.engine is None:
             # we need to set up engine
             shape = inputs.img.img.shape
-            self.size: Tuple[int, int, int] = (shape[1], shape[0], 30)
+            self.size: Tuple[int, int, int] = (shape[1], shape[0], self.fps)
             self.engine = engine.GStreamerEngineWriter(
                 socket_path=self.shmem_socket,
                 video_size=self.size,
@@ -486,7 +495,7 @@ class H264CameraServer:
 
     @property
     def shmem_socket(self):
-        return "/tmp/{}".format(self.name)
+        return f"/tmp/{self.name}"
 
     @property
     def encoder(self):
@@ -502,10 +511,14 @@ class H264CameraServer:
 
     @property
     def pipeline(self):
-        url = "/{}".format(self.name)
+        url = f"/{self.name}"
         return {
             "input": {"SharedMemory": self.shmem_socket},
             "encoder": self.encoder,
-            "size": {"width": self.size[0], "height": self.size[1], "framerate": 30},
+            "size": {
+                "width": self.size[0],
+                "height": self.size[1],
+                "framerate": self.fps,
+            },
             "url": url,
         }
