@@ -128,18 +128,17 @@ $(document).ready(function() {
   });
   $(document).on("click", "#network-button", function(event) {
     var form = $("#network-form")[0];
-    if (typeof form[2] === undefined) {
-      var data = {
-        team: parseInt(form[0].valueAsNumber),
-        static: form[1].checked,
-      };
-    } else {
-      var data = {
-        team: parseInt(form[0].valueAsNumber),
-        static: form[1].checked,
-        nt_enabled: form[2].checked,
-        nt_client: form[3].value == "client"
-      };
+    var data = {
+      team: $("#team-number")[0].valueAsNumber,
+      mDNS: ($("#dns-mode")[0].value === "mDNS")
+    };
+    if ($("#net-pi-settings").length > 0) {
+      data['dhcp'] = ($("#ip-assign")[0].value === "DHCP")
+      data['static_ext'] = $("#static-ext")[0].valueAsNumber;
+    }
+    if ($("#net-nt-settings").length > 0) {
+      data['nt_enabled'] = $("#nt-enabled")[0].checked;
+      data['nt_client'] = ($("#nt-mode")[0].value === "client");
     }
     setIcons("spinner");
     $.ajax({
@@ -158,6 +157,10 @@ $(document).ready(function() {
         setIcons("cross");
       }
     });
+  });
+  $("#static-ext").prop('disabled', ($("#ip-assign").value == 'Static') ? false : true);
+  $('#ip-assign').on('change', function () {
+    $("#static-ext").prop('disabled', (this.value == 'Static') ? false : true);
   });
 });
 
