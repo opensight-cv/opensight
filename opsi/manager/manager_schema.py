@@ -161,6 +161,8 @@ class Function:
 
 def isfunction(func):
     try:
+        if func is Function:
+            return False
         return issubclass(func, Function)
     except TypeError:  # func is not a type
         return False
