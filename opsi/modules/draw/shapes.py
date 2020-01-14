@@ -9,8 +9,6 @@ from opsi.util.cv.shape import Circles, Segments
 
 
 class DrawCircles(Function):
-    force_enabled = True
-
     @dataclass
     class Inputs:
         circles: Circles
@@ -43,8 +41,6 @@ class DrawCircles(Function):
 
 
 class DrawSegments(Function):
-    force_enabled = True
-
     @dataclass
     class Inputs:
         lines: Segments

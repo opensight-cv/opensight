@@ -37,7 +37,6 @@ class Function:
     require_restart: bool = False
     always_restart: bool = False
     disabled = False
-    force_enabled = False
 
     SettingTypes: List[Field]
     InputTypes: Dict[str, Type]

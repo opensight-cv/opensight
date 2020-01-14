@@ -73,7 +73,10 @@ class Manager:
                 isfunction(func)
                 and (not func.disabled)
                 # If a module imports a Function from another module, do not register that Function
-                and (inspect.getmodule(func) == module or func.force_enabled)
+                and (
+                    inspect.getmodule(func) == module
+                    or (issubclass(func, Function) and func is not Function)
+                )
             )
 
         return closure
