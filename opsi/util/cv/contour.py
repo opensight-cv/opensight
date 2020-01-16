@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Union
 
 import cv2
 from numpy import ndarray
@@ -6,7 +6,7 @@ from numpy import ndarray
 from opsi.util.cache import cached_property
 
 from .mat import Mat, MatBW
-from .shape import Point, Rect, RotatedRect
+from .shape import Point, Rect, RotatedRect, Corners
 
 
 class Contour:
@@ -47,7 +47,7 @@ class Contour:
         cx = M["m10"] / area
         cy = M["m01"] / area
 
-        return (cx, cy)
+        return Point(cx, cy)
 
     @cached_property
     def centroid(self):  # (x, y), -1 to 1, where (0, 0) is the center
@@ -84,6 +84,31 @@ class Contour:
     @cached_property
     def to_min_area_rect(self) -> RotatedRect:
         return RotatedRect.from_contour(self.raw)
+
+    @cached_property
+    def points(self) -> List[Point]:
+        return [Point(*raw_point[0]) for raw_point in self.raw]
+
+    @cached_property
+    def corners(self) -> Tuple[bool, Union[Corners, None]]:
+        centroid = self.pixel_centroid
+        points = self.points
+        if len(points) < 4:
+            return False, None
+
+        tl = next((point for point in points
+                  if point.x < centroid.x and point.y < centroid.y), None)
+        tr = next((point for point in points
+                  if point.x > centroid.x and point.y < centroid.y), None)
+        bl = next((point for point in points
+                  if point.x < centroid.x and point.y > centroid.y), None)
+        br = next((point for point in points
+                  if point.x > centroid.x and point.y > centroid.y), None)
+
+        if tl is None or tr is None or bl is None or br is None:
+            return False, None
+        else:
+            return True, Corners(tl, tr, bl, br)
 
 
 FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_EXTERNAL, "method": cv2.CHAIN_APPROX_SIMPLE}

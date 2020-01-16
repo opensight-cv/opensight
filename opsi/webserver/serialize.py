@@ -13,7 +13,7 @@ from opsi.util.concurrency import FifoLock
 
 from ..util.cv import Contour, Contours, Mat, MatBW, Point
 from ..util.cv.mat import Color
-from ..util.cv.shape import Circles, Lines, Segments
+from ..util.cv.shape import Circles, Lines, Segments, Corners
 from .schema import *
 
 __all__ = (
@@ -62,6 +62,7 @@ _type_name: Dict[Type, str] = {
     Contour: "cnt",
     Contours: "cts",
     Point: "pnt",
+    Corners: "corn",
     AnyType: "any",
 }
 _normal_types = {int, str, Mat}

@@ -1,6 +1,7 @@
 from typing import NamedTuple
 
 import cv2
+import numpy as np
 from numpy.core._multiarray_umath import ndarray
 
 from opsi.util.cache import cached_property
@@ -125,6 +126,30 @@ class RotatedRect(Shape):
         if self.dim[0] > self.dim[1]:
             rect_angle += 90
         return rect_angle
+
+
+# Stores corners used for SolvePNP
+class Corners(NamedTuple):
+    tl: Point
+    tr: Point
+    bl: Point
+    br: Point
+
+    def to_matrix(self):
+        return np.array([self.tl, self.tr, self.bl, self.br])
+
+    @cached_property
+    def calculate_pose(self, object_points: "Corners", camera_matrix, distortion_coefficients):
+        img_points_mat = self.to_matrix()
+        object_points_mat = object_points.to_matrix()
+
+        ret, rvec, tvec = cv2.solvePnP(object_points_mat, img_points_mat, camera_matrix, distortion_coefficients)
+
+        print(ret, rvec, tvec)
+
+
+
+
 
 
 # TODO Make proper wrapper classes for these shapes
