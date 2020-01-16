@@ -4,8 +4,9 @@ from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .cameraserver import CamHook, EngineManager, H264CameraServer, MjpegCameraServer
+from .h264 import EngineManager, H264CameraServer
 from .input import controls, create_capture, get_modes, parse_camstring
+from .mjpeg import CamHook, MjpegCameraServer
 
 __package__ = "opsi.videoio"
 __version__ = "0.123"
