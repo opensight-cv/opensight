@@ -4,7 +4,6 @@ from dataclasses import dataclass
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.util.cache import cached_property
 from opsi.util.cv import Point
 from opsi.util.cv.file_storage import read_calibration_file
 from opsi.util.cv.shape import Corners, Pose3D
@@ -12,7 +11,6 @@ from opsi.util.persistence import Persistence
 
 __package__ = "opsi.solvepnp"
 __version__ = "0.123"
-
 
 
 def get_calibration_files(persist: Persistence):
@@ -64,18 +62,6 @@ class SolvePNP(Function):
             [0.2492375, -0.2159, -0.74295],  # Bottom right
         ]
     )
-
-    # TODO Some way to actually calibrate the camera
-    # camera_matrix = np.array(
-    #     [
-    #         [549.16440778, 0.0, 286.27258457],
-    #         [0.0, 552.26641517, 188.54410636],
-    #         [0.0, 0.0, 1.0],
-    #     ]
-    # )
-    # distortion_coefficients = np.array(
-    #     [[0.11201923, -0.43900659, 0.00620875, -0.00058852, 0.57582748]]
-    # )
 
     def run(self, inputs):
         if inputs.corners is None:
