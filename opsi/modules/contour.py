@@ -13,7 +13,6 @@ __package__ = "opsi.contours"
 __version__ = "0.123"
 
 
-
 class FindContours(Function):
     @dataclass
     class Inputs:
