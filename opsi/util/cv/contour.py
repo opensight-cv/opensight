@@ -6,7 +6,7 @@ from numpy import ndarray
 from opsi.util.cache import cached_property
 
 from .mat import Mat, MatBW
-from .shape import Point, Rect, RotatedRect, Corners
+from .shape import Corners, Point, Rect, RotatedRect
 
 
 class Contour:
@@ -96,14 +96,38 @@ class Contour:
         if len(points) < 4:
             return False, None
 
-        tl = next((point for point in points
-                  if point.x < centroid.x and point.y < centroid.y), None)
-        tr = next((point for point in points
-                  if point.x > centroid.x and point.y < centroid.y), None)
-        bl = next((point for point in points
-                  if point.x < centroid.x and point.y > centroid.y), None)
-        br = next((point for point in points
-                  if point.x > centroid.x and point.y > centroid.y), None)
+        tl = next(
+            (
+                point
+                for point in points
+                if point.x < centroid.x and point.y < centroid.y
+            ),
+            None,
+        )
+        tr = next(
+            (
+                point
+                for point in points
+                if point.x > centroid.x and point.y < centroid.y
+            ),
+            None,
+        )
+        bl = next(
+            (
+                point
+                for point in points
+                if point.x < centroid.x and point.y > centroid.y
+            ),
+            None,
+        )
+        br = next(
+            (
+                point
+                for point in points
+                if point.x > centroid.x and point.y > centroid.y
+            ),
+            None,
+        )
 
         if tl is None or tr is None or bl is None or br is None:
             return False, None

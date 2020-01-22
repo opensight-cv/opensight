@@ -1,3 +1,4 @@
+from math import atan2, cos, sin
 from typing import NamedTuple
 
 import cv2
@@ -136,20 +137,44 @@ class Corners(NamedTuple):
     br: Point
 
     def to_matrix(self):
-        return np.array([self.tl, self.tr, self.bl, self.br])
+        return np.array([self.tl, self.tr, self.bl, self.br], dtype=np.float)
 
-    @cached_property
-    def calculate_pose(self, object_points: "Corners", camera_matrix, distortion_coefficients):
+    def calculate_pose(self, object_points, camera_matrix, distortion_coefficients):
         img_points_mat = self.to_matrix()
-        object_points_mat = object_points.to_matrix()
 
-        ret, rvec, tvec = cv2.solvePnP(object_points_mat, img_points_mat, camera_matrix, distortion_coefficients)
+        ret, rvec, tvec = cv2.solvePnP(
+            object_points, img_points_mat, camera_matrix, distortion_coefficients
+        )
 
-        print(ret, rvec, tvec)
+        return ret, rvec, tvec
 
 
+class Pose3D(NamedTuple):
+    rvec: ndarray
+    tvec: ndarray
 
+    def position_2d(self, tilt_angle: float):
+        #  var x = tVec.get(0, 0)[0];
+        #  var z = FastMath.sin(tilt_angle) * tVec.get(1, 0)[0] + tVec.get(2, 0)[0] *  FastMath.cos(tilt_angle);
+        x = self.tvec[0, 0]
+        z = sin(tilt_angle) * self.tvec[1, 0] + cos(tilt_angle) * self.tvec[2, 0]
 
+        trans_2d = Point(x, z)
+
+        # From Team 5190: Green Hope Falcons
+        # https://github.com/FRC5190/2019CompetitionSeason/blob/51f1940c5742a74bdcd25c4c9b6e9cfe187ec2fa/vision/jevoisvision/modules/ghrobotics/ReflectiveTape/ReflectiveTape.py#L94
+
+        # Find the horizontal angle between camera center line and target
+        camera_to_target_angle = atan2(x, z)
+
+        rot, _ = cv2.Rodrigues(self.rvec)
+        rot_inv = rot.transpose()
+
+        pzero_world = np.matmul(rot_inv, -self.tvec)
+
+        target_angle = atan2(pzero_world[0][0], pzero_world[2][0])
+
+        return trans_2d, -target_angle, -camera_to_target_angle
 
 
 # TODO Make proper wrapper classes for these shapes

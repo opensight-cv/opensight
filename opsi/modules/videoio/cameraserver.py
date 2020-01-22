@@ -9,10 +9,10 @@ from datetime import datetime
 from shlex import split
 from typing import Tuple
 
+import engine
 import jinja2
 from starlette.routing import Route, Router
 
-import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point

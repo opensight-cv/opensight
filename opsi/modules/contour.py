@@ -1,19 +1,17 @@
 import math
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import List
 
 import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Slide
 from opsi.util.cv import Contours, Mat, MatBW, Point
+from opsi.util.cv.shape import Corners
 
 __package__ = "opsi.contours"
 __version__ = "0.123"
 
-from opsi.util.cv.shape import Corners
 
 
 class FindContours(Function):
@@ -188,11 +186,7 @@ class FindCorners(Function):
 
             for corner in corners:
                 cv2.circle(
-                    img,
-                    (int(corner.x), int(corner.y)),
-                    5,
-                    (0, 0, 255),
-                    3,
+                    img, (int(corner.x), int(corner.y)), 5, (0, 0, 255), 3,
                 )
             img = Mat(img)
         elif self.settings.draw:

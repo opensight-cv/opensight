@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 import gpiozero
-
 from opsi.manager.manager_schema import Function
 
 __package__ = "opsi.gpio"
