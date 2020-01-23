@@ -158,39 +158,20 @@ class FindAngle(Function):
 
 class FindCorners(Function):
     @dataclass
-    class Settings:
-        draw: bool
-
-    @dataclass
     class Inputs:
         contours: Contours
-        img: Mat
 
     @dataclass
     class Outputs:
         corners: Corners
-        visual: Mat
         success: bool
 
     def run(self, inputs):
         if len(inputs.contours.l) == 0:
-            return self.Outputs(corners=None, success=False, visual=inputs.img)
+            return self.Outputs(corners=None, success=False)
 
         cnt = inputs.contours.l[0]
 
         ret, corners = cnt.corners
 
-        if self.settings.draw and ret:
-            img = np.copy(inputs.img.mat.img)
-
-            for corner in corners:
-                cv2.circle(
-                    img, (int(corner.x), int(corner.y)), 5, (0, 0, 255), 3,
-                )
-            img = Mat(img)
-        elif self.settings.draw:
-            img = inputs.img
-        else:
-            img = None
-
-        return self.Outputs(corners=corners, success=ret, visual=img)
+        return self.Outputs(corners=corners, success=ret)

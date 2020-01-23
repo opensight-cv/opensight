@@ -8,7 +8,7 @@ from opsi.manager.types import AnyType, Slide
 from opsi.util.cv import Contours, Mat, MatBW
 
 from .fps import DrawFPS
-from .shapes import DrawCircles, DrawSegments
+from .shapes import DrawCircles, DrawCorners, DrawSegments
 
 __package__ = "opsi.draw"
 __version__ = "0.123"

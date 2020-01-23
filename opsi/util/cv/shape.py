@@ -143,7 +143,11 @@ class Corners(NamedTuple):
         img_points_mat = self.to_matrix()
 
         ret, rvec, tvec = cv2.solvePnP(
-            object_points, img_points_mat, camera_matrix, distortion_coefficients
+            object_points,
+            img_points_mat,
+            camera_matrix,
+            distortion_coefficients,
+            flags=cv2.SOLVEPNP_AP3P,
         )
 
         return ret, rvec, tvec
@@ -175,6 +179,14 @@ class Pose3D(NamedTuple):
         target_angle = atan2(pzero_world[0][0], pzero_world[2][0])
 
         return trans_2d, -target_angle, -camera_to_target_angle
+
+    def object_to_image_points(
+        self, obj_points, camera_matrix, distortion_coefficients
+    ):
+        img_points, jacobian = cv2.projectPoints(
+            obj_points, self.rvec, self.tvec, camera_matrix, distortion_coefficients
+        )
+        return img_points.astype(np.int)
 
 
 # TODO Make proper wrapper classes for these shapes
