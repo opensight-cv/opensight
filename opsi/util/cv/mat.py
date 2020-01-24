@@ -2,6 +2,7 @@ import math
 from typing import NamedTuple
 
 import cv2
+import numpy as np
 from numpy import ndarray
 
 from opsi.util.cache import cached_property
@@ -84,6 +85,13 @@ class Mat:
 
     def resize(self, res: Point) -> "Mat":
         return Mat(cv2.resize(self.img, res))
+
+    def color_balance(self, red_balance: float, blue_balance: float):
+        a = np.multiply(self.img, np.array([blue_balance, 1.0, red_balance,])).astype(
+            np.uint8
+        )
+
+        return Mat(a)
 
     def canny(self, threshold_lower, threshold_upper) -> "MatBW":
         return MatBW(cv2.Canny(self.img, threshold_lower, threshold_upper))
