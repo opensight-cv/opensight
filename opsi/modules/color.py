@@ -344,3 +344,24 @@ class Resize(Function):
     def run(self, inputs):
         img = inputs.img.resize(Point(self.settings.width, self.settings.height))
         return self.Outputs(img=img)
+
+
+class ColorBalance(Function):
+    @dataclass
+    class Settings:
+        red_balance: Slide(min=0, max=100)
+        blue_balance: Slide(min=0, max=100)
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        img: Mat
+
+    def run(self, inputs):
+        img = inputs.img.color_balance(
+            self.settings.red_balance / 100.0, self.settings.blue_balance / 100.0
+        )
+        return self.Outputs(img=img)
