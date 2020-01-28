@@ -27,6 +27,7 @@ class Api:
         self.app.get("/funcs", response_model=SchemaF)(self.read_funcs)
         self.app.get("/nodes", response_model=NodeTreeN)(self.read_nodes)
         self.app.post("/nodes")(self.save_nodes)
+        self.app.post("/calibration")(self.save_calibration)
         self.app.post("/upgrade")(self.upgrade)
         self.app.post("/shutdown")(self.shutdown)
         self.app.post("/restart")(self.restart)
@@ -62,6 +63,17 @@ class Api:
         # only save if successful import
         self.program.lifespan.persist.nodetree = nodetree
         return nodetree
+
+    def save_calibration(self, *, file: UploadFile = File(...)):
+        if file.content_type == "application/x-yaml":
+            self.program.lifespan.persist.add_calibration_file(file)
+        else:
+            json = {
+                "error": "Invalid calibration file",
+                "message": "Calibration file must be a .yaml file",
+            }
+
+            return JSONResponse(status_code=400, content=json)
 
     def upgrade(self, file: UploadFile = File(...)):
         upgrade_opsi(file, self.program.lifespan)

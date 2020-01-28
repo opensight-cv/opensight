@@ -9,10 +9,10 @@ from datetime import datetime
 from shlex import split
 from typing import Tuple
 
+import engine
 import jinja2
 from starlette.routing import Route, Router
 
-import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
@@ -422,7 +422,6 @@ class EngineManager:
         if func.name in self.pipelines:
             raise ValueError("Cannot have duplicate name")
         pipeline = func.pipeline
-        pipeline["port"] = self.port
         self.pipelines[func.name] = pipeline
         if NT_AVAIL:
             url = self.hook.url.split("/")[2].split(":")[0]
@@ -441,7 +440,7 @@ class EngineManager:
     def start(self):
         # turn pipelines into JSON
         pipes = json.dumps([v for k, v in self.pipelines.items()])
-        launch = f"{engine.core.DEFAULT_EXEC_PATH} --pipes-as-json '{pipes}'"
+        launch = f"{engine.core.DEFAULT_EXEC_PATH} --port {self.port} --pipes-as-json '{pipes}'"
         self.engine = engine.Engine(shlex.split(launch))
         self.engine.start()
         self._on = True

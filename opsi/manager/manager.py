@@ -69,12 +69,7 @@ class Manager:
         def closure(func):
             # Todo: are there any other times we don't want to register a Function?
             # This is important because the default is registering every single Function
-            return (
-                isfunction(func)
-                and (not func.disabled)
-                # If a module imports a Function from another module, do not register that Function
-                and (inspect.getmodule(func) == module or func.force_enabled)
-            )
+            return isfunction(func) and not func.disabled
 
         return closure
 
