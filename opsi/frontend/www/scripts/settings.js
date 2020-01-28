@@ -92,6 +92,30 @@ $(document).ready(function() {
     };
     fileReader.readAsText(form[0].files[0]);
   });
+  $("#import-calibration-button").click(function(event) {
+    event.preventDefault();
+    var form = $("#import-calibration-form")[0];
+    var data = new FormData();
+    data.append("file", form[0].files[0]);
+    $("#update-button").prop("disabled", true);
+    setIcons("spinner")
+    $.ajax({
+      type: "POST",
+      enctype: "multipart/form-data",
+      url: "/api/calibration",
+      data: data,
+      processData: false,
+      contentType: false,
+      cache: false,
+      success: function(data) {
+        setIcons("check")
+      },
+      error: function(e) {
+        console.log(e);
+        setIcons("cross")
+      }
+    });
+  });
   $("#export-button").click(function() {
     $("<a />", {
       download: "nodetree.json",

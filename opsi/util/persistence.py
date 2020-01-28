@@ -2,6 +2,7 @@ import logging
 from json import JSONDecodeError
 from pathlib import PosixPath
 
+from fastapi import UploadFile
 from pydantic import ValidationError
 
 from opsi.webserver.schema import NodeTreeN, Preferences
@@ -12,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 class Persistence:
     PATHS = ("/var/lib/opensight", "~/.local/share/opensight")
     NODETREE_DIR = "nodetrees"
+    CALIBRATION_DIR = "calibration"
 
     def __init__(self, path=None):
         self._nodetree = None
@@ -47,6 +49,7 @@ class Persistence:
 
                 # mkdir -p and then ensure file created + write perms
                 (path / self.NODETREE_DIR).mkdir(parents=True, exist_ok=True)
+                (path / self.CALIBRATION_DIR).mkdir(parents=True, exist_ok=True)
                 for i in range(0, 10):
                     (path / self.NODETREE_DIR / f"nodetree_{i}.json").touch()
                 (path / "preferences.json").touch()
@@ -145,6 +148,25 @@ class Persistence:
         self.nodetree_path = self._get_nt_path()
         self.prefs.network = value
         self.prefs = self.prefs  # write to file
+
+    def add_calibration_file(self, file: UploadFile):
+        if self.base_path is None:
+            return
+        try:
+            (self.base_path / self.CALIBRATION_DIR / file.filename).write_bytes(
+                file.file.read()
+            )
+        except OSError:
+            LOGGER.exception("Failed to write to preferences persistence")
+
+    def get_all_calibration_files(self):
+        return list((self.base_path / self.CALIBRATION_DIR).glob("*.yaml"))
+
+    def get_calibration_file_path(self, name):
+        try:
+            return self.base_path / self.CALIBRATION_DIR / name
+        except OSError:
+            LOGGER.exception("Failed to read calibration file")
 
 
 class NullPersistence(Persistence):

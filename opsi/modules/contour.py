@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Slide
 from opsi.util.cv import Contours, Mat, MatBW, Point
+from opsi.util.cv.shape import Corners
 
 __package__ = "opsi.contours"
 __version__ = "0.123"
@@ -174,6 +174,27 @@ class FindAngle(Function):
             return self.Outputs(angle=degrees)
 
 
+class FindCorners(Function):
+    @dataclass
+    class Inputs:
+        contours: Contours
+
+    @dataclass
+    class Outputs:
+        corners: Corners
+        success: bool
+
+    def run(self, inputs):
+        if len(inputs.contours.l) == 0:
+            return self.Outputs(corners=None, success=False)
+
+        cnt = inputs.contours.l[0]
+
+        ret, corners = cnt.corners
+
+        return self.Outputs(corners=corners, success=ret)
+
+
 class FindArea(Function):
     @dataclass
     class Inputs:
@@ -188,3 +209,4 @@ class FindArea(Function):
             return self.Outputs(area=0)
         else:
             return self.Outputs(area=sum([cnt.area for cnt in inputs.contours.l]))
+
