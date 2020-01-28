@@ -193,3 +193,20 @@ class FindCorners(Function):
         ret, corners = cnt.corners
 
         return self.Outputs(corners=corners, success=ret)
+
+
+class FindArea(Function):
+    @dataclass
+    class Inputs:
+        contours: Contours
+
+    @dataclass
+    class Outputs:
+        area: float
+
+    def run(self, inputs):
+        if inputs.contours is None or len(inputs.contours.l) == 0:
+            return self.Outputs(area=0)
+        else:
+            return self.Outputs(area=sum([cnt.area for cnt in inputs.contours.l]))
+
