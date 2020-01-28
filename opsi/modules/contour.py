@@ -172,3 +172,19 @@ class FindAngle(Function):
                 y=math.degrees(math.atan2(y, v_focal_length)),
             )
             return self.Outputs(angle=degrees)
+
+
+class FindArea(Function):
+    @dataclass
+    class Inputs:
+        contours: Contours
+
+    @dataclass
+    class Outputs:
+        area: float
+
+    def run(self, inputs):
+        if inputs.contours is None or len(inputs.contours.l) == 0:
+            return self.Outputs(area=0)
+        else:
+            return self.Outputs(area=sum([cnt.area for cnt in inputs.contours.l]))
