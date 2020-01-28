@@ -37,7 +37,6 @@ class Function:
     require_restart: bool = False
     always_restart: bool = False
     disabled = False
-    force_enabled = False
 
     SettingTypes: List[Field]
     InputTypes: Dict[str, Type]
@@ -162,6 +161,8 @@ class Function:
 
 def isfunction(func):
     try:
+        if func is Function:
+            return False
         return issubclass(func, Function)
     except TypeError:  # func is not a type
         return False

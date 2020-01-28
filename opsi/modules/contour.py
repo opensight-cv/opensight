@@ -79,7 +79,7 @@ class FindCenter(Function):
     def run(self, inputs):
         if len(inputs.contours.l) == 0:
             return self.Outputs(center=None, success=False, visual=inputs.img)
-
+        res = inputs.contours.l[0].res
         center = inputs.contours.centroid_of_all
 
         if self.settings.draw:
@@ -99,7 +99,11 @@ class FindCenter(Function):
         else:
             img = None
 
-        return self.Outputs(center=center, success=True, visual=img)
+        scaled_center = Point(
+            x=((center.x * 2) / res.x) - 1, y=((center.y * 2) / res.y) - 1
+        )
+
+        return self.Outputs(center=scaled_center, success=True, visual=img)
 
 
 class FindAngle(Function):
@@ -118,42 +122,56 @@ class FindAngle(Function):
             math.atan(math.tan(diagonalView / 2) * (horizontalAspect / diagonalAspect))
             * 2
         )
-        # verticalView = math.atan(math.tan(diagonalView/2) * (verticalAspect / diagonalAspect)) * 2
+        verticalView = (
+            math.atan(math.tan(diagonalView / 2) * (verticalAspect / diagonalAspect))
+            * 2
+        )
 
         # Since point is -1 <= (x, y) <= 1: width, height = 2; center = (0, 0)
 
         # Focal Length calculations: https://docs.google.com/presentation/d/1ediRsI-oR3-kwawFJZ34_ZTlQS2SDBLjZasjzZ-eXbQ/pub?start=false&loop=false&slide=id.g12c083cffa_0_165
         H_FOCAL_LENGTH = 2 / (2 * math.tan((horizontalView / 2)))
-        # V_FOCAL_LENGTH = 2 / (2*math.tan((verticalView/2)))
+        V_FOCAL_LENGTH = 2 / (2 * math.tan((verticalView / 2)))
 
-        return H_FOCAL_LENGTH
+        return H_FOCAL_LENGTH, V_FOCAL_LENGTH
 
     @dataclass
     class Settings:
+        mode: ("Degrees", "Radians") = "Radians"
         diagonalFOV: float = 68.5
 
     @dataclass
     class Inputs:
-        pnt: Point
+        point: Point
         img: Mat
 
     @dataclass
     class Outputs:
-        radians: float
+        angle: Point
 
     def run(self, inputs):
-        width = inputs.img.shape[1]
-        height = inputs.img.shape[0]
+        width = inputs.img.res.x
+        height = inputs.img.res.y
 
         center_x = 0
-        x = inputs.point[0]
+        x = inputs.point.x
+        y = inputs.point.y
 
-        H_FOCAL_LENGTH = self.calculate_focal_length(
+        h_focal_length, v_focal_length = self.calculate_focal_length(
             self.settings.diagonalFOV, width, height
         )
-        radians = math.atan2(x, H_FOCAL_LENGTH)
 
-        return self.Outputs(radians=radians)
+        if self.settings.mode == "Radians":
+            radians = Point(
+                x=math.atan2(x, h_focal_length), y=math.atan2(y, v_focal_length)
+            )
+            return self.Outputs(angle=radians)
+        else:
+            degrees = Point(
+                x=math.degrees(math.atan2(x, h_focal_length)),
+                y=math.degrees(math.atan2(y, v_focal_length)),
+            )
+            return self.Outputs(angle=degrees)
 
 
 class FindCorners(Function):

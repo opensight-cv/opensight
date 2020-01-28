@@ -45,8 +45,8 @@
             <br>
             <label for="dns-mode">DNS Mode:</label>
             <select id="dns-mode">
-                <option value="mDNS" {{"selected" if persist.network.mdns}}>mDNS</option>
-                <option value="Static" {{"selected" if not persist.network.mdns}}>Static</option>
+                <option value="mDNS" {{"selected" if persist.network.mDNS}}>mDNS</option>
+                <option value="Static" {{"selected" if not persist.network.mDNS}}>Static</option>
             </select>
             <br>
         </div>
@@ -54,8 +54,8 @@
         <div id="net-pi-settings">
             <label for="ip-assign">IP Assignment Mode:</label>
             <select id="ip-assign">
-                <option value="DHCP" {{"selected" if not persist.network.ip_assign}}>DHCP</option>
-                <option value="Static" {{"selected" if persist.network.ip_assign}}>Static</option>
+                <option value="DHCP" {{"selected" if not persist.network.dhcp}}>DHCP</option>
+                <option value="Static" {{"selected" if persist.network.dhcp}}>Static</option>
             </select>
             <br>
             <div id="static-ext-div">

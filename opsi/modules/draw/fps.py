@@ -32,8 +32,6 @@ class FPS:
 
 
 class DrawFPS(Function):
-    force_enabled = True
-
     def on_start(self):
         self.f = FPS()
         self.f.start()
