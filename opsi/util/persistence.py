@@ -1,6 +1,6 @@
 import logging
 from json import JSONDecodeError
-from pathlib import PosixPath
+from pathlib import Path
 
 from fastapi import UploadFile
 from pydantic import ValidationError
@@ -42,7 +42,7 @@ class Persistence:
 
     def _get_path(self):
         for path in self.paths:
-            path = PosixPath(path).expanduser().resolve()  # get absolute canonical path
+            path = Path(path).expanduser().resolve()  # get absolute canonical path
 
             try:
                 LOGGER.debug("Trying path: %s", path)
@@ -175,4 +175,4 @@ class NullPersistence(Persistence):
 
     def _get_path(self):
         LOGGER.debug("Null persistence")
-        return PosixPath("/dev/null")
+        return Path("/dev/null")
