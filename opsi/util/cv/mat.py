@@ -2,6 +2,7 @@ import math
 from typing import NamedTuple
 
 import cv2
+import imutils
 import numpy as np
 from numpy import ndarray
 
@@ -118,6 +119,12 @@ class Mat:
 
     def abs_diff(self, scalar: ndarray) -> "Mat":
         return Mat(cv2.absdiff(self.img, scalar))
+
+    def rotate(self, angle: cv2.rotateCode):
+        return Mat(cv2.rotate(self.img, angle))
+
+    def rotate_no_crop(self, angle):
+        return Mat(imutils.rotate_bound(self.img, angle))
 
 
 class MatBW:
