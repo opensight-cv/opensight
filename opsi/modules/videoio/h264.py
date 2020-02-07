@@ -1,18 +1,9 @@
-import asyncio
 import json
-import logging
-import queue
-import re
 import shlex
 import subprocess
-from datetime import datetime
 from shlex import split
 from typing import Tuple
 
-import jinja2
-from starlette.routing import Route, Router
-
-import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
