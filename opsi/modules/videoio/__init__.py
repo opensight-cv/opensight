@@ -5,7 +5,7 @@ from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .input import controls, create_capture, get_modes, parse_camstring
+from .input import create_capture, get_modes, get_settings, parse_cammode
 from .mjpeg import CamHook, MjpegCameraServer
 
 LOGGER = logging.getLogger(__name__)
@@ -34,23 +34,18 @@ class CameraInput(Function):
     require_restart = True
 
     def on_start(self):
-        camNum = parse_camstring(self.settings.mode)[0]
+        camNum = parse_cammode(self.settings.mode)[0]
         if not UndupeInstance.add(camNum):
             raise ValueError(f"Camera {camNum} already in use")
 
         self.cap = create_capture(self.settings)
-        self.cap.read()  # test for errors
+        ret, frame = self.cap.read()  # test for errors
+        try:
+            Mat(frame)
+        except Exception:
+            raise ValueError(f"Unable to read picture from Camera {camNum}")
 
-    @dataclass
-    class Settings:
-        mode: get_modes()
-        brightness: int = 50
-        contrast: int = 50
-        saturation: int = 50
-        exposure: int = 50
-        width: controls() = None
-        height: controls() = None
-        fps: controls(True) = None
+    Settings = get_settings()
 
     @dataclass
     class Outputs:
@@ -64,7 +59,7 @@ class CameraInput(Function):
         return self.Outputs(img=frame)
 
     def dispose(self):
-        camNum = parse_camstring(self.settings.mode)[0]
+        camNum = parse_cammode(self.settings.mode)[0]
         UndupeInstance.remove(camNum)
 
 
