@@ -17,6 +17,13 @@ try:
 except ImportError:
     NT_AVAIL = False
 
+try:
+    import engine
+
+    ENGINE_AVAIL = True
+except ImportError:
+    ENGINE_AVAIL = False
+
 
 class EngineManager:
     """
