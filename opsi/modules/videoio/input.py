@@ -13,6 +13,7 @@ __package__ = "opsi.input"
 
 ENABLE_RES = False
 ENABLE_FPS = False
+IS_LINUX = platform.startswith("linux")
 
 
 def get_settings():
@@ -38,9 +39,7 @@ def get_settings():
         height: int = 240
         fps: int = 60
 
-    if platform == "linux":
-        return Linux
-    return NonLinux
+    return Linux if IS_LINUX else NonLinux
 
 
 def get_w(mode):
@@ -186,7 +185,7 @@ def create_capture(settings):
     mode = parse_cammode(settings.mode)
     if len(mode) < 1:
         return None
-    if platform == "linux":
+    if IS_LINUX:
         cap = cv2.VideoCapture(mode[0], cv2.CAP_V4L)
     else:
         cap = cv2.VideoCapture(mode[0])
