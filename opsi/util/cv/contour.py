@@ -96,38 +96,32 @@ class Contour:
         if len(points) < 4:
             return False, None
 
-        tl = next(
-            (
-                point
-                for point in points
-                if point.x < centroid.x and point.y < centroid.y
-            ),
-            None,
-        )
-        tr = next(
-            (
-                point
-                for point in points
-                if point.x > centroid.x and point.y < centroid.y
-            ),
-            None,
-        )
-        bl = next(
-            (
-                point
-                for point in points
-                if point.x < centroid.x and point.y > centroid.y
-            ),
-            None,
-        )
-        br = next(
-            (
-                point
-                for point in points
-                if point.x > centroid.x and point.y > centroid.y
-            ),
-            None,
-        )
+        def centerDistance(point: Point):
+            return (point.x - centroid.x) ** 2 + (point.y - centroid.y) ** 2
+
+        try:
+            tl = sorted([
+                    point
+                    for point in points
+                    if point.x < centroid.x and point.y < centroid.y
+                ], key=centerDistance, reverse=True)[0]
+            tr = sorted([
+                    point
+                    for point in points
+                    if point.x > centroid.x and point.y < centroid.y
+                ], key=centerDistance, reverse=True)[0]
+            bl = sorted([
+                    point
+                    for point in points
+                    if point.x < centroid.x and point.y > centroid.y
+                ], key=centerDistance, reverse=True)[0]
+            br = sorted([
+                    point
+                    for point in points
+                    if point.x > centroid.x and point.y > centroid.y
+            ], key=centerDistance, reverse=True)[0]
+        except IndexError:
+            return False, None
 
         if tl is None or tr is None or bl is None or br is None:
             return False, None
