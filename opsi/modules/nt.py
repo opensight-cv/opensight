@@ -5,7 +5,6 @@ from networktables import NetworkTables
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.netdict import NT_TYPES, NetworkDict
 from opsi.manager.types import AnyType
-from opsi.util.cv.serializable import NTSerializable
 from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
 

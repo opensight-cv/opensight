@@ -6,7 +6,6 @@ from numpy import ndarray
 from opsi.util.cache import cached_property
 
 from .mat import Mat, MatBW
-from .serializable import NTSerializable
 from .shape import Corners, Point, Rect, RotatedRect
 
 

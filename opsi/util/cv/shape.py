@@ -6,10 +6,9 @@ import numpy as np
 from numpy.core._multiarray_umath import ndarray
 
 from opsi.util.cache import cached_property
+
+
 # Also represents dimensions
-from opsi.util.cv.serializable import NTSerializable
-
-
 class Point(NamedTuple):
     def nt_serialize(self):
         return {"x": self.x, "y": self.y}
