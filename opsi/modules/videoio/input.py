@@ -185,11 +185,13 @@ def create_capture(settings):
     mode = parse_cammode(settings.mode)
     if len(mode) < 1:
         return None
-    cap = cv2.VideoCapture(mode[0])
     if IS_LINUX:
+        cap = cv2.VideoCapture(mode[0], cv2.CAP_V4L)
         codec = get_codec(get_cam_info(mode[0]))
         if codec:
             set_property(cap, cv2.CAP_PROP_FOURCC, codec[0])
+    else:
+        cap = cv2.VideoCapture(mode[0])
     if len(mode) >= 3:
         w = mode[1]
         h = mode[2]
