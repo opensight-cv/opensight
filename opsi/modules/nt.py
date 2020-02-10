@@ -3,10 +3,9 @@ from dataclasses import dataclass
 from networktables import NetworkTables
 
 from opsi.manager.manager_schema import Function, Hook
-from opsi.manager.netdict import NetworkDict
+from opsi.manager.netdict import NT_TYPES, NetworkDict
 from opsi.manager.types import AnyType
-from opsi.util.cv import Point
-from opsi.util.cv.mat import Color
+from opsi.util.cv.serializable import NTSerializable
 from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
 
@@ -68,9 +67,6 @@ class PutNT(Function):
         if not settings.path.startswith("/"):
             raise ValueError("You must have an absolute that starts with '/'")
 
-        if not settings.key:
-            raise ValueError("Key cannot be empty")
-
         if "/" in settings.key:
             raise ValueError("Key cannot have '/' in it")
 
@@ -85,6 +81,18 @@ class PutNT(Function):
         if not UndupeInstance.add(fullPath):
             raise ValueError("Cannot have duplicate NetworkTables paths")
 
+    # Returns the key with the specified prefix, or no prefix if the key is empty
+    def prefixed_key(self, key):
+        if self.settings.key == "":
+            return key
+        else:
+            return f"{self.settings.key}-{key}"
+
+    # Writes a dictionary of values to network tables
+    def write_dict_to_path(self, value_dict):
+        for key, val in value_dict.items():
+            self.table[self.prefixed_key(key)] = val
+
     @dataclass
     class Settings:
         path: str = "/OpenSight"
@@ -95,42 +103,33 @@ class PutNT(Function):
         val: AnyType
 
     def run(self, inputs):
-        self.table[self.settings.key] = inputs.val
+        if inputs.val is None:  # Do not write None values to NT
+            pass
+
+        # If the value has a nt_serialize function, use it.
+        elif hasattr(inputs.val, "nt_serialize") and callable(inputs.val.nt_serialize):
+            values = inputs.val.nt_serialize()
+            self.write_dict_to_path(values)
+
+        else:  # If the value is in NT_TYPES, write it directly to the key. If this fails, the value cannot be written.
+            try:
+                if self.settings.key:
+                    self.table[self.settings.key] = inputs.val
+                else:
+                    raise ValueError(
+                        "Cannot write types bool, int, float, str, bytes, or lists to NT without "
+                        "a key"
+                    )
+            except TypeError:
+                raise TypeError(
+                    f"Type {inputs.val.__class__.__name__} cannot be written to NT."
+                )
 
         return self.Outputs()
 
     def dispose(self):
-        fullPath = (self.settings.path, self.settings.key)
-        UndupeInstance.remove(fullPath)
-
-
-class PutCoordinate(PutNT):
-    def validate_paths(self):
-        x = (self.settings.path, f"{self.settings.key}-x")
-        y = (self.settings.path, f"{self.settings.key}-y")
-        xSuccess = UndupeInstance.add(x)
-        ySuccess = UndupeInstance.add(y)
-        if not xSuccess or not ySuccess:
-            raise ValueError("Cannot have duplicate NetworkTables paths")
-
-    @dataclass
-    class Inputs:
-        val: Point
-
-    def run(self, inputs):
-        if inputs.val:
-            x, y, *_ = inputs.val
-
-            self.table[f"{self.settings.key}-x"] = x
-            self.table[f"{self.settings.key}-y"] = y
-
-        return self.Outputs()
-
-    def dispose(self):
-        x = (self.settings.path, f"{self.settings.key}-x")
-        y = (self.settings.path, f"{self.settings.key}-y")
-        UndupeInstance.remove(x)
-        UndupeInstance.remove(y)
+        full_path = (self.settings.path, self.settings.key)
+        UndupeInstance.remove(full_path)
 
 
 class GetNT(PutNT):
@@ -142,7 +141,7 @@ class GetNT(PutNT):
         try:
             val = self.table[self.settings.key]
         except KeyError:
-            raise ValueError(f"Key does {self.settings.key} not exist.")
+            raise ValueError(f"Key {self.settings.key}  does not exist.")
 
     @dataclass
     class Inputs:
@@ -159,39 +158,3 @@ class GetNT(PutNT):
             return self.Outputs()
 
         return self.Outputs(val=val)
-
-
-class PutColor(PutNT):
-    def validate_paths(self):
-        r = (self.settings.path, f"{self.settings.key}-r")
-        g = (self.settings.path, f"{self.settings.key}-g")
-        b = (self.settings.path, f"{self.settings.key}-b")
-        r_success = UndupeInstance.add(r)
-        g_success = UndupeInstance.add(g)
-        b_success = UndupeInstance.add(b)
-        if not (r_success and g_success and b_success):
-            raise ValueError("Cannot have duplicate NetworkTables paths")
-
-    @dataclass
-    class Inputs:
-        val: Color
-
-    def run(self, inputs):
-        if inputs.val.all():
-            red = inputs.val["red"]
-            green = inputs.val["green"]
-            blue = inputs.val["blue"]
-
-            self.table[f"{self.settings.key}-r"] = red
-            self.table[f"{self.settings.key}-g"] = green
-            self.table[f"{self.settings.key}-b"] = blue
-
-        return self.Outputs()
-
-    def dispose(self):
-        r = (self.settings.path, f"{self.settings.key}-r")
-        g = (self.settings.path, f"{self.settings.key}-g")
-        b = (self.settings.path, f"{self.settings.key}-b")
-        UndupeInstance.remove(r)
-        UndupeInstance.remove(g)
-        UndupeInstance.remove(b)

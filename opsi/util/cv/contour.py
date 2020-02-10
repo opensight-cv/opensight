@@ -6,10 +6,24 @@ from numpy import ndarray
 from opsi.util.cache import cached_property
 
 from .mat import Mat, MatBW
+from .serializable import NTSerializable
 from .shape import Corners, Point, Rect, RotatedRect
 
 
 class Contour:
+    def nt_serialize(self):
+        points_x = [point.x for point in self.points]
+        points_y = [point.y for point in self.points]
+
+        return {
+            "x": points_x,
+            "y": points_y,
+            "centroid_x": self.centroid.x,
+            "centroid_y": self.centroid.y,
+            "area": self.area,
+            "num_points": len(self.points),
+        }
+
     # https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html
     # https://docs.opencv.org/3.4/d0/d49/tutorial_moments.html
 
@@ -139,6 +153,17 @@ FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_EXTERNAL, "method": cv2.CHAIN_APPROX_SI
 
 
 class Contours:
+    def nt_serialize(self):
+        centroids_x = [cnt.centroid.x for cnt in self.l]
+        centroids_y = [cnt.centroid.y for cnt in self.l]
+        areas = [cnt.area for cnt in self.l]
+        return {
+            "x": centroids_x,
+            "y": centroids_y,
+            "area": areas,
+            "num_contours": len(self.l),
+        }
+
     raw: List[ndarray]
     res: Point
 
