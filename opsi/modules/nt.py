@@ -35,7 +35,7 @@ class Manager:
 
 
 UndupeInstance = Unduplicator()
-HookInstance = Hook(visible=False)
+HookInstance = Hook()
 
 
 def init_networktables():

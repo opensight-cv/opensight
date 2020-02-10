@@ -93,8 +93,8 @@ class Manager:
         if len(hooks_tuple) == 1:
             hook = hooks_tuple[0][1]
             self.hooks[info.package] = hook
-            setattr(hook, "pipeline", self.pipeline)
-            setattr(hook, "persist", self.pipeline.program.lifespan.persist)
+            hook.pipeline = self.pipeline
+            hook.persist = self.pipeline.program.lifespan.persist
             hook.startup()
         elif len(hooks_tuple) > 1:
             LOGGER.error(f"Only one Hook per module allowed: {info.package}")

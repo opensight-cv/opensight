@@ -9,6 +9,7 @@ from uuid import UUID
 from toposort import toposort
 
 from opsi.util.concurrency import FifoLock
+from opsi.util.fps import FPS
 
 from .link import Link, NodeLink, StaticLink
 from .manager_schema import Function
@@ -108,6 +109,7 @@ class Pipeline:
         self.lock = FifoLock(self.program.queue)
         self.broken = False
         self.current: Node = None
+        self.fps = FPS()
 
     def run(self):
         if self.broken:
@@ -141,6 +143,8 @@ class Pipeline:
             if had_problem or self.broken:
                 # avoid clogging logs with errors
                 time.sleep(0.5)
+                self.fps.reset()
+            self.fps.update()
 
     def get_dependents(self, node):
         visited = set()
