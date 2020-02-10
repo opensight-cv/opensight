@@ -139,8 +139,7 @@ class Contour:
         except IndexError:
             return False, None
 
-        else:
-            return True, Corners(tl, tr, bl, br)
+        return True, Corners(tl, tr, bl, br)
 
 
 FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_EXTERNAL, "method": cv2.CHAIN_APPROX_SIMPLE}
