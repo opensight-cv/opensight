@@ -120,11 +120,14 @@ class Mat:
     def abs_diff(self, scalar: ndarray) -> "Mat":
         return Mat(cv2.absdiff(self.img, scalar))
 
-    # angle must be a cv2.rotateCode
+    def flip_horizontally(self):
+        return Mat(cv2.flip(self.img, 1))
+
+    def flip_vertically(self):
+        return Mat(cv2.flip(self.img, 0))
+
     def rotate(self, angle):
-        if angle != cv2.ROTATE_90_CLOCKWISE | angle != cv2.ROTATE_90_COUNTERCLOCKWISE | angle != cv2.ROTATE_180:
-            return Mat(Mat(cv2.rotate(self.img, angle)))
-        return Mat(self.img)
+        return Mat(imutils.rotate(self.img, angle))
 
     def rotate_no_crop(self, angle):
         return Mat(imutils.rotate_bound(self.img, angle))
