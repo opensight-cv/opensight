@@ -209,4 +209,3 @@ class FindArea(Function):
             return self.Outputs(area=0)
         else:
             return self.Outputs(area=sum([cnt.area for cnt in inputs.contours.l]))
-

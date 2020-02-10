@@ -100,31 +100,45 @@ class Contour:
             return (point.x - centroid.x) ** 2 + (point.y - centroid.y) ** 2
 
         try:
-            tl = sorted([
+            tl = sorted(
+                [
                     point
                     for point in points
                     if point.x < centroid.x and point.y < centroid.y
-                ], key=centerDistance, reverse=True)[0]
-            tr = sorted([
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+            tr = sorted(
+                [
                     point
                     for point in points
                     if point.x > centroid.x and point.y < centroid.y
-                ], key=centerDistance, reverse=True)[0]
-            bl = sorted([
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+            bl = sorted(
+                [
                     point
                     for point in points
                     if point.x < centroid.x and point.y > centroid.y
-                ], key=centerDistance, reverse=True)[0]
-            br = sorted([
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+            br = sorted(
+                [
                     point
                     for point in points
                     if point.x > centroid.x and point.y > centroid.y
-            ], key=centerDistance, reverse=True)[0]
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
         except IndexError:
             return False, None
 
-        if tl is None or tr is None or bl is None or br is None:
-            return False, None
         else:
             return True, Corners(tl, tr, bl, br)
 
