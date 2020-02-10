@@ -50,7 +50,7 @@ class WebServer:
     def make_hooks(self):
         PREFIX = "/hooks"
         HOOKS = {
-            x[0]: x[1] for x in self.program.manager.hooks.items() if x[1].visible
+            x[0]: x[1] for x in self.program.manager.hooks.items() if x[1].app
         }  # {package: app}
 
         self.app.add_route(

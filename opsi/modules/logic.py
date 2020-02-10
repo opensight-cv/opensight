@@ -6,7 +6,7 @@ from opsi.manager.types import AnyType
 __package__ = "opsi.logic"
 __version__ = "0.123"
 
-HookInstance = Hook(visible=False)
+HookInstance = Hook()
 
 
 class Freeze(Function):
