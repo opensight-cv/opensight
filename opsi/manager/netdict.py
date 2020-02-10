@@ -1,7 +1,6 @@
 from typing import Callable, List, Union
 
-from networktables.instance import NetworkTablesInstance
-from networktables.networktables import NetworkTables
+from networktables import NetworkTables, NetworkTablesInstance
 from ntcore.api import NtCoreApi
 from ntcore.constants import NT_UNASSIGNED
 from ntcore.storage import _Entry
