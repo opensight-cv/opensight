@@ -8,51 +8,7 @@ from opsi.manager.types import AnyType
 from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
 
-__package__ = "opsi.nt"
-__version__ = "0.123"
-
-
-class Manager:
-    def __init__(self):
-        self.keys = set()
-
-    @classmethod
-    def make_path(cls, settings):
-        return settings.path + "/" + settings.key
-
-    def add(self, settings):
-        path = self.make_path(settings)
-
-        if path in self.keys:
-            raise ValueError("Cannot have duplicate path")
-
-        self.keys.add(path)
-
-    def dispose(self, settings):
-        self.keys.discard(self.make_path(settings))
-
-
 UndupeInstance = Unduplicator()
-HookInstance = Hook(visible=False)
-
-
-def init_networktables():
-    network = HookInstance.persist.network
-    if network.nt_enabled:
-        if network.nt_client:
-            addr = get_nt_server(network)
-            NetworkTables.startClient(addr)
-        else:
-            NetworkTables.startServer()
-
-
-def deinit_networktables():
-    if HookInstance.persist.network.nt_enabled:
-        NetworkTables.shutdown()
-
-
-HookInstance.add_listener("startup", init_networktables)
-HookInstance.add_listener("shutdown", deinit_networktables)
 
 
 class PutNT(Function):
@@ -129,31 +85,3 @@ class PutNT(Function):
     def dispose(self):
         full_path = (self.settings.path, self.settings.key)
         UndupeInstance.remove(full_path)
-
-
-class GetNT(PutNT):
-    def on_start(self):
-        self.table = NetworkDict(self.settings.path)
-        self.validate_paths()
-
-    def validate_paths(self):
-        try:
-            val = self.table[self.settings.key]
-        except KeyError:
-            raise ValueError(f"Key {self.settings.key}  does not exist.")
-
-    @dataclass
-    class Inputs:
-        pass
-
-    @dataclass
-    class Outputs:
-        val: AnyType = None
-
-    def run(self, inputs):
-        val = self.table.get(self.settings.key, None)
-        if val is None:
-            HookInstance.cancel_output("val")
-            return self.Outputs()
-
-        return self.Outputs(val=val)
