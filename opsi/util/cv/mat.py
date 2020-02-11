@@ -106,7 +106,7 @@ class Mat:
         min_radius: int,
         max_radius: int,
     ) -> "Circles":
-        return cv2.HoughCircles(
+        circles = cv2.HoughCircles(
             self.img,
             method=cv2.HOUGH_GRADIENT,
             dp=dp,
@@ -116,6 +116,10 @@ class Mat:
             minRadius=min_radius,
             maxRadius=max_radius,
         )
+        if circles is None:
+            return None
+        else:
+            return circles.view(Circles)
 
     def abs_diff(self, scalar: ndarray) -> "Mat":
         return Mat(cv2.absdiff(self.img, scalar))
@@ -177,7 +181,7 @@ class MatBW:
         max_gap: int,
         theta: float = math.pi / 180.0,
     ) -> "Segments":
-        return cv2.HoughLinesP(
+        segments = cv2.HoughLinesP(
             self.img,
             rho=rho,
             theta=theta,
@@ -185,9 +189,16 @@ class MatBW:
             minLineLength=min_length,
             maxLineGap=max_gap,
         )
+        if segments is None:
+            return None
+        else:
+            return segments.view(Segments)
 
 
 class Color(NamedTuple):
     red: int
     green: int
     blue: int
+
+    def nt_serialize(self):
+        return {"red": self.red, "green": self.green, "blue": self.blue}
