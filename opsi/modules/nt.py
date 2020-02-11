@@ -103,7 +103,7 @@ class PutNT(Function):
 
     def run(self, inputs):
         if inputs.val is None:  # Do not write None values to NT
-            pass
+            return self.Outputs()
 
         # If the value has a nt_serialize function, use it.
         elif hasattr(inputs.val, "nt_serialize") and callable(inputs.val.nt_serialize):
