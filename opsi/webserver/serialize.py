@@ -2,7 +2,7 @@ import logging
 import sys
 from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
-from typing import Callable, Type
+from typing import Callable, Tuple, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
@@ -382,8 +382,9 @@ def _process_node_settings(program, node: NodeN):
     real_node.settings = settings
 
 
-def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
+def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, bool]:
     visited = set()
+    broken = set()
     queue = deque()
     nodes = {}
 
@@ -391,9 +392,31 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
     for node in nodetree.nodes:
         nodes[node.id] = node
 
-        func = program.manager.funcs[node.type]
-        if func.has_sideeffect:
-            queue.append(node.id)
+        try:
+            func = program.manager.funcs[node.type]
+            if func.has_sideeffect:
+                queue.append(node.id)
+        except KeyError:
+            # if function doesn't exist
+            broken.add(node.id)
+
+    # If any broken nodes, don't remove any except broken
+    # We can't be sure which may have been side effect nodes
+    # Remove the outputs of broken nodes
+    if broken:
+        nodes = [node for node in nodetree.nodes if node.id not in broken]
+        # slow and messy but temporary™
+        for node in broken:
+            for sub in nodes:
+                remove = []
+                for name, val in sub.inputs.items():
+                    if val.id == node:
+                        remove.append(name)
+                for name in remove:
+                    del sub.inputs[name]
+        nodetree = NodeTreeN(nodes=nodes)
+        # return nodetree and report that there are broken nodes
+        return nodetree, True
 
     # Then, do a DFS over queue, adding all reachable nodes to visited
     while queue:
@@ -421,11 +444,12 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
     # make a copy of nodetree to fix broken json save
     nodetree = NodeTreeN(nodes=nodes)
 
-    return nodetree
+    # return nodetree and report no broken nodes
+    return nodetree, False
 
 
-def import_nodetree(program, nodetree: NodeTreeN):
-    nodetree = _remove_unneeded_nodes(program, nodetree)
+def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
+    nodetree, broken = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
 
     # TODO : how to cache FifoLock in the stateless import_nodetree function?
@@ -439,30 +463,33 @@ def import_nodetree(program, nodetree: NodeTreeN):
                 except KeyError as e:
                     raise NodeTreeImportError from e
 
-        for node in nodetree.nodes:
-            _process_node_settings(program, node)
-            if LINKS_INSTEAD_OF_INPUTS:
-                _process_node_links(program, node, ids)
-            else:
-                _process_node_inputs(program, node, ids)
+        if not broken:
+            for node in nodetree.nodes:
+                _process_node_settings(program, node)
+                if LINKS_INSTEAD_OF_INPUTS:
+                    _process_node_links(program, node, ids)
+                else:
+                    _process_node_inputs(program, node, ids)
 
-            try:
-                program.pipeline.nodes[node.id].ensure_init()
-            except Exception as e:
                 try:
-                    del program.pipeline.nodes[node.id]
-                except KeyError:
-                    pass
+                    program.pipeline.nodes[node.id].ensure_init()
+                except Exception as e:
+                    try:
+                        del program.pipeline.nodes[node.id]
+                    except KeyError:
+                        pass
 
-                raise NodeTreeImportError(
-                    program, node, "Error creating Function"
-                ) from e
+                    raise NodeTreeImportError(
+                        program, node, "Error creating Function"
+                    ) from e
 
         try:
             program.pipeline.run()
             program.manager.pipeline_update()
         except Exception as e:
             program.pipeline.broken = True
+            if force_save:
+                program.lifespan.persist.nodetree = nodetree
             raise NodeTreeImportError(
                 program,
                 program.pipeline.current,
@@ -470,4 +497,5 @@ def import_nodetree(program, nodetree: NodeTreeN):
                 real_node=True,
             )
 
+        program.lifespan.persist.nodetree = nodetree
         program.pipeline.broken = False
