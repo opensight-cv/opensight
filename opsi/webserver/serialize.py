@@ -2,7 +2,7 @@ import logging
 import sys
 from collections import deque
 from dataclasses import _MISSING_TYPE, asdict
-from typing import Callable, Type
+from typing import Callable, Tuple, Type
 
 from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
@@ -382,7 +382,7 @@ def _process_node_settings(program, node: NodeN):
     real_node.settings = settings
 
 
-def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
+def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, bool]:
     visited = set()
     broken = set()
     queue = deque()
@@ -415,6 +415,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
                 for name in remove:
                     del sub.inputs[name]
         nodetree = NodeTreeN(nodes=nodes)
+        # return nodetree and report that there are broken nodes
         return nodetree, True
 
     # Then, do a DFS over queue, adding all reachable nodes to visited
@@ -443,6 +444,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN):
     # make a copy of nodetree to fix broken json save
     nodetree = NodeTreeN(nodes=nodes)
 
+    # return nodetree and report no broken nodes
     return nodetree, False
 
 
