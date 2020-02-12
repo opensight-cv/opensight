@@ -25,5 +25,5 @@ class Freeze(Function):
     def run(self, inputs):
         if not self.settings.freeze:
             return self.Outputs(out=inputs.thru)
-        HookInstance.cancel_dependents()
+        HookInstance.cancel_current()
         return self.Outputs()
