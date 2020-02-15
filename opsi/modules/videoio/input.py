@@ -4,6 +4,7 @@ import re
 import subprocess
 
 import cv2
+from   picamera import PiCamera, PiRGBArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -154,24 +155,116 @@ def create_capture(settings):
     mode = parse_camstring(settings.mode)
     if len(mode) < 1:
         return None
-    cap = cv2.VideoCapture(mode[0], cv2.CAP_V4L)
-    codec = get_codec(get_cam_info(mode[0]))
-    set_property(cap, cv2.CAP_PROP_FOURCC, codec[0])
+
     if len(mode) >= 3:
         w = mode[1]
         h = mode[2]
     else:
         w = settings.width
         h = settings.height
-    set_property(cap, cv2.CAP_PROP_FRAME_WIDTH, w)
-    set_property(cap, cv2.CAP_PROP_FRAME_HEIGHT, h)
+
     if len(mode) >= 4:
         fps = mode[3]
     else:
         fps = settings.fps
-    set_property(cap, cv2.CAP_PROP_FPS, fps)
-    set_property(cap, cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
-    set_property(cap, cv2.CAP_PROP_CONTRAST, settings.contrast)
-    set_property(cap, cv2.CAP_PROP_SATURATION, settings.saturation)
-    set_property(cap, cv2.CAP_PROP_EXPOSURE, settings.exposure)
-    return cap
+
+    cam = PiCamera(mode[0])
+    cam.resolution = (w,h)
+
+    #####
+    # brightness
+    #   0..100 default 50
+    # contrast
+    #   -100..100 default is 0
+    # drc_strength is dynamic range compression strength
+    #   off, low, medium, high, default off
+    # sharpness
+    #   -100..100 default 0
+    #####
+    # iso
+    #   0=auto, 100, 200, 320, 400, 500, 640, 800, on some cameras iso100 is gain of 1 and iso200 is gain of 2
+    # exposure mode 
+    #   off, auto, night, nightpreview, backight, spotlight, sports, snow, beach, verylong, fixedfps, antishake, fireworks, 
+    #   default is auto, off fixes the analog and digital gains
+    # exposure compensation
+    #   -25..25, 
+    #   larger value gives brighter images, default is 0
+    # meter_mode
+    #   'average', 'spot', 'backlit', 'matrix'
+    #####
+    # awb_mode
+    #   off, auto, sunLight, cloudy, share, tungsten, fluorescent, flash, horizon, default is auto
+    # analog gain
+    #   retreives the analog gain prior to digitization
+    # digital gain
+    #   applied after conversion, a fraction
+    # awb_gains
+    #   0..8 for red,blue, typical values 0.9..1.9 if awb mode is set to "off
+    #####
+    # clock mode
+    #   "reset", is relative to start of recording, "raw" is relative to start of camera
+    # color_effects
+    #   "None" or (u,v) where u and v are 0..255 e.g. (128,128) gives black and white image
+    # flash_mode
+    #   'off', 'auto', 'on', 'redeye', 'fillin', 'torch' defaults is off
+    # image_denoise
+    #   True or False, activates the denosing of the image
+    # video_denoise
+    #   True or False, activates the denosing of the video recording
+    # image_effect
+    #   negative, solarize, sketch, denoise, emboss, oilpaint, hatch, gpen, pastel, watercolor, film, 
+    #   blur, saturation, colorswap, washedout, colorpoint, posterise, colorbalance, cartoon, deinterlace1, 
+    #   deinterlace2, default is 'none'
+    # image_effect_params
+    #   setting the parameters for the image effects 
+    #   see https://picamera.readthedocs.io/en/release-1.13/api_camera.html
+    # video_stabilization
+    #   default is False
+    #####
+
+    if settings.exposure > 0 :
+        # Manual Settings, most feaures are off
+        ##########################################################
+        cam.framerate      = fps
+        cam.brightness     = settings.brightness # No change in brightness
+        cam.shutter_speed  = settings.exposure   # Sets exposure in microseconds, if 0 then autoexposure
+        cam.awb_mode       = 'off'            # No auto white balance
+        cam.awb_gains      = (1,1)            # Gains for red and blue are 1
+        cam.contrast       = 0                # No change in contrast
+        cam.drc_strength   = 'off'            # Dynamic Range Compression off
+        cam.clock_mode     = 'raw'            # Frame numbers since opened camera
+        cam.color_effects  = None             # No change in color
+        cam.flash_mode     = 'off'            # No flash
+        cam.image_denoise  = False            # In vidoe mode
+        cam.image_effect   = 'none'           # No image effects
+        cam.sharpness      = 0                # No changes in sharpness
+        cam.video_stabilization = False       # No image stablization
+        cam.exposure_mode  = 'off'            # No automatic exposure control
+        cam.exposure_compensation = 0         # No automatic expsoure controls compensation
+    else:
+        # Auto Exposure and Auto White Balance
+        ############################################################
+        cam.framerate      = fps
+        cam.brightness     = settings.brightness # No change in brightness
+        cam.shutter_speed  = 0                # Sets exposure in microseconds, if 0 then autoexposure
+        cam.iso            = 0                # Auto ISO
+        cam.awb_mode       = 'on'             # No auto white balance
+        cam.awb_gains      = (1,1)            # Gains for red and blue are 1
+        cam.contrast       = 0                # No change in contrast
+        cam.drc_strength   = 'off'            # Dynamic Range Compression off
+        cam.clock_mode     = 'raw'            # Frame numbers since opened camera
+        cam.color_effects  = None             # No change in color
+        cam.flash_mode     = 'off'            # No flash
+        cam.image_denoise  = False            # In vidoe mode
+        cam.image_effect   = 'none'           # No image effects
+        cam.sharpness      = 0                # No changes in sharpness
+        cam.video_stabilization = False       # No image stablization
+        cam.exposure_mode  = 'on'             # automatic exposure control
+        cam.exposure_compensation = 0         # No automatic expsoure controls compensation
+
+    cam.start_preview()
+    time.sleep(2) # warm up
+
+    cap = PiRGBArray(cam)
+
+    return cam, cap

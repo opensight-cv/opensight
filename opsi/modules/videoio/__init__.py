@@ -9,7 +9,7 @@ from .input import controls, create_capture, get_modes, parse_camstring
 from .mjpeg import CamHook, MjpegCameraServer
 
 __package__ = "opsi.videoio"
-__version__ = "0.123"
+__version__ = "0.123csi"
 
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
@@ -24,9 +24,7 @@ class CameraInput(Function):
         camNum = parse_camstring(self.settings.mode)[0]
         if not UndupeInstance.add(camNum):
             raise ValueError(f"Camera {camNum} already in use")
-
-        self.cap = create_capture(self.settings)
-        self.cap.read()  # test for errors
+        self.cam, self.cap = create_capture(self.settings)
 
     @dataclass
     class Settings:
@@ -45,9 +43,10 @@ class CameraInput(Function):
 
     def run(self, inputs):
         frame = None
-        if self.cap:
-            ret, frame = self.cap.read()
-            frame = Mat(frame)
+        if self.cam:
+            self.cam.capture(self.cap, format='bgr', use_video_port=True)
+            frame = self.cap.array
+            self.cap.truncate(0)
         return self.Outputs(img=frame)
 
     def dispose(self):
