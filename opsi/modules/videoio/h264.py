@@ -1,3 +1,4 @@
+import atexit
 import json
 import shlex
 import subprocess
@@ -100,21 +101,28 @@ class H264CameraServer:
             img = inputs.img.mat.img
             self.engine.write_frame(img)
 
+    # Add atexit register in case dispose call gets missed for some reason
     def dispose(self):
         if self.engine:
             self.engine.stop()
+
+    def kill(self):
+        if self.engine.process is not None:
+            self.engine.process.kill()
 
     def register(self, EngineInstance):
         if self.registered:
             return
         EngineInstance.register(self)
         self.registered = True
+        atexit.register(self.kill, self)
 
     def unregister(self, EngineInstance):
         if not self.registered:
             return
         EngineInstance.unregister(self)
         self.registered = False
+        atexit.unregister(self.kill)
 
     @property
     def shmem_socket(self):
