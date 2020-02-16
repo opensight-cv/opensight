@@ -9,7 +9,7 @@ from .input import controls, create_capture, get_modes, parse_camstring
 from .mjpeg import CamHook, MjpegCameraServer
 
 __package__ = "opsi.videoio"
-__version__ = "0.123csi"
+__version__ = "0.123"
 
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
@@ -24,7 +24,9 @@ class CameraInput(Function):
         camNum = parse_camstring(self.settings.mode)[0]
         if not UndupeInstance.add(camNum):
             raise ValueError(f"Camera {camNum} already in use")
-        self.cam, self.cap = create_capture(self.settings)
+        self.cap, self.capBuffer = create_capture(self.settings)
+        # for maximum performance we should continously stream into buffer
+        # self.stream = self.cap.capture_continuous(self.capBuffer, format="bgr", use_video_port=True)
 
     @dataclass
     class Settings:
@@ -42,11 +44,18 @@ class CameraInput(Function):
         img: Mat
 
     def run(self, inputs):
+        
+        # for maximum performance this should be:
+        # for f in self.stream
+        #    frame = Mat(f.array)
+        #    self.capBuffer.turncate(0)
+        # However this is infinite loop and needs different framework from OPSI
+
         frame = None
-        if self.cam:
-            self.cam.capture(self.cap, format='bgr', use_video_port=True)
-            frame = self.cap.array
-            self.cap.truncate(0)
+        if self.cap:
+            self.cap.capture(self.capBuffer, format='bgr', use_video_port=True)
+            frame = Mat( self.capBuffer.array )
+            self.capBuffer.truncate(0)
         return self.Outputs(img=frame)
 
     def dispose(self):

@@ -2,9 +2,11 @@ import glob
 import logging
 import re
 import subprocess
+import time
 
 import cv2
-from   picamera import PiCamera, PiRGBArray
+from   picamera import PiCamera
+from   picamera.array import PiRGBArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -144,11 +146,11 @@ def controls(fps=False):
     return None
 
 
-def set_property(cap, prop, value):
-    try:
-        cap.set(prop, value)
-    except AttributeError:
-        LOGGER.debug("Camera does not support property %s", property)
+#def set_property(cap, prop, value):
+#    try:
+#        cap.set(prop, value)
+#    except AttributeError:
+#        LOGGER.debug("Camera does not support property %s", property)
 
 
 def create_capture(settings):
@@ -163,13 +165,17 @@ def create_capture(settings):
         w = settings.width
         h = settings.height
 
+    if w < 640 or h < 480:
+        w = 640
+        h = 480
+ 
     if len(mode) >= 4:
         fps = mode[3]
     else:
         fps = settings.fps
 
-    cam = PiCamera(mode[0])
-    cam.resolution = (w,h)
+    cap = PiCamera(mode[0])
+    cap.resolution = (w,h)
 
     #####
     # brightness
@@ -225,46 +231,43 @@ def create_capture(settings):
     if settings.exposure > 0 :
         # Manual Settings, most feaures are off
         ##########################################################
-        cam.framerate      = fps
-        cam.brightness     = settings.brightness # No change in brightness
-        cam.shutter_speed  = settings.exposure   # Sets exposure in microseconds, if 0 then autoexposure
-        cam.awb_mode       = 'off'            # No auto white balance
-        cam.awb_gains      = (1,1)            # Gains for red and blue are 1
-        cam.contrast       = 0                # No change in contrast
-        cam.drc_strength   = 'off'            # Dynamic Range Compression off
-        cam.clock_mode     = 'raw'            # Frame numbers since opened camera
-        cam.color_effects  = None             # No change in color
-        cam.flash_mode     = 'off'            # No flash
-        cam.image_denoise  = False            # In vidoe mode
-        cam.image_effect   = 'none'           # No image effects
-        cam.sharpness      = 0                # No changes in sharpness
-        cam.video_stabilization = False       # No image stablization
-        cam.exposure_mode  = 'off'            # No automatic exposure control
-        cam.exposure_compensation = 0         # No automatic expsoure controls compensation
+        cap.framerate      = fps
+        cap.brightness     = settings.brightness # No change in brightness
+        cap.shutter_speed  = settings.exposure   # Sets exposure in microseconds, if 0 then autoexposure
+        cap.awb_mode       = 'off'            # No auto white balance
+        cap.awb_gains      = (1,1)            # Gains for red and blue are 1
+        cap.contrast       = 0                # No change in contrast
+        cap.drc_strength   = 'off'            # Dynamic Range Compression off
+        cap.clock_mode     = 'raw'            # Frame numbers since opened capera
+        cap.color_effects  = None             # No change in color
+        cap.flash_mode     = 'off'            # No flash
+        cap.image_denoise  = False            # In vidoe mode
+        cap.image_effect   = 'none'           # No image effects
+        cap.sharpness      = 0                # No changes in sharpness
+        cap.video_stabilization = False       # No image stablization
+        cap.exposure_mode  = 'off'            # No automatic exposure control
+        cap.exposure_compensation = 0         # No automatic expsoure controls compensation
     else:
         # Auto Exposure and Auto White Balance
         ############################################################
-        cam.framerate      = fps
-        cam.brightness     = settings.brightness # No change in brightness
-        cam.shutter_speed  = 0                # Sets exposure in microseconds, if 0 then autoexposure
-        cam.iso            = 0                # Auto ISO
-        cam.awb_mode       = 'on'             # No auto white balance
-        cam.awb_gains      = (1,1)            # Gains for red and blue are 1
-        cam.contrast       = 0                # No change in contrast
-        cam.drc_strength   = 'off'            # Dynamic Range Compression off
-        cam.clock_mode     = 'raw'            # Frame numbers since opened camera
-        cam.color_effects  = None             # No change in color
-        cam.flash_mode     = 'off'            # No flash
-        cam.image_denoise  = False            # In vidoe mode
-        cam.image_effect   = 'none'           # No image effects
-        cam.sharpness      = 0                # No changes in sharpness
-        cam.video_stabilization = False       # No image stablization
-        cam.exposure_mode  = 'on'             # automatic exposure control
-        cam.exposure_compensation = 0         # No automatic expsoure controls compensation
+        cap.framerate      = fps
+        cap.brightness     = settings.brightness # No change in brightness
+        cap.shutter_speed  = 0                # Sets exposure in microseconds, if 0 then autoexposure
+        cap.iso            = 0                # Auto ISO
+        cap.awb_mode       = 'on'             # No auto white balance
+        cap.awb_gains      = (1,1)            # Gains for red and blue are 1
+        cap.contrast       = 0                # No change in contrast
+        cap.drc_strength   = 'off'            # Dynamic Range Compression off
+        cap.clock_mode     = 'raw'            # Frame numbers since opened capera
+        cap.color_effects  = None             # No change in color
+        cap.flash_mode     = 'off'            # No flash
+        cap.image_denoise  = False            # In vidoe mode
+        cap.image_effect   = 'none'           # No image effects
+        cap.sharpness      = 0                # No changes in sharpness
+        cap.video_stabilization = False       # No image stablization
+        cap.exposure_mode  = 'on'             # automatic exposure control
+        cap.exposure_compensation = 0         # No automatic expsoure controls compensation
 
-    cam.start_preview()
-    time.sleep(2) # warm up
+    capBuffer = PiRGBArray(cap)
 
-    cap = PiRGBArray(cam)
-
-    return cam, cap
+    return cap, capBuffer
