@@ -1,71 +1,66 @@
-import logging
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
-from .input import create_capture, get_modes, get_settings, parse_cammode
+from .h264 import EngineManager, H264CameraServer
+from .input import controls, create_capture, get_modes, parse_camstring
 from .mjpeg import CamHook, MjpegCameraServer
-
-LOGGER = logging.getLogger(__name__)
-
-try:
-    import engine
-    from .h264 import EngineManager, H264CameraServer
-
-    ENGINE_AVAIL = True
-except ImportError:
-    ENGINE_AVAIL = False
-    LOGGER.error("upgraded-engineer not found, disabling H264 support")
-
 
 __package__ = "opsi.videoio"
 __version__ = "0.123"
 
 UndupeInstance = Unduplicator()
 HookInstance = CamHook()
-if ENGINE_AVAIL:
-    EngineInstance = EngineManager(HookInstance)
-    HookInstance.add_listener("pipeline_update", EngineInstance.restart_engine)
+EngineInstance = EngineManager(HookInstance)
+HookInstance.add_listener("pipeline_update", EngineInstance.restart_engine)
 
 
 class CameraInput(Function):
     require_restart = True
 
     def on_start(self):
-        camNum = parse_cammode(self.settings.mode)[0]
+        camNum = parse_camstring(self.settings.mode)[0]
         if not UndupeInstance.add(camNum):
             raise ValueError(f"Camera {camNum} already in use")
+        self.cap, self.capBuffer = create_capture(self.settings)
+        # for maximum performance we should continously stream into buffer
+        # self.stream = self.cap.capture_continuous(self.capBuffer, format="bgr", use_video_port=True)
 
-        self.cap = create_capture(self.settings)
-        ret, frame = self.cap.read()  # test for errors
-        try:
-            Mat(frame)
-        except Exception:
-            raise ValueError(f"Unable to read picture from Camera {camNum}")
-
-    Settings = get_settings()
+    @dataclass
+    class Settings:
+        mode: get_modes()
+        brightness: int = 50
+        contrast: int = 50
+        saturation: int = 50
+        exposure: int = 50
+        width: controls() = None
+        height: controls() = None
+        fps: controls(True) = None
 
     @dataclass
     class Outputs:
         img: Mat
 
     def run(self, inputs):
+        
+        # for maximum performance this should be:
+        # for f in self.stream
+        #    frame = Mat(f.array)
+        #    self.capBuffer.turncate(0)
+        # However this is infinite loop and needs different framework from OPSI
+
         frame = None
         if self.cap:
-            ret, frame = self.cap.read()
-            frame = Mat(frame)
+            self.cap.capture(self.capBuffer, format='bgr', use_video_port=True)
+            frame = Mat( self.capBuffer.array )
+            self.capBuffer.truncate(0)
         return self.Outputs(img=frame)
 
     def dispose(self):
-        camNum = parse_cammode(self.settings.mode)[0]
+        camNum = parse_camstring(self.settings.mode)[0]
         UndupeInstance.remove(camNum)
-
-
-BACKEND_STRINGS = (
-    ("MJPEG", "H.264 (30 FPS)", "H.264 (60 FPS)") if ENGINE_AVAIL else ("MJPEG",)
-)
 
 
 class CameraServer(Function):
@@ -93,7 +88,7 @@ class CameraServer(Function):
     @dataclass
     class Settings:
         name: str = "camera"
-        backend: BACKEND_STRINGS = "MJPEG"
+        backend: ("MJPEG", "H.264 (30 FPS)", "H.264 (60 FPS)") = "MJPEG"
 
     @dataclass
     class Inputs:
