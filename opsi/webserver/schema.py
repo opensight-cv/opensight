@@ -78,13 +78,17 @@ class Network(BaseModel):
     nt_client: bool = True
 
     @validator("team", always=True)
-    def team_str_formatter(cls, team):
+    def team_formatter(cls, team):
         team = int(team)
 
         if not 1 <= team <= 9999:
             raise ValueError("Team number must be between 1 and 9999")
 
-        team_str = f"{team:04d}"
+        return team
+
+    @property
+    def team_str(self):
+        team_str = f"{self.team:04d}"
         assert 1 <= len(team_str) <= 4
 
         return team_str

@@ -10,6 +10,9 @@ from opsi.util.cache import cached_property
 
 # Also represents dimensions
 class Point(NamedTuple):
+    def nt_serialize(self):
+        return {"x": self.x, "y": self.y}
+
     # implicit classmethod Point._make - create from existing iterable
 
     x: float
@@ -53,6 +56,14 @@ class Shape:
 
 
 class Rect(Shape):
+    def nt_serialize(self):
+        return {
+            "x": self.tl.x,
+            "y": self.tl.y,
+            "width": self.dim.x,
+            "height": self.dim.y,
+        }
+
     # create from top-left coordinate and dimensions
     @classmethod
     def from_params(cls, x, y, width, height):
@@ -93,6 +104,15 @@ class Rect(Shape):
 
 
 class RotatedRect(Shape):
+    def nt_serialize(self):
+        return {
+            "cx": self.center.x,
+            "cy": self.center.y,
+            "width": self.dim.x,
+            "heigh": self.dim.y,
+            "angle": self.angle,
+        }
+
     # create from top-left coordinate and dimensions
     @classmethod
     def from_params(cls, center, size, angle):
@@ -131,6 +151,18 @@ class RotatedRect(Shape):
 
 # Stores corners used for SolvePNP
 class Corners(NamedTuple):
+    def nt_serialize(self):
+        return {
+            "tlx": self.tl.x,
+            "tly": self.tl.y,
+            "trx": self.tr.x,
+            "try": self.tr.y,
+            "blx": self.bl.x,
+            "bly": self.bl.y,
+            "brx": self.br.x,
+            "bry": self.br.y,
+        }
+
     tl: Point
     tr: Point
     bl: Point
@@ -154,6 +186,9 @@ class Corners(NamedTuple):
 
 
 class Pose3D(NamedTuple):
+    def nt_serialize(self):
+        return {"rvec": self.rvec.ravel(), "tvec": self.tvec.ravel()}
+
     rvec: ndarray
     tvec: ndarray
 
@@ -189,14 +224,25 @@ class Pose3D(NamedTuple):
         return img_points.astype(np.int)
 
 
-# TODO Make proper wrapper classes for these shapes
 class Circles(ndarray):
-    pass
+    def nt_serialize(self):
+        return {
+            "x": [float(circle[0]) for circle in self[0]],
+            "y": [float(circle[1]) for circle in self[0]],
+            "radius": [float(circle[2]) for circle in self[0]],
+        }
 
 
 class Segments(ndarray):
-    pass
+    def nt_serialize(self):
+        return {
+            "x1": [float(seg[0][0]) for seg in self],
+            "y1": [float(seg[0][1]) for seg in self],
+            "x2": [float(seg[0][2]) for seg in self],
+            "y2": [float(seg[0][3]) for seg in self],
+        }
 
 
+# Never actually used, but might be in the future?
 class Lines(ndarray):
     pass

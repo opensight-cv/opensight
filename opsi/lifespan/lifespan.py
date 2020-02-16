@@ -88,7 +88,11 @@ class Lifespan:
 
         if nodetree is not None:
             # queue import_nodetree to run at start of mainloop
-            threading.Thread(target=import_nodetree, args=(program, nodetree)).start()
+            threading.Thread(
+                target=import_nodetree,
+                args=(program, nodetree),
+                kwargs={"force_save": True},
+            ).start()
 
     @property
     def using_systemd(self):

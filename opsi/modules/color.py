@@ -240,7 +240,7 @@ class ColorSampler(Function):
             int(height * self.settings.y_pct / 100.0 + 10),
         )
         color_bgr = inputs.img.img[sample_coords[1], sample_coords[0]]
-        draw = None
+        draw = inputs.img
         if self.settings.draw_color:
             draw = np.copy(inputs.img.mat.img)
             # Draw a small circle (of radius 5) to show the point.

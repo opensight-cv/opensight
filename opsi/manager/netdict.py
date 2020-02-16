@@ -1,11 +1,9 @@
 from typing import Callable, List, Union
 
-from networktables.instance import NetworkTablesInstance
-from networktables.networktables import NetworkTables
-from ntcore.api import NtCoreApi
-from ntcore.constants import NT_UNASSIGNED
-from ntcore.storage import _Entry
-from ntcore.value import Value  # Value = namedtuple("type", "value")
+from _pynetworktables._impl.api import NtCoreApi
+from _pynetworktables._impl.constants import NT_UNASSIGNED
+from _pynetworktables._impl.value import Value
+from networktables import NetworkTableEntry, NetworkTables, NetworkTablesInstance
 
 # These are the types that are allowed to be stored in NT
 # Not the actual types themselves, these are the Python equivalents
@@ -49,7 +47,7 @@ class NetworkDict:
 
         path = self._get_path(name)
 
-        entry: _Entry
+        entry: NetworkTableEntry
 
         with self.api.storage.m_mutex:
             # _getOrNew does not lock mutex itself; will this cause problems?

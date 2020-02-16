@@ -169,14 +169,14 @@ def isfunction(func):
 
 
 class Hook:
-    def __init__(self, visible=True):
-        # self.app can be any ASGI app, but it must exist
-        self.visible = visible
-        self.app = Router()
+    def __init__(self):
+        self.app = None  # self.app can be any ASGI app, or None if not visible
         self.url = ""  # will be replaced during webserver init
         self.cache = {"skip": {}, "deps": {}}
         self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
         self.lastPipeline = None
+        self.pipeline = None  # will be replaced during module init
+        self.persist = None  # will be replaced during module init
 
     def update_cache(self):
         if not self.lastPipeline == self.pipeline.nodes:
@@ -243,6 +243,9 @@ class Hook:
     def pipeline_update(self):
         for func in self.listeners["pipeline_update"]:
             func()
+
+    def get_fps(self):
+        return self.pipeline.fps.fps
 
 
 def ishook(hook):

@@ -2,6 +2,8 @@ import glob
 import logging
 import re
 import subprocess
+from dataclasses import dataclass
+from sys import platform
 
 import cv2
 
@@ -11,12 +13,39 @@ __package__ = "opsi.input"
 
 ENABLE_RES = False
 ENABLE_FPS = False
+IS_LINUX = platform.startswith("linux")
 
 
-def get_w(string):
-    camstring = parse_camstring(string)
-    if len(camstring) >= 3:
-        camtuple = parse_camstring(string)
+def get_settings():
+    @dataclass
+    class Linux:
+        mode: get_modes()
+        brightness: int = 50
+        contrast: int = 50
+        saturation: int = 50
+        exposure: int = 50
+        width: controls() = None
+        height: controls() = None
+        fps: controls(True) = None
+
+    @dataclass
+    class NonLinux:
+        mode: int = 0
+        brightness: int = 50
+        contrast: int = 50
+        saturation: int = 50
+        exposure: int = 50
+        width: int = 320
+        height: int = 240
+        fps: int = 60
+
+    return Linux if IS_LINUX else NonLinux
+
+
+def get_w(mode):
+    cammode = parse_cammode(mode)
+    if len(cammode) >= 3:
+        camtuple = parse_cammode(mode)
         return camtuple[1] + camtuple[2]
     return 0
 
@@ -117,22 +146,24 @@ def get_modes():
     return tuple(sorted(all_modes, key=get_w, reverse=True))
 
 
-def parse_camstring(string):
-    camstring = []
+def parse_cammode(mode):
+    if type(mode) is int:
+        return (mode,)
+    cammode = []
     # group 3: any digit+ OR any digit+, decimal, any digit+
-    m = re.search(r"(?:Cam (\d+))?(?::( \d+)x(\d+))?(?: @ (\d+|\d+.\d+) fps)?", string)
+    m = re.search(r"(?:Cam (\d+))?(?::( \d+)x(\d+))?(?: @ (\d+|\d+.\d+) fps)?", mode)
     cam = m.group(1)
     w = m.group(2)
     h = m.group(3)
     fps = m.group(4)
     if cam:
-        camstring.append(int(cam))
+        cammode.append(int(cam))
     if w and h:
-        camstring.append(int(w))
-        camstring.append(int(h))
+        cammode.append(int(w))
+        cammode.append(int(h))
     if fps:
-        camstring.append(float(fps))
-    return tuple(camstring)
+        cammode.append(float(fps))
+    return tuple(cammode)
 
 
 def controls(fps=False):
@@ -151,12 +182,16 @@ def set_property(cap, prop, value):
 
 
 def create_capture(settings):
-    mode = parse_camstring(settings.mode)
+    mode = parse_cammode(settings.mode)
     if len(mode) < 1:
         return None
-    cap = cv2.VideoCapture(mode[0], cv2.CAP_V4L)
-    codec = get_codec(get_cam_info(mode[0]))
-    set_property(cap, cv2.CAP_PROP_FOURCC, codec[0])
+    if IS_LINUX:
+        cap = cv2.VideoCapture(mode[0], cv2.CAP_V4L)
+        codec = get_codec(get_cam_info(mode[0]))
+        if codec:
+            set_property(cap, cv2.CAP_PROP_FOURCC, codec[0])
+    else:
+        cap = cv2.VideoCapture(mode[0])
     if len(mode) >= 3:
         w = mode[1]
         h = mode[2]

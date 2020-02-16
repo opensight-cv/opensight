@@ -2,13 +2,14 @@ aiofiles==0.4.0
 Click==7.0
 fastapi==0.42.0
 h11==0.8.1
+imutils==0.5.3
 httptools==0.0.13
 Jinja2==2.10.3
 MarkupSafe==1.1.1
 netifaces==0.10.9
 numpy==1.16.2
 pydantic==0.32.2
-pynetworktables==2019.0.2
+pynetworktables==2020.0.2
 pystemd==0.6.0
 python-multipart==0.0.5
 six==1.12.0

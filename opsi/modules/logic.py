@@ -6,7 +6,7 @@ from opsi.manager.types import AnyType
 __package__ = "opsi.logic"
 __version__ = "0.123"
 
-HookInstance = Hook(visible=False)
+HookInstance = Hook()
 
 
 class Freeze(Function):
@@ -25,5 +25,5 @@ class Freeze(Function):
     def run(self, inputs):
         if not self.settings.freeze:
             return self.Outputs(out=inputs.thru)
-        HookInstance.cancel_dependents()
+        HookInstance.cancel_current()
         return self.Outputs()
