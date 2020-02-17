@@ -5,6 +5,8 @@ import numpy as np
 
 DIM_BLOCK = 32
 
+cp.cuda.Device(0).use()
+
 cuda_rgb2hsv = cp.ElementwiseKernel(
     'uint8 r, uint8 g, uint8 b',
     'uint8 h, uint8 s, uint8 v',
@@ -76,36 +78,14 @@ class CudaThresholdWrapper:
 
 class CudaBlurWrapper:
     def __init__(self, radius):
-        self.cuda_module = cp.RawModule(code=open('./opsi/util/cv/cuda/gaussian.cu').read())
+        self.cuda_module = cp.RawModule(code=open('./opsi/util/cv/cuda/boxblur.cu').read())
         self.apply_filter = self.cuda_module.get_function("applyFilter")
 
-        self.radius = radius
-        self.make_kernel(radius)
+        self.update_radius(radius)
 
     def update_radius(self, radius):
-        if self.radius != radius:
-            self.radius = radius
-            self.make_kernel(radius)
-
-    # Create gaussian kernel for blurring
-    def make_kernel(self, radius):
-        self.radius = radius
-        self.filter_width = radius * 2 + 1
-
-        # Crazy math below
-        sigma = 0.3 * ((self.filter_width - 1) * 0.5 - 1) + 0.8
-
-        gaussian_kernel = cp.empty((self.filter_width, self.filter_width), np.float32)
-        kernel_half_width = self.filter_width // 2
-        for i in range(-kernel_half_width, kernel_half_width + 1):
-            for j in range(-kernel_half_width, kernel_half_width + 1):
-                gaussian_kernel[i + kernel_half_width][j + kernel_half_width] = (
-                        np.exp(-(i ** 2 + j ** 2) / (2 * sigma ** 2))
-                        / (2 * np.pi * sigma ** 2)
-                )
-
-        # Normalize the kernel so that its sum is 1
-        self.gaussian_kernel = gaussian_kernel / gaussian_kernel.sum()
+        self.radius = max(0, radius)
+        self.filter_width = self.radius * 2 + 1
 
     def apply(self, source_array):
         # Numpy array to store the output
@@ -132,7 +112,6 @@ class CudaBlurWrapper:
                     channel,
                     cp.uint32(width),
                     cp.uint32(height),
-                    self.gaussian_kernel,
                     cp.uint32(self.filter_width)
                 )
             )
@@ -150,36 +129,14 @@ class CudaThresholdAndBlurWrapper:
         self.lower = lower
         self.upper = upper
         self.cuda_kernel = self.compile_kernel(lower, upper)
-        self.cuda_module = cp.RawModule(code=open('./opsi/util/cv/cuda/gaussian.cu').read())
+        self.cuda_module = cp.RawModule(code=open('./opsi/util/cv/cuda/boxblur.cu').read())
         self.apply_filter = self.cuda_module.get_function("applyFilter")
 
-        self.radius = radius
-        self.make_kernel(radius)
+        self.update_radius(radius)
 
     def update_radius(self, radius):
-        if self.radius != radius:
-            self.radius = radius
-            self.make_kernel(radius)
-
-    # Create gaussian kernel for blurring
-    def make_kernel(self, radius):
-        self.radius = radius
-        self.filter_width = radius * 2 + 1
-
-        # Crazy math below
-        sigma = 0.3 * ((self.filter_width - 1) * 0.5 - 1) + 0.8
-
-        gaussian_kernel = cp.empty((self.filter_width, self.filter_width), np.float32)
-        kernel_half_width = self.filter_width // 2
-        for i in range(-kernel_half_width, kernel_half_width + 1):
-            for j in range(-kernel_half_width, kernel_half_width + 1):
-                gaussian_kernel[i + kernel_half_width][j + kernel_half_width] = (
-                        np.exp(-(i ** 2 + j ** 2) / (2 * sigma ** 2))
-                        / (2 * np.pi * sigma ** 2)
-                )
-
-        # Normalize the kernel so that its sum is 1
-        self.gaussian_kernel = gaussian_kernel / gaussian_kernel.sum()
+        self.radius = max(0, radius)
+        self.filter_width = self.radius * 2 + 1
 
     def update_kernel(self, lower, upper):
         if lower != self.lower or upper != self.upper:
@@ -217,7 +174,6 @@ class CudaThresholdAndBlurWrapper:
                     channel,
                     cp.uint32(width),
                     cp.uint32(height),
-                    self.gaussian_kernel,
                     cp.uint32(self.filter_width)
                 )
             )
