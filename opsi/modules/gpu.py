@@ -7,7 +7,8 @@ from opsi.util.cv import Mat, MatBW
 __package__ = "opsi.gpu"
 __version__ = "0.123"
 
-from opsi.util.cv.cuda.wrappers import CudaThresholdWrapper, CudaBlurWrapper, CudaThresholdAndBlurWrapper
+from opsi.util.cv.cuda.wrappers import CudaThresholdWrapper, CudaBlurWrapper, CudaThresholdAndBlurWrapper, \
+    CudaGreenMinusRedWrapper
 
 
 class ThresholdGPU(Function):
@@ -106,5 +107,32 @@ class BlurAndThreshold(Function):
         self.gpu_blur_thresh.update_radius(self.settings.blur_radius)
 
         processed = self.gpu_blur_thresh.apply(inputs.img.img)
+
+        return self.Outputs(MatBW(processed))
+
+
+class GreenMinusRed(Function):
+    def on_start(self):
+        self.gpu_thresh = CudaGreenMinusRedWrapper(self.settings.threshold)
+
+    @dataclass
+    class Settings:
+        threshold: int = 100
+
+    @dataclass
+    class Inputs:
+        img: Mat
+
+    @dataclass
+    class Outputs:
+        img: MatBW
+
+    def run(self, inputs):
+        if inputs.img is None:
+            return self.Outputs()
+
+        self.gpu_thresh.update_kernel(self.settings.threshold)
+
+        processed = self.gpu_thresh.apply(inputs.img.img)
 
         return self.Outputs(MatBW(processed))

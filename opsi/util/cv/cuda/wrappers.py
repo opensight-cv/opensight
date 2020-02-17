@@ -186,3 +186,31 @@ class CudaThresholdAndBlurWrapper:
 
         # Convert back to numpy array
         return cp.asnumpy(result_array)
+
+
+class CudaGreenMinusRedWrapper:
+    def __init__(self, thresh):
+        self.thresh = thresh
+        self.cuda_kernel = self.compile_kernel(thresh)
+
+    def update_kernel(self, thresh):
+        if thresh != self.thresh:
+            self.thresh = thresh
+            self.cuda_kernel = self.compile_kernel(thresh)
+
+    def compile_kernel(self, thresh):
+        return cp.ElementwiseKernel(
+            'uint8 r, uint8 g',
+            'uint8 out',
+            f'out = max(g - r - {thresh}, 0);',
+            #f'if(g - r > {thresh}) {{ out = 255; }} else {{ out = 0; }}',
+            'threshold'
+        )
+
+    def apply(self, source_array):
+        green_channel = cp.asarray(source_array[:, :, 1])
+        red_channel = cp.asarray(source_array[:, :, 2])
+
+        result_array = self.cuda_kernel(red_channel, green_channel)
+
+        return cp.asnumpy(result_array)
