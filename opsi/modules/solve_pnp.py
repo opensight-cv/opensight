@@ -117,11 +117,9 @@ class Position2D(Function):
 
         cam_tilt_radians = math.radians(self.settings.camera_tilt_degrees)
 
-        position, target_angle, camera_to_target_angle = inputs.pose.position_2d(
+        position, target_angle, camera_to_target_angle, distance = inputs.pose.position_2d(
             cam_tilt_radians
         )
-
-        distance = position.hypot
 
         if self.settings.output_units == "Degrees":
             camera_to_target_angle = math.degrees(camera_to_target_angle)
