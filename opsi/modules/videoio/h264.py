@@ -65,7 +65,9 @@ class EngineManager:
     def start(self):
         # turn pipelines into JSON
         pipes = json.dumps([v for k, v in self.pipelines.items()])
-        launch = f"{engine.core.DEFAULT_EXEC_PATH} --pipes-as-json '{pipes}'"
+        launch = (
+            f"{engine.core.DEFAULT_EXEC_PATH} --port {port} --pipes-as-json '{pipes}'"
+        )
         self.engine = engine.Engine(shlex.split(launch))
         self.engine.start()
         self._on = True
