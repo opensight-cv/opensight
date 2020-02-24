@@ -1,5 +1,6 @@
 aiofiles
 fastapi
+imutils
 Jinja2
 netifaces
 numpy
@@ -7,6 +8,7 @@ pynetworktables
 pystemd
 python-multipart
 toposort
+upgraded-engineer
 uvicorn
 
 black
