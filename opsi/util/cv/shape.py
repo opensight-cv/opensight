@@ -1,4 +1,4 @@
-from math import atan2, cos, sin
+from math import atan2, cos, sin, sqrt
 from typing import NamedTuple
 
 import cv2
@@ -198,25 +198,28 @@ class Pose3D(NamedTuple):
         x = self.tvec[0, 0]
         z = sin(tilt_angle) * self.tvec[1, 0] + cos(tilt_angle) * self.tvec[2, 0]
 
-        trans_2d = Point(x, z)
+        distance = sqrt(x * x + z * z)
 
         # From Team 5190: Green Hope Falcons
         # https://github.com/FRC5190/2019CompetitionSeason/blob/51f1940c5742a74bdcd25c4c9b6e9cfe187ec2fa/vision/jevoisvision/modules/ghrobotics/ReflectiveTape/ReflectiveTape.py#L94
 
         # Find the horizontal angle between camera center line and target
-        camera_to_target_angle = atan2(x, z)
+        camera_to_target_angle = -atan2(x, z)
 
         rot, _ = cv2.Rodrigues(self.rvec)
         rot_inv = rot.transpose()
 
         pzero_world = np.matmul(rot_inv, -self.tvec)
 
-        target_angle = atan2(pzero_world[0][0], pzero_world[2][0])
+        target_angle = -atan2(pzero_world[0][0], pzero_world[2][0])
 
-        return trans_2d, -target_angle, -camera_to_target_angle
+        trans_2d = Point(distance * cos(camera_to_target_angle),
+                         distance * sin(camera_to_target_angle))
+
+        return trans_2d, target_angle, camera_to_target_angle, distance
 
     def object_to_image_points(
-        self, obj_points, camera_matrix, distortion_coefficients
+            self, obj_points, camera_matrix, distortion_coefficients
     ):
         img_points, jacobian = cv2.projectPoints(
             obj_points, self.rvec, self.tvec, camera_matrix, distortion_coefficients

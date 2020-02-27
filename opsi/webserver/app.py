@@ -4,6 +4,7 @@ from os.path import join
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
@@ -46,6 +47,8 @@ class WebServer:
         self.app.mount(
             "/", CacheControlMiddleware(StaticFiles(directory=join(frontend, "www")))
         )
+
+        self.app.add_middleware(GZipMiddleware)
 
     def make_hooks(self):
         PREFIX = "/hooks"

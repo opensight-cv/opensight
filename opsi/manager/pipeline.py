@@ -14,6 +14,13 @@ from opsi.util.fps import FPS
 from .link import Link, NodeLink, StaticLink
 from .manager_schema import Function
 
+try:
+    from networktables import NetworkTables
+
+    NT_AVAIL = True
+except ImportError:
+    NT_AVAIL = False
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -131,6 +138,9 @@ class Pipeline:
             try:
                 with self.lock:
                     self.run()
+                if NT_AVAIL:
+                    NetworkTables.flush()
+
             except (TypeError, AttributeError):
                 LOGGER.debug(
                     "(Harmless?) Error during pipeline mainloop", exc_info=True

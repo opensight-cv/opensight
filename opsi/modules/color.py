@@ -27,7 +27,7 @@ class Blur(Function):
         img: Mat
 
     def run(self, inputs):
-        img = inputs.img.blur(self.settings.radius)
+        img = inputs.img.mat.blur(self.settings.radius)
         return self.Outputs(img=img)
 
 
@@ -47,7 +47,7 @@ class HSVRange(Function):
         imgBW: MatBW
 
     def run(self, inputs):
-        imgBW = inputs.img.hsv_threshold(
+        imgBW = inputs.img.mat.hsv_threshold(
             self.settings.hue, self.settings.sat, self.settings.val
         )
         return self.Outputs(imgBW=imgBW)
@@ -82,7 +82,7 @@ class Canny(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            imgBW=inputs.img.canny(
+            imgBW=inputs.img.mat.canny(
                 self.settings.threshold[0], self.settings.threshold[1]
             )
         )
@@ -107,7 +107,7 @@ class AbsoluteDifferenceRGB(Function):
         img: Mat
 
     def run(self, inputs):
-        diff = inputs.img.abs_diff(
+        diff = inputs.img.mat.abs_diff(
             np.array(
                 [self.settings.blue, self.settings.green, self.settings.red],
                 dtype=np.float,
@@ -144,8 +144,7 @@ class AbsoluteDifferenceHSV(Function):
         img: Mat
 
     def run(self, inputs):
-        img_hsv = inputs.img.hsv
-        # cvw.bgr_to_hsv(inputs.img)
+        img_hsv = inputs.img.mat.hsv
         diff_hsv = img_hsv.abs_diff(
             np.array(
                 [self.settings.hue, self.settings.sat, self.settings.val],
@@ -233,14 +232,14 @@ class ColorSampler(Function):
 
     def run(self, inputs):
         # Find the pixel coordinates to sample in the image
-        height, width = inputs.img.img.shape[:2]
+        height, width = inputs.img.mat.img.shape[:2]
 
         sample_coords = (
             int(width * self.settings.x_pct / 100.0 + 10),
             int(height * self.settings.y_pct / 100.0 + 10),
         )
-        color_bgr = inputs.img.img[sample_coords[1], sample_coords[0]]
-        draw = inputs.img
+        color_bgr = inputs.img.mat.img[sample_coords[1], sample_coords[0]]
+        draw = inputs.img.mat
         if self.settings.draw_color:
             draw = np.copy(inputs.img.mat.img)
             # Draw a small circle (of radius 5) to show the point.
@@ -342,7 +341,7 @@ class Resize(Function):
         img: Mat
 
     def run(self, inputs):
-        img = inputs.img.resize(Point(self.settings.width, self.settings.height))
+        img = inputs.img.mat.resize(Point(self.settings.width, self.settings.height))
         return self.Outputs(img=img)
 
 
@@ -361,7 +360,7 @@ class ColorBalance(Function):
         img: Mat
 
     def run(self, inputs):
-        img = inputs.img.color_balance(
+        img = inputs.img.mat.color_balance(
             self.settings.red_balance / 100.0, self.settings.blue_balance / 100.0
         )
         return self.Outputs(img=img)

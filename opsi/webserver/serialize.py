@@ -1,7 +1,7 @@
 import logging
 import sys
 from collections import deque
-from dataclasses import _MISSING_TYPE, asdict
+from dataclasses import _MISSING_TYPE, asdict, fields
 from typing import Callable, Tuple, Type
 
 from opsi.manager.link import NodeLink
@@ -346,10 +346,27 @@ def _process_node_settings(program, node: NodeN):
                 # field is disabled
                 continue
 
-            # throws KeyError on missing, ValueError on invalid
-            settings[field.name] = _process_widget(
-                field.type, node.settings[field.name]
-            )
+            # throws ValueError on invalid
+            # try the following before giving up:
+            # 1. Use the value provided by the nodetree
+            # 2. If none provided by nodetree, get default value for element in dataclass
+            # 3. If no default, try default initializing the type
+            # 4. If can't default initialize type, give up
+            try:
+                setting = _process_widget(field.type, node.settings[field.name])
+            except KeyError:
+                default = {
+                    x.name: x.default for x in fields(real_node.func_type.Settings)
+                }[field.name]
+                if default is not None:
+                    setting = default
+                else:
+                    blank = type(field.type)
+                    if blank is not None:
+                        setting = blank
+                    else:
+                        raise ValueError(f"Cannot default initialize type {type}")
+            settings[field.name] = setting
 
         # throws TypeError on missing
         settings = real_node.func_type.Settings(**settings)

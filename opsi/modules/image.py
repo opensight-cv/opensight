@@ -25,7 +25,7 @@ class Rotate(Function):
         img: Mat
 
     def run(self, inputs):
-        img = inputs.img.rotate(self.settings.angle)
+        img = inputs.img.mat.rotate(self.settings.angle)
         return self.Outputs(img=img)
 
 
@@ -43,7 +43,7 @@ class RotateNoCrop(Function):
         img: Mat
 
     def run(self, inputs):
-        img = inputs.img.rotate_no_crop(self.settings.angle)
+        img = inputs.img.mat.rotate_no_crop(self.settings.angle)
         return self.Outputs(img=img)
 
 
