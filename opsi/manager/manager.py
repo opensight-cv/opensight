@@ -33,7 +33,7 @@ def import_module(path: ModulePath):
             path.name,
             e,
         )
-        LOGGER.debug("", exc_info=True)
+        # LOGGER.debug("", exc_info=True)
     finally:
         sys.path = path_bak[:]
     """
