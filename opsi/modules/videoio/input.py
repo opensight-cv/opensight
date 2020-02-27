@@ -212,6 +212,7 @@ def create_capture(settings):
         fps = settings.fps
     set_property(cv2.CAP_PROP_FPS, fps)
 
+    set_property(cv2.CAP_PROP_AUTO_EXPOSURE, 1)  # disable auto-exposure, unintuitively
     set_property(cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
     set_property(cv2.CAP_PROP_CONTRAST, settings.contrast)
     set_property(cv2.CAP_PROP_SATURATION, settings.saturation)
