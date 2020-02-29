@@ -37,13 +37,18 @@ class CameraInput(Function):
         camNum = parse_cammode(self.settings.mode)[0]
         if not UndupeInstance.add(camNum):
             raise ValueError(f"Camera {camNum} already in use")
-
         self.cap = create_capture(self.settings)
-        ret, frame = self.cap.read()  # test for errors
+
+    @classmethod
+    def validate_settings(cls, settings):
+        camNum = parse_cammode(settings.mode)[0]
+        cap = create_capture(settings)
+        ret, frame = cap.read()  # test for errors
         try:
             Mat(frame)
         except Exception:
             raise ValueError(f"Unable to read picture from Camera {camNum}")
+        return settings
 
     Settings = get_settings()
 
