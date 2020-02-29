@@ -22,7 +22,9 @@ class Persistence:
             cls.instance = super().__new__(cls)
             cls.instance._is_init = False
         elif path is not None:
-            LOGGER.warning(f"Attempted to create second instance of singleton {cls} with parameter '{path}'")
+            LOGGER.warning(
+                f"Attempted to create second instance of singleton {cls} with parameter '{path}'"
+            )
         return cls.instance
 
     def __init__(self, path=None):

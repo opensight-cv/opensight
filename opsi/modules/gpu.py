@@ -1,14 +1,17 @@
 from dataclasses import dataclass
+
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import RangeType
-
 from opsi.util.cv import Mat, MatBW
+from opsi.util.cv.cuda.wrappers import (
+    CudaBlurWrapper,
+    CudaGreenMinusRedWrapper,
+    CudaThresholdAndBlurWrapper,
+    CudaThresholdWrapper,
+)
 
 __package__ = "opsi.gpu"
 __version__ = "0.123"
-
-from opsi.util.cv.cuda.wrappers import CudaThresholdWrapper, CudaBlurWrapper, CudaThresholdAndBlurWrapper, \
-    CudaGreenMinusRedWrapper
 
 
 class ThresholdGPU(Function):
@@ -76,7 +79,9 @@ class BlurGPU(Function):
 class BlurAndThreshold(Function):
     def on_start(self):
         lower, upper = self.lower_upper_from_settings()
-        self.gpu_blur_thresh = CudaThresholdAndBlurWrapper(lower, upper, self.settings.blur_radius)
+        self.gpu_blur_thresh = CudaThresholdAndBlurWrapper(
+            lower, upper, self.settings.blur_radius
+        )
 
     @dataclass
     class Settings:
