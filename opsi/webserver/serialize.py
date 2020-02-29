@@ -482,11 +482,15 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
 
         if not broken:
             for node in nodetree.nodes:
-                _process_node_settings(program, node)
-                if LINKS_INSTEAD_OF_INPUTS:
-                    _process_node_links(program, node, ids)
-                else:
-                    _process_node_inputs(program, node, ids)
+                try:
+                    _process_node_settings(program, node)
+                    if LINKS_INSTEAD_OF_INPUTS:
+                        _process_node_links(program, node, ids)
+                    else:
+                        _process_node_inputs(program, node, ids)
+                except Exception as e:
+                    if not force_save:
+                        raise e
 
                 try:
                     program.pipeline.nodes[node.id].ensure_init()
@@ -496,9 +500,10 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
                     except KeyError:
                         pass
 
-                    raise NodeTreeImportError(
-                        program, node, "Error creating Function"
-                    ) from e
+                    if not force_save:
+                        raise NodeTreeImportError(
+                            program, node, "Error creating Function"
+                        ) from e
 
         try:
             program.pipeline.run()

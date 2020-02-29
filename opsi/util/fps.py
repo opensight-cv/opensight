@@ -1,5 +1,5 @@
 from collections import deque
-from time import monotonic, sleep
+from time import monotonic
 
 get_time = monotonic  # in case it needs to be changed later
 

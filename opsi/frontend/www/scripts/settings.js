@@ -78,13 +78,20 @@ $(document).ready(function() {
     var fileReader = new FileReader();
     var nodetree;
     var success = function(content) {
-      $.post(
-        "/api/nodes",
-        content,
-        function() {
+      setIcons("spinner");
+      $.ajax({
+        type: "POST",
+        url: "/api/nodes?force_save=true",
+        data: content,
+        success: function(data) {
+          setIcons("check");
           console.log("successful post request");
         },
-        "json"
+        error: function(e) {
+          setIcons("cross");
+          console.log(e);
+        }
+      }
       );
     };
     fileReader.onload = function(evt) {

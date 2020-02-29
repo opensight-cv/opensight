@@ -213,13 +213,15 @@ class Pose3D(NamedTuple):
 
         target_angle = -atan2(pzero_world[0][0], pzero_world[2][0])
 
-        trans_2d = Point(distance * cos(camera_to_target_angle),
-                         distance * sin(camera_to_target_angle))
+        trans_2d = Point(
+            distance * cos(camera_to_target_angle),
+            distance * sin(camera_to_target_angle),
+        )
 
         return trans_2d, target_angle, camera_to_target_angle, distance
 
     def object_to_image_points(
-            self, obj_points, camera_matrix, distortion_coefficients
+        self, obj_points, camera_matrix, distortion_coefficients
     ):
         img_points, jacobian = cv2.projectPoints(
             obj_points, self.rvec, self.tvec, camera_matrix, distortion_coefficients
