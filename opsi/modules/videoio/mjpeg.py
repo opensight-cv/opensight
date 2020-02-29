@@ -167,7 +167,7 @@ class ASGIStreamer(ASGIApplication):
     async def send(self, data):
         try:
             await super().send(self._boundary + data)
-        except asyncio.CancelledError:
+        except (asyncio.CancelledError, RuntimeError):
             return
 
 
@@ -189,12 +189,12 @@ class MjpegResponse:
             asyncio.create_task(app.send(self.HEADERS + img))
 
     def get_values(self):
-        quality = 100
-        fps = 90
+        quality = 70
+        fps = 30
         resolution = None
         try:
-            quality = 100 - int(self.request.query_params.get("compression", 0))
-            fps = int(self.request.query_params.get("fps", 90))
+            quality = 100 - int(self.request.query_params.get("compression", 30))
+            fps = int(self.request.query_params.get("fps", 30))
             resolution = self.request.query_params.get("resolution")
         except (TypeError, ValueError):
             LOGGER.error("Failed to parse URL parameters", exc_info=True)
