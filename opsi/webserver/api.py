@@ -95,7 +95,9 @@ class Api:
             return
         self.program.lifespan.persist.profile = profile
         self.program.lifespan.persist.update_nodetree()
-        import_nodetree(self.program, self.program.lifespan.persist.nodetree)
+        import_nodetree(
+            self.program, self.program.lifespan.persist.nodetree, force_save=True
+        )
         return profile
 
     def network(self, *, network: Network):

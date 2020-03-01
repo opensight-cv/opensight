@@ -16,13 +16,6 @@ HookInstance = Hook()
 class GetNT(PutNT):
     def on_start(self):
         self.table = NetworkDict(self.settings.path)
-        self.validate_paths()
-
-    def validate_paths(self):
-        try:
-            val = self.table[self.settings.key]
-        except KeyError:
-            raise ValueError(f"Key {self.settings.key}  does not exist.")
 
     @dataclass
     class Inputs:
