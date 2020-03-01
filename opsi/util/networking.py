@@ -35,7 +35,7 @@ def get_server_url(lifespan, port=80, prefix="/"):
     port_str = "" if port == 80 else f":{port}"
 
     # default to mdns in case static fails for some reason
-    teamStr = network.team
+    teamStr = network.team_str
     hostname = f"{socket.gethostname()}.local"
 
     if not network.mDNS:
@@ -53,12 +53,11 @@ def get_server_url(lifespan, port=80, prefix="/"):
 
 
 def get_nt_server(network):
-    teamStr = network.team
-
     if not network.mDNS:
+        teamStr = network.team_str
         hostname = f"10.{teamStr[:2]}.{teamStr[2:]}.2"
     else:
-        hostname = f"roboRIO-{teamStr}-FRC.local"
+        hostname = f"roboRIO-{network.team}-FRC.local"
 
     return hostname
 

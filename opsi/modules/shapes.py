@@ -29,7 +29,7 @@ class FindCircles(Function):
 
     def run(self, inputs):
         return self.Outputs(
-            circles=inputs.img.hough_circles(
+            circles=inputs.img.mat.hough_circles(
                 self.settings.resolution_divisor,
                 self.settings.min_dist,
                 self.settings.edge_detection_threshold,

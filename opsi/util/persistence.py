@@ -15,7 +15,24 @@ class Persistence:
     NODETREE_DIR = "nodetrees"
     CALIBRATION_DIR = "calibration"
 
+    instance = None
+
+    def __new__(cls, path=None):
+        if cls.instance is None:
+            cls.instance = super().__new__(cls)
+            cls.instance._is_init = False
+        elif path is not None:
+            LOGGER.warning(
+                f"Attempted to create second instance of singleton {cls} with parameter '{path}'"
+            )
+        return cls.instance
+
     def __init__(self, path=None):
+        # _is_init is necessary because __init__ is always called after __new__
+        if self._is_init:
+            return
+        self._is_init = True
+
         self._nodetree = None
 
         self._prefs = None

@@ -97,7 +97,7 @@ class FindCenter(Function):
             cv2.circle(img, (int(center.x), int(center.y)), 10, (255, 0, 0), 5)
             img = Mat(img)
         else:
-            img = None
+            img = inputs.img
 
         scaled_center = Point(
             x=((center.x * 2) / res.x) - 1, y=((center.y * 2) / res.y) - 1
@@ -209,4 +209,3 @@ class FindArea(Function):
             return self.Outputs(area=0)
         else:
             return self.Outputs(area=sum([cnt.area for cnt in inputs.contours.l]))
-

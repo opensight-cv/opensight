@@ -1,18 +1,9 @@
-import asyncio
 import json
-import logging
-import queue
-import re
 import shlex
 import subprocess
-from datetime import datetime
 from shlex import split
 from typing import Tuple
 
-import jinja2
-from starlette.routing import Route, Router
-
-import engine
 from opsi.manager.manager_schema import Hook
 from opsi.util.concurrency import AsyncThread, Snippet
 from opsi.util.cv import Mat, Point
@@ -25,6 +16,13 @@ try:
     NT_AVAIL = True
 except ImportError:
     NT_AVAIL = False
+
+try:
+    import engine
+
+    ENGINE_AVAIL = True
+except ImportError:
+    ENGINE_AVAIL = False
 
 
 class EngineManager:
@@ -47,12 +45,12 @@ class EngineManager:
         if func.name in self.pipelines:
             raise ValueError("Cannot have duplicate name")
         pipeline = func.pipeline
-        pipeline["port"] = self.port
         self.pipelines[func.name] = pipeline
         if NT_AVAIL:
             url = self.hook.url.split("/")[2].split(":")[0]
+            port = "" if self.port == 554 else self.port
             NetworkDict(f"/GStreamer/{func.name}")["/streams"] = [
-                f"rtsp://{url}:{self.port}/{func.name}",
+                f"rtsp://{url}:{port}/{func.name}",
             ]
 
     def unregister(self, func: "H264CameraServer"):
@@ -66,7 +64,7 @@ class EngineManager:
     def start(self):
         # turn pipelines into JSON
         pipes = json.dumps([v for k, v in self.pipelines.items()])
-        launch = f"{engine.core.DEFAULT_EXEC_PATH} --pipes-as-json '{pipes}'"
+        launch = f"{engine.core.DEFAULT_EXEC_PATH} --port {self.port} --pipes-as-json '{pipes}'"
         self.engine = engine.Engine(shlex.split(launch))
         self.engine.start()
         self._on = True
@@ -76,6 +74,10 @@ class EngineManager:
             self.engine.stop()
         if len(self.pipelines) > 0:
             self.start()
+
+    def shutdown(self):
+        if self.engine:
+            self.engine.stop()
 
 
 class H264CameraServer:

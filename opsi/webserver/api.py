@@ -58,10 +58,10 @@ class Api:
             # return export_nodetree(self.program.pipeline)
             return self.program.lifespan.persist.nodetree
 
-    def save_nodes(self, *, nodetree: NodeTreeN):
-        import_nodetree(self.program, nodetree)
+    def save_nodes(self, *, nodetree: NodeTreeN, force_save: bool = False):
+        import_nodetree(self.program, nodetree, force_save)
         # only save if successful import
-        self.program.lifespan.persist.nodetree = nodetree
+        # self.program.lifespan.persist.nodetree = nodetree
         return nodetree
 
     def save_calibration(self, *, file: UploadFile = File(...)):
@@ -95,7 +95,9 @@ class Api:
             return
         self.program.lifespan.persist.profile = profile
         self.program.lifespan.persist.update_nodetree()
-        import_nodetree(self.program, self.program.lifespan.persist.nodetree)
+        import_nodetree(
+            self.program, self.program.lifespan.persist.nodetree, force_save=True
+        )
         return profile
 
     def network(self, *, network: Network):

@@ -1,41 +1,15 @@
-import datetime
 from dataclasses import dataclass
 
 import cv2
 import numpy as np
 
-from opsi.manager.manager_schema import Function
+from opsi.manager.manager_schema import Function, Hook
 from opsi.util.cv import Mat
 
-
-class FPS:
-    def __init__(self):
-        self._start = None
-        self._end = None
-        self._numFrames = 0
-
-    def start(self):
-        self._start = datetime.datetime.now()
-        return self
-
-    def end(self):
-        self._end = datetime.datetime.now()
-
-    def update(self):
-        self._numFrames += 1
-
-    def elapsed(self):
-        return (datetime.datetime.now() - self._start).total_seconds()
-
-    def fps(self):
-        return self._numFrames / self.elapsed()
+HookInstance = Hook()
 
 
 class DrawFPS(Function):
-    def on_start(self):
-        self.f = FPS()
-        self.f.start()
-
     @dataclass
     class Inputs:
         img: Mat
@@ -45,8 +19,7 @@ class DrawFPS(Function):
         img: Mat
 
     def run(self, inputs):
-        self.f.update()
-        fps_str = str(round(self.f.fps(), 1))
+        fps_str = "{:.1f}".format(HookInstance.get_fps())
         draw = np.copy(inputs.img.mat.img)
         cv2.putText(
             draw,

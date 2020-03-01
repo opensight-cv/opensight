@@ -10,6 +10,19 @@ from .shape import Corners, Point, Rect, RotatedRect
 
 
 class Contour:
+    def nt_serialize(self):
+        points_x = [point.x for point in self.points]
+        points_y = [point.y for point in self.points]
+
+        return {
+            "x": points_x,
+            "y": points_y,
+            "centroid_x": self.centroid.x,
+            "centroid_y": self.centroid.y,
+            "area": self.area,
+            "num_points": len(self.points),
+        }
+
     # https://docs.opencv.org/trunk/dd/d49/tutorial_py_contour_features.html
     # https://docs.opencv.org/3.4/d0/d49/tutorial_moments.html
 
@@ -96,49 +109,67 @@ class Contour:
         if len(points) < 4:
             return False, None
 
-        tl = next(
-            (
-                point
-                for point in points
-                if point.x < centroid.x and point.y < centroid.y
-            ),
-            None,
-        )
-        tr = next(
-            (
-                point
-                for point in points
-                if point.x > centroid.x and point.y < centroid.y
-            ),
-            None,
-        )
-        bl = next(
-            (
-                point
-                for point in points
-                if point.x < centroid.x and point.y > centroid.y
-            ),
-            None,
-        )
-        br = next(
-            (
-                point
-                for point in points
-                if point.x > centroid.x and point.y > centroid.y
-            ),
-            None,
-        )
+        def centerDistance(point: Point):
+            return (point.x - centroid.x) ** 2 + (point.y - centroid.y) ** 2
 
-        if tl is None or tr is None or bl is None or br is None:
+        try:
+            tl = sorted(
+                [
+                    point
+                    for point in points
+                    if point.x < centroid.x and point.y < centroid.y
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+            tr = sorted(
+                [
+                    point
+                    for point in points
+                    if point.x > centroid.x and point.y < centroid.y
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+            bl = sorted(
+                [
+                    point
+                    for point in points
+                    if point.x < centroid.x and point.y > centroid.y
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+            br = sorted(
+                [
+                    point
+                    for point in points
+                    if point.x > centroid.x and point.y > centroid.y
+                ],
+                key=centerDistance,
+                reverse=True,
+            )[0]
+        except IndexError:
             return False, None
-        else:
-            return True, Corners(tl, tr, bl, br)
+
+        return True, Corners(tl, tr, bl, br)
 
 
 FIND_CONTOURS_CONSTS = {"mode": cv2.RETR_EXTERNAL, "method": cv2.CHAIN_APPROX_SIMPLE}
 
 
 class Contours:
+    def nt_serialize(self):
+        centroids_x = [cnt.centroid.x for cnt in self.l]
+        centroids_y = [cnt.centroid.y for cnt in self.l]
+        areas = [cnt.area for cnt in self.l]
+        return {
+            "x": centroids_x,
+            "y": centroids_y,
+            "area": areas,
+            "num_contours": len(self.l),
+        }
+
     raw: List[ndarray]
     res: Point
 

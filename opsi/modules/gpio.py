@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import gpiozero
+
 from opsi.manager.manager_schema import Function
 
 __package__ = "opsi.gpio"
@@ -8,7 +9,7 @@ __version__ = "0.123"
 
 
 class LED(Function):
-    has_sideffect = True
+    has_sideeffect = True
 
     def on_start(self):
         self.LED = gpiozero.LED(self.settings.pin)
@@ -28,7 +29,7 @@ class LED(Function):
 
 
 class PWMLED(LED):
-    has_sideffect = True
+    has_sideeffect = True
 
     def on_start(self):
         self.LED = gpiozero.PWMLED(self.settings.pin)

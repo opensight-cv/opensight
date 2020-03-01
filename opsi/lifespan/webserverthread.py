@@ -3,6 +3,7 @@ import logging
 import threading
 
 import uvicorn
+from uvicorn.main import logger
 
 from opsi.util.concurrency import AsyncThread
 
@@ -19,10 +20,9 @@ class WebserverThread(AsyncThread):
         super().__init__(coroutine=self.run(), name="Webserver thread")
 
     async def __run_server__(self):
-        self.server.logger = self.config.logger_instance
         self.server.lifespan = self.config.lifespan_class(self.config)
 
-        self.server.logger.info("Started server process")
+        logger.info("Started server process")
         await self.server.startup()
         await self.server.main_loop()
 

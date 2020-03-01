@@ -7,7 +7,7 @@ from opsi.manager.manager_schema import Function
 from opsi.manager.types import AnyType, Slide
 from opsi.util.cv import Contours, Mat, MatBW
 
-from .fps import DrawFPS
+from .fps import DrawFPS, HookInstance
 from .shapes import DrawCircles, DrawCorners, DrawSegments
 
 __package__ = "opsi.draw"
