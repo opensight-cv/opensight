@@ -28,6 +28,7 @@ HookInstance = CamHook()
 if ENGINE_AVAIL:
     EngineInstance = EngineManager(HookInstance)
     HookInstance.add_listener("pipeline_update", EngineInstance.restart_engine)
+    HookInstance.add_listener("shutdown", EngineInstance.shutdown)
 
 
 class CameraInput(Function):
@@ -38,17 +39,11 @@ class CameraInput(Function):
         if not UndupeInstance.add(camNum):
             raise ValueError(f"Camera {camNum} already in use")
         self.cap = create_capture(self.settings)
-
-    @classmethod
-    def validate_settings(cls, settings):
-        camNum = parse_cammode(settings.mode)[0]
-        cap = create_capture(settings)
-        ret, frame = cap.read()  # test for errors
+        ret, frame = self.cap.read()  # test for errors
         try:
             Mat(frame)
         except Exception:
             raise ValueError(f"Unable to read picture from Camera {camNum}")
-        return settings
 
     Settings = get_settings()
 
