@@ -132,7 +132,15 @@ class Pipeline:
             n.next_frame()
             self.current = n
             if not n.skip:
-                n.run()
+                try:
+                    n.run()
+                except Exception as e:
+                    self.hook.cancel_current()
+                    LOGGER.exception(
+                        f"Error while running node {n.func_type.__name__}",
+                        exc_info=True,
+                    )
+
             n.skip = False
 
     def mainloop(self):
@@ -147,9 +155,7 @@ class Pipeline:
                 LOGGER.debug(
                     "(Harmless?) Error during pipeline mainloop", exc_info=True
                 )
-                self.hook.cancel_current()
             except:  # todo: wildcard except
-                self.hook.cancel_current()
                 LOGGER.exception("Error during pipeline mainloop")
 
             self.fps.update()
