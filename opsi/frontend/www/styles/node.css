@@ -466,7 +466,7 @@ input[type="button"]:active {
   justify-content: space-evenly;
   align-items: center;
   height: auto;
-  max-height: 20px;
+  max-height: auto;
 }
 .ioContainer {
   height: auto;

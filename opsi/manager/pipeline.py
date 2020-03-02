@@ -12,7 +12,7 @@ from opsi.util.concurrency import FifoLock
 from opsi.util.fps import FPS
 
 from .link import Link, NodeLink, StaticLink
-from .manager_schema import Function
+from .manager_schema import Function, Hook
 
 try:
     from networktables import NetworkTables
@@ -118,6 +118,9 @@ class Pipeline:
         self.current: Node = None
         self.fps = FPS()
 
+        self.hook = Hook()
+        self.hook.pipeline = self
+
     def run(self):
         if self.broken:
             return
@@ -129,12 +132,19 @@ class Pipeline:
             n.next_frame()
             self.current = n
             if not n.skip:
-                n.run()
+                try:
+                    n.run()
+                except Exception as e:
+                    self.hook.cancel_current()
+                    LOGGER.exception(
+                        f"Error while running node {n.func_type.__name__}",
+                        exc_info=True,
+                    )
+
             n.skip = False
 
     def mainloop(self):
         while True:
-            had_problem = False
             try:
                 with self.lock:
                     self.run()
@@ -145,15 +155,9 @@ class Pipeline:
                 LOGGER.debug(
                     "(Harmless?) Error during pipeline mainloop", exc_info=True
                 )
-                had_problem = True
             except:  # todo: wildcard except
                 LOGGER.exception("Error during pipeline mainloop")
-                had_problem = True
 
-            if had_problem or self.broken:
-                # avoid clogging logs with errors
-                time.sleep(0.5)
-                self.fps.reset()
             self.fps.update()
 
     def get_dependents(self, node):
