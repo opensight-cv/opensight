@@ -90,8 +90,8 @@ class SwitchBoolean(Function):
 
     def run(self, inputs):
         if inputs.switch:
-            return self.Outputs(out=inputs.thru2)
-        return self.Outputs(out=inputs.thru1)
+            return self.Outputs(thru=inputs.thru1)
+        return self.Outputs(thru=inputs.thru0)
 
 
 class SwitchNumber(Function):
