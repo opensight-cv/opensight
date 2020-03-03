@@ -48,9 +48,9 @@ class EngineManager:
         self.pipelines[func.name] = pipeline
         if NT_AVAIL:
             url = self.hook.url.split("/")[2].split(":")[0]
-            port = "" if self.port == 554 else self.port
+            port = "" if self.port == 554 else ":{self.port}"
             NetworkDict(f"/GStreamer/{func.name}")["/streams"] = [
-                f"rtsp://{url}:{port}/{func.name}",
+                f"rtsp://{url}{port}/{func.name}",
             ]
 
     def unregister(self, func: "H264CameraServer"):
