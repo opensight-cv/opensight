@@ -31,10 +31,6 @@ def get_settings():
     @dataclass
     class NonLinux:
         mode: int = 0
-        brightness: int = 50
-        contrast: int = 50
-        saturation: int = 50
-        exposure: int = 50
         width: int = 320
         height: int = 240
         fps: int = 60
