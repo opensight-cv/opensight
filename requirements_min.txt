@@ -13,5 +13,4 @@ six==1.14.0
 starlette==0.12.9
 toposort==1.5
 uvicorn==0.11.3
-uvloop==0.11.2
 websockets==7.0
