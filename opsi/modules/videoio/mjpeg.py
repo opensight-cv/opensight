@@ -1,6 +1,9 @@
 import asyncio
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+
+from pydantic import BaseModel
 
 from opsi.util.cv import Point
 
@@ -163,26 +166,25 @@ class MjpegResponse:
         self.request = request
         self.camserv = camserv
 
-    def int_param(self, name, default):
-        try:
-            return int(self.request.query_params.get(name, default))
-        except ValueError:
-            LOGGER.error("Failed to parse URL parameter %s", name, exc_info=True)
-            return default
+    class Params(BaseModel):
+        compression: int = 30
+        fps: int = 30
+        resolution: Point = None
 
     def get_params(self):
-        params = {"compression": 70, "fps": 30, "resolution": None}
-        params["compression"] = self.int_param("compression", 30)
-        params["fps"] = self.int_param("fps", 30)
+        query = dict(self.request.query_params)
 
-        res = self.request.query_params.get("resolution")
+        # parse resolution (in format XXxYY)
+        res = query.get("resolution")
         if res:
             try:
                 r = res.split("x")
-                params["resolution"] = Point(int(r[0]), int(r[1]))
-            except ValueError:
+                query["resolution"] = Point(int(r[0]), int(r[1]))
+            except (ValueError, AttributeError):
                 LOGGER.error("Invalid resolution: %s", res)
+                query["resolution"] = None
 
+        params = self.Params.parse_obj(query)
         return params
 
     async def __call__(self, scope, receive, send):
@@ -193,13 +195,17 @@ class MjpegResponse:
             while True:
                 if app.end or sink.end:
                     return
-                time = sink.next_frame_time(params["fps"])
+                time = sink.next_frame_time(params.fps)
+
+                if not sink.pendingFrame:
+                    await asyncio.sleep(0.01)
+                    continue
 
                 frame = sink.frame
-                res = params["resolution"]
+                res = params.resolution
                 if res:
                     frame = frame.resize(res)
-                frame = frame.encode_jpg(100 - params["compression"])
+                frame = frame.encode_jpg(100 - params.compression)
 
                 await app.send(self.HEADERS + frame)
                 if time > 0:
