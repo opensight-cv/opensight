@@ -81,12 +81,6 @@ class ASGILifespan:
 
         return self
 
-    async def __aexit__(self, *exc_info):
-        if self._task is not None:
-            self._task.cancel()
-
-        self._task = None
-
 
 # Takes care of all headers, preamble, and postamble
 # Usage: ```
