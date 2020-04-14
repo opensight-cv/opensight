@@ -196,26 +196,28 @@ def create_capture(settings):
         codec = get_codec(get_cam_info(mode[0]))
         if codec:
             set_property(cv2.CAP_PROP_FOURCC, codec[0])
+
+        if len(mode) >= 3:
+            w, h = mode[1], mode[2]
+        else:
+            w, h = settings.width, settings.height
+        set_property(cv2.CAP_PROP_FRAME_WIDTH, w)
+        set_property(cv2.CAP_PROP_FRAME_HEIGHT, h)
+
+        if len(mode) >= 4:
+            fps = mode[3]
+        else:
+            fps = settings.fps
+        set_property(cv2.CAP_PROP_FPS, fps)
+
+        set_property(
+            cv2.CAP_PROP_AUTO_EXPOSURE, 1
+        )  # disable auto-exposure, unintuitively
+        set_property(cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
+        set_property(cv2.CAP_PROP_CONTRAST, settings.contrast)
+        set_property(cv2.CAP_PROP_SATURATION, settings.saturation)
+        set_property(cv2.CAP_PROP_EXPOSURE, settings.exposure)
     else:
         cap = cv2.VideoCapture(mode[0])
-
-    if len(mode) >= 3:
-        w, h = mode[1], mode[2]
-    else:
-        w, h = settings.width, settings.height
-    set_property(cv2.CAP_PROP_FRAME_WIDTH, w)
-    set_property(cv2.CAP_PROP_FRAME_HEIGHT, h)
-
-    if len(mode) >= 4:
-        fps = mode[3]
-    else:
-        fps = settings.fps
-    set_property(cv2.CAP_PROP_FPS, fps)
-
-    set_property(cv2.CAP_PROP_AUTO_EXPOSURE, 1)  # disable auto-exposure, unintuitively
-    set_property(cv2.CAP_PROP_BRIGHTNESS, settings.brightness)
-    set_property(cv2.CAP_PROP_CONTRAST, settings.contrast)
-    set_property(cv2.CAP_PROP_SATURATION, settings.saturation)
-    set_property(cv2.CAP_PROP_EXPOSURE, settings.exposure)
 
     return cap
