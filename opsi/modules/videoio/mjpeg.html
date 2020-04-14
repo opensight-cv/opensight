@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>CameraServer: {{ cams|length }}</title>
+    </head>
+    <body>
+        <h1>CameraServer</h1>
+        <ul>
+        {% for cam in cams.items() %}
+            <li><a href="{{ cam[1] }}">{{ cam[0] }}</a></li>
+        {% else %}
+            <li>None</li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>

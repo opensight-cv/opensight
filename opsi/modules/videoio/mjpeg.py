@@ -3,6 +3,7 @@ import logging
 import queue
 import re
 from datetime import datetime
+from pathlib import Path
 
 import jinja2
 from starlette.routing import Route, Router
@@ -223,30 +224,14 @@ class CamHook(Hook):
     ROUTE_URL = "/{func}.mjpe?g"  # Route to bind to
     STREAM_URL = "/{func}.mjpeg"  # Canonical path
 
-    TEMPLATE = jinja2.Template(
-        """
-<html>
-    <head>
-        <title>CameraServer: {{ funcs|length }}</title>
-    </head>
-    <body>
-        <h1>CameraServer</h1>
-        <ul>
-        {% for func in funcs %}
-            <li><a href=".URL">{{ func }}</a></li>
-        {% else %}
-            <li>None</li>
-        {% endfor %}
-        </ul>
-    </body>
-</html>
-""".replace(
-            "URL", STREAM_URL.replace("{", "{{ ").replace("}", " }}")
-        )  # {func} --> {{ func }}
-    )
+    path = Path(__file__).parent
+    with open(path / "mjpeg.html") as f:
+        TEMPLATE = f.read()
+    TEMPLATE = jinja2.Template(TEMPLATE)
 
     CAMERA_NAME = "OpenSight: {func}"
-    CAMERA_URL = f"mjpeg:{{url}}{STREAM_URL}?"
+    CAMERA_URL_NT = f"mjpeg:{{url}}{STREAM_URL}?"
+    CAMERA_URL_WEB = f"{{url}}{STREAM_URL}"
 
     def __init__(self):
         super().__init__()
@@ -255,9 +240,8 @@ class CamHook(Hook):
         if NT_AVAIL:
             self.netdict = NetworkDict("/CameraPublisher")
         self.funcs = {}  # {name: route}
-        self.index_route = [
-            Route("/", LiteralTemplate(self.TEMPLATE, funcs=self.funcs.keys()))
-        ]
+        self.cams = {}  # {name: url}
+        self.index_route = [Route("/", LiteralTemplate(self.TEMPLATE, cams=self.cams))]
         self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
 
         self._update()
@@ -278,16 +262,18 @@ class CamHook(Hook):
         self.funcs[func.id] = Route(
             self.ROUTE_URL.format(func=func.id), self.endpoint(func)
         )
+        self.cams[func.id] = self.CAMERA_URL_WEB.format(url=self.url, func=func.id)
         self._update()
 
         # https://github.com/wpilibsuite/allwpilib/blob/ec9738245d86ec5a535a7d9eb22eadc78dee88b4/wpilibj/src/main/java/edu/wpi/first/wpilibj/CameraServer.java#L313
         if NT_AVAIL:
             ntdict = self.netdict.get_subtable(self.CAMERA_NAME.format(func=func.id))
-            ntdict["streams"] = [self.CAMERA_URL.format(url=self.url, func=func.id)]
+            ntdict["streams"] = [self.CAMERA_URL_NT.format(url=self.url, func=func.id)]
 
     def unregister(self, func):
         try:
             del self.funcs[func.id]
+            del self.cams[func.id]
         except KeyError:
             pass
 
@@ -297,97 +283,12 @@ class CamHook(Hook):
         self._update()
 
 
-class CameraSource:
-    def __init__(self):
-        self.queue = queue.Queue()
-        self.thread = AsyncThread(timeout=0.5, name="CameraSource")
-        self.snippets = []
-        self._img: Mat = None
-        self._shutdown = False
-
-    @property
-    def quality(self):
-        return self._quality
-
-    @quality.setter
-    def quality(self, quality):
-        self._quality = quality
-
-    @property
-    def img(self):
-        return self._img
-
-    @img.setter
-    def img(self, img):
-        self._img = img
-        if self._shutdown:
-            for snip in self.snippets:
-                snip.run_abandon()  # run each snippet one last time to close request
-            return
-        self.thread.run_coro(self.notify_generators())
-
-    async def notify_generators(self):
-        for snip in self.snippets:
-            try:
-                await snip.run()
-            except asyncio.CancelledError:
-                return
-
-    async def get_img(self, app, quality: int, fps_limit: int, resolution=None):
-        snippet = Snippet()
-        self.snippets.append(snippet)
-
-        res = None
-        if resolution:
-            m = re.search("(\d+)x(\d+)", resolution)
-            try:
-                res = Point(int(m.group(1)), int(m.group(2)))
-            except (TypeError, AttributeError):
-                LOGGER.debug("Invalid resolution", exc_info=True)
-
-        time = datetime.now()
-        while True:
-
-            await snippet.start()
-
-            # if not enough time has passed since last frame, wait until it has
-            delay = 1 / fps_limit
-            passed = (datetime.now() - time).total_seconds()
-            if delay > passed:
-                await asyncio.sleep(delay - passed)
-                continue
-            time = datetime.now()
-
-            mat = self.img
-            if mat is None:
-                break
-
-            if app.end or self._shutdown:
-                break
-
-            if res:
-                mat = mat.resize(res)
-            img = mat.encode_jpg(quality)
-
-            yield img
-
-            snippet.done()
-        snippet.done()
-
-        self.snippets.remove(snippet)
-
-    def shutdown(self):
-        self._shutdown = True
-        self.img = None
-        self.thread.shutdown()
-
-
 class MjpegCameraServer:
     def __init__(self):
-        self.src = CameraSource()
+        pass
 
     def run(self, inputs):
-        self.src.img = inputs.img.mat
+        pass
 
     def dispose(self):
-        self.src.shutdown()
+        pass
