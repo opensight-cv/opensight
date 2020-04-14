@@ -5,8 +5,9 @@ from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat, MatBW
 from opsi.util.unduplicator import Unduplicator
 
+from .camhook import CamHook
 from .input import create_capture, get_modes, get_settings, parse_cammode
-from .mjpeg import CamHook, MjpegCameraServer
+from .mjpeg import MjpegCameraServer
 
 LOGGER = logging.getLogger(__name__)
 

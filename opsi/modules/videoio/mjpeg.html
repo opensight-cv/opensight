@@ -5,8 +5,8 @@
     <body>
         <h1>CameraServer</h1>
         <ul>
-        {% for cam in cams.items() %}
-            <li><a href="{{ cam[1] }}">{{ cam[0] }}</a></li>
+        {% for name, url in cams.items() %}
+            <li><a href="{{ url|e }}">{{ name|e }}</a></li>
         {% else %}
             <li>None</li>
         {% endfor %}

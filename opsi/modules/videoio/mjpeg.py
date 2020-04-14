@@ -1,28 +1,11 @@
 import asyncio
 import logging
-import queue
-import re
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime, timedelta
 
-import jinja2
-from starlette.routing import Route, Router
-
-from opsi.manager.manager_schema import Hook
-from opsi.util.concurrency import AsyncThread, Snippet
-from opsi.util.cv import Mat, Point
-from opsi.util.networking import choose_port
-from opsi.util.templating import LiteralTemplate
-
-try:
-    from opsi.manager.netdict import NetworkDict
-
-    NT_AVAIL = True
-except ImportError:
-    NT_AVAIL = False
+from opsi.util.cv import Point
 
 LOGGER = logging.getLogger(__name__)
-logging.getLogger("asyncio").setLevel(logging.ERROR)
+# logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 # -----------------------------------------------------------------------------
 # Reusable ASGI framework
@@ -87,6 +70,14 @@ class ASGILifespan:
 
         if self._task is None:
             self._task = asyncio.ensure_future(self._task_end())
+
+        return self
+
+    async def __aexit__(self, *exc_info):
+        if self._task is not None:
+            self._task.cancel()
+
+        self._task = None
 
         return self
 
@@ -166,10 +157,7 @@ class ASGIStreamer(ASGIApplication):
         super().__init__(receive, send, status=status, headers=headers)
 
     async def send(self, data):
-        try:
-            await super().send(self._boundary + data)
-        except (asyncio.CancelledError, RuntimeError):
-            return
+        await super().send(self._boundary + data)
 
 
 # -----------------------------------------------------------------------------
@@ -179,116 +167,89 @@ class ASGIStreamer(ASGIApplication):
 class MjpegResponse:
     HEADERS = ASGIApplication._encode_bytes("Content-Type: image/jpeg\r\n\r\n")
 
-    def __init__(self, request, src):
+    def __init__(self, request, camserv):
         self.request = request
-        self.src = src
+        self.camserv = camserv
 
-    async def send_images(self, app, quality, fps, resolution):
-        async for img in self.src.get_img(app, quality, fps, resolution):
-            if img is None:
-                break
-            asyncio.create_task(app.send(self.HEADERS + img))
-
-    def get_values(self):
-        quality = 70
-        fps = 30
-        resolution = None
+    def int_param(self, name, default):
         try:
-            quality = 100 - int(self.request.query_params.get("compression", 30))
-            fps = int(self.request.query_params.get("fps", 30))
-            resolution = self.request.query_params.get("resolution")
-        except (TypeError, ValueError):
-            LOGGER.error("Failed to parse URL parameters", exc_info=True)
-        return quality, fps, resolution
+            return int(self.request.query_params.get(name, default))
+        except ValueError:
+            LOGGER.error("Failed to parse URL parameter %s", name, exc_info=True)
+            return default
+
+    def get_params(self):
+        params = {"compression": 70, "fps": 30, "resolution": None}
+        params["compression"] = self.int_param("compression", 30)
+        params["fps"] = self.int_param("fps", 30)
+
+        res = self.request.query_params.get("resolution")
+        if res:
+            try:
+                r = res.split("x")
+                params["resolution"] = Point(int(r[0]), int(r[1]))
+            except ValueError:
+                LOGGER.error("Invalid resolution: %s", res)
+
+        return params
 
     async def __call__(self, scope, receive, send):
+        # call app.send(self.HEADERS + frame) to send frame
+        sink = self.camserv.src.src
+        params = self.get_params()
         async with ASGIStreamer(receive, send) as app:
-            quality, fps, resolution = self.get_values()
-            self.src.thread.run_coro(self.send_images(app, quality, fps, resolution))
             while True:
-                if app.end:
+                if app.end or sink.end:
                     return
-                if self.src._shutdown:
-                    return
-                try:
-                    await asyncio.sleep(0.1)
-                except asyncio.CancelledError:
-                    return
+                time = sink.next_frame_time(params["fps"])
+
+                frame = sink.frame
+                res = params["resolution"]
+                if res:
+                    frame = frame.resize(res)
+                frame = frame.encode_jpg(100 - params["compression"])
+
+                await app.send(self.HEADERS + frame)
+                if time > 0:
+                    await asyncio.sleep(time)
 
 
 # -----------------------------------------------------------------------------
 
 
-class CamHook(Hook):
-    # Matches both "camera.mjpg" and "camera.mjpeg"
-    ROUTE_URL = "/{func}.mjpe?g"  # Route to bind to
-    STREAM_URL = "/{func}.mjpeg"  # Canonical path
-
-    path = Path(__file__).parent
-    with open(path / "mjpeg.html") as f:
-        TEMPLATE = f.read()
-    TEMPLATE = jinja2.Template(TEMPLATE)
-
-    CAMERA_NAME = "OpenSight: {func}"
-    CAMERA_URL_NT = f"mjpeg:{{url}}{STREAM_URL}?"
-    CAMERA_URL_WEB = f"{{url}}{STREAM_URL}"
-
+class Sink:
     def __init__(self):
-        super().__init__()
+        self.pendingFrame = False
+        self.lastTime = datetime.now()
+        self.end = False
 
-        self.app = Router()
-        if NT_AVAIL:
-            self.netdict = NetworkDict("/CameraPublisher")
-        self.funcs = {}  # {name: route}
-        self.cams = {}  # {name: url}
-        self.index_route = [Route("/", LiteralTemplate(self.TEMPLATE, cams=self.cams))]
-        self.listeners = {"startup": set(), "shutdown": set(), "pipeline_update": set()}
+        self._frame = None
 
-        self._update()
+    @property
+    def frame(self):
+        self.lastTime = datetime.now()
+        return self._frame
 
-    def _update(self):
-        self.app.routes = self.index_route + list(self.funcs.values())
+    @frame.setter
+    def frame(self, frame):
+        self._frame = frame
+        self.pendingFrame = True
 
-    def endpoint(self, func):
-        def image(request):
-            return MjpegResponse(request, func.src.src)
+    def next_frame_time(self, fps):
+        return (
+            (self.lastTime + timedelta(seconds=1 / fps)) - datetime.now()
+        ).total_seconds()
 
-        return image
-
-    def register(self, func):
-        if func.id in self.funcs:
-            raise ValueError("Cannot have duplicate name")
-
-        self.funcs[func.id] = Route(
-            self.ROUTE_URL.format(func=func.id), self.endpoint(func)
-        )
-        self.cams[func.id] = self.CAMERA_URL_WEB.format(url=self.url, func=func.id)
-        self._update()
-
-        # https://github.com/wpilibsuite/allwpilib/blob/ec9738245d86ec5a535a7d9eb22eadc78dee88b4/wpilibj/src/main/java/edu/wpi/first/wpilibj/CameraServer.java#L313
-        if NT_AVAIL:
-            ntdict = self.netdict.get_subtable(self.CAMERA_NAME.format(func=func.id))
-            ntdict["streams"] = [self.CAMERA_URL_NT.format(url=self.url, func=func.id)]
-
-    def unregister(self, func):
-        try:
-            del self.funcs[func.id]
-            del self.cams[func.id]
-        except KeyError:
-            pass
-
-        if NT_AVAIL:
-            self.netdict.delete_table(self.CAMERA_NAME.format(func=func.id))
-
-        self._update()
+    def dispose(self):
+        self.end = True
 
 
 class MjpegCameraServer:
     def __init__(self):
-        pass
+        self.src = Sink()
 
     def run(self, inputs):
-        pass
+        self.src.frame = inputs.img
 
     def dispose(self):
-        pass
+        self.src.dispose()
