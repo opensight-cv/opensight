@@ -79,8 +79,6 @@ class ASGILifespan:
 
         self._task = None
 
-        return self
-
 
 # Takes care of all headers, preamble, and postamble
 # Usage: ```
