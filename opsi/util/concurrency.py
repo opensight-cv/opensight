@@ -6,7 +6,9 @@ import time
 try:
     import uvloop
 except ImportError:
-    import asyncio as uvloop
+    pass
+else:
+    uvloop.install()
 
 LOGGER = logging.getLogger(__name__)
 
@@ -93,7 +95,7 @@ class ShutdownThread(ThreadBase):
 
 class AsyncThread(ShutdownThread):
     def __init__(self, coroutine=None, **kwargs):
-        self.loop = uvloop.new_event_loop()
+        self.loop = asyncio.new_event_loop()
         super().__init__(self.loop.run_forever, autostart=True, **kwargs)
         if coroutine:
             self.run_coro(coroutine)
