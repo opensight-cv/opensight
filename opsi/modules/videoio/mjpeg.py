@@ -19,6 +19,7 @@ class Params(BaseModel):
         #   "30"   -> 30
         #    30.9  -> 30
         #   "30.9" -> error
+        # this fixes that
 
         try:
             return int(v)
@@ -27,17 +28,12 @@ class Params(BaseModel):
 
     @validator("resolution", pre=True)
     def parse_resolution(cls, v):
-        # parse widthXheight str
+        # parse "widthXheight" str to ("width", "height") tuple
 
         if v is None:
             return v
 
-        try:
-            # split only, pydantic will convert to int
-            return v.lower().split("x")
-        except AttributeError:
-            LOGGER.error("Invalid resolution %s", v)
-            return None
+        return v.lower().split("x")
 
     @validator("resolution")
     def convert_resolution(cls, v):
@@ -46,14 +42,12 @@ class Params(BaseModel):
         if v is None or isinstance(v, Point):
             return v
 
-        try:
-            w = int(v[0])
-            h = int(v[1])
-            assert w > 0 and h > 0
-            return Point(w, h)
-        except (ValueError, TypeError, AssertionError):
-            LOGGER.error("Invalid resolution %s", v)
-            return None
+        w, h = int(v[0]), int(v[1])
+
+        if not (w > 0 and h > 0):
+            raise ValueError("Must be positive resolution")
+
+        return Point(w, h)
 
     @classmethod
     def create(cls, query=None):
@@ -70,7 +64,9 @@ class Params(BaseModel):
 
             for error in e.errors():
                 try:
-                    del query[error["loc"][0]]
+                    key = error["loc"][0]
+                    value = query.pop(key)
+                    LOGGER.info("Ignoring invalid argument: %r = %r", key, value)
                 except KeyError:  # multiple errors in same key
                     pass
 
@@ -98,7 +94,7 @@ class MjpegResponse:
         query = dict(self.request.query_params)
         params = Params.create(query)
 
-        LOGGER.debug("Parsed params: %r -> %r", query, params)
+        # LOGGER.debug("Parsed params: %r -> %r", query, params)
 
         async with ASGIStreamer(receive, send) as app:
             while True:
