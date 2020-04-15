@@ -9,7 +9,6 @@ from opsi.util.asgi import ASGIStreamer
 from opsi.util.cv import Point
 
 LOGGER = logging.getLogger(__name__)
-# logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 
 class Params(BaseModel):
@@ -37,7 +36,7 @@ class Params(BaseModel):
             # split only, pydantic will convert to int
             return v.lower().split("x")
         except AttributeError:
-            log_bad_resolution(v)
+            LOGGER.error("Invalid resolution %s", v)
             return None
 
     @validator("resolution")
@@ -48,9 +47,12 @@ class Params(BaseModel):
             return v
 
         try:
-            return Point(int(v[0]), int(v[1]))
-        except (ValueError, TypeError):
-            log_bad_resolution(v)
+            w = int(v[0])
+            h = int(v[1])
+            assert w > 0 and h > 0
+            return Point(w, h)
+        except (ValueError, TypeError, AssertionError):
+            LOGGER.error("Invalid resolution %s", v)
             return None
 
     @classmethod
@@ -96,13 +98,12 @@ class MjpegResponse:
         query = dict(self.request.query_params)
         params = Params.create(query)
 
-        LOGGER.info("Parsed params: %r -> %r", query, params)
+        LOGGER.debug("Parsed params: %r -> %r", query, params)
 
         async with ASGIStreamer(receive, send) as app:
             while True:
                 if app.end or sink.end:
                     return
-                time = sink.next_frame_time(params.fps)
 
                 if not sink.pendingFrame:
                     await asyncio.sleep(0.01)
@@ -113,8 +114,9 @@ class MjpegResponse:
                 if res:
                     frame = frame.resize(res)
                 frame = frame.encode_jpg(100 - params.compression)
-
                 await app.send(self.HEADERS + frame)
+
+                time = sink.next_frame_time(params.fps)
                 if time > 0:
                     await asyncio.sleep(time)
 
