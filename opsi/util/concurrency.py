@@ -6,7 +6,9 @@ import time
 try:
     import uvloop
 except ImportError:
-    import asyncio as uvloop
+    pass
+else:
+    uvloop.install()
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,33 +40,6 @@ class FifoLock:
         with self.condition:
             self.condition.notify_all()
             self.condition.wait()
-
-
-class Snippet:
-    def __init__(self):
-        self.__start__ = asyncio.Event()
-        self.__end__ = asyncio.Event()
-
-    async def run(self):
-        self.__start__.set()
-        try:
-            await self.__end__.wait()
-        except asyncio.CancelledError:
-            pass
-        self.__end__.clear()
-
-    async def start(self):
-        try:
-            await self.__start__.wait()
-            self.__start__.clear()
-        except asyncio.CancelledError:
-            pass
-
-    def run_abandon(self):
-        self.__start__.set()
-
-    def done(self):
-        self.__end__.set()
 
 
 class ThreadBase:
@@ -120,7 +95,7 @@ class ShutdownThread(ThreadBase):
 
 class AsyncThread(ShutdownThread):
     def __init__(self, coroutine=None, **kwargs):
-        self.loop = uvloop.new_event_loop()
+        self.loop = asyncio.new_event_loop()
         super().__init__(self.loop.run_forever, autostart=True, **kwargs)
         if coroutine:
             self.run_coro(coroutine)
@@ -134,9 +109,9 @@ class AsyncThread(ShutdownThread):
         asyncio.run_coroutine_threadsafe(coro, self.loop)
 
     def wait_for_task(self, task, timeout=3):
-        start = time.time()
+        start = time.monotonic()
         while True:
-            if (time.time() - start) >= timeout:
+            if (time.monotonic() - start) >= timeout:
                 return False
             if task.done() or task.cancelled():
                 return True
