@@ -1,8 +1,7 @@
 import math
 
-import numpy as np
-
 import cupy as cp
+import numpy as np
 
 DIM_BLOCK = 32
 
