@@ -2,10 +2,9 @@ from dataclasses import dataclass
 
 from networktables import NetworkTables
 
-from opsi.manager.manager_schema import Function, Hook
-from opsi.manager.netdict import NT_TYPES, NetworkDict
+from opsi.manager.manager_schema import Function
+from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import AnyType
-from opsi.util.networking import get_nt_server
 from opsi.util.unduplicator import Unduplicator
 
 UndupeInstance = Unduplicator()

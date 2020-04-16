@@ -3,6 +3,8 @@ import socket
 
 import netifaces
 
+from opsi.webserver.schema import Network
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -38,26 +40,24 @@ def get_server_url(lifespan, port=80, prefix="/"):
     teamStr = network.team_str
     hostname = f"{socket.gethostname()}.local"
 
-    if not network.mDNS:
+    if network.mode is Network.Mode.STATIC:
         host_prefix = f"10.{teamStr[:2]}.{teamStr[2:]}"
         static = get_static_hostname(host_prefix)
         hostname = static if static else hostname  # ensure static isn't None
-
-    if network.nt_enabled and not network.nt_client:
-        if lifespan.using_systemd:
-            hostname = "opensight.local"
-        else:
-            hostname = "localhost"
+    elif network.mode is Network.Mode.LOCALHOST:
+        hostname = "localhost"
 
     return f"http://{hostname}{port_str}{prefix}"
 
 
 def get_nt_server(network):
-    if not network.mDNS:
+    if network.mode is Network.Mode.STATIC:
         teamStr = network.team_str
         hostname = f"10.{teamStr[:2]}.{teamStr[2:]}.2"
-    else:
+    elif network.mode is Network.Mode.mDNS:
         hostname = f"roboRIO-{network.team}-FRC.local"
+    else:
+        hostname = "localhost"
 
     return hostname
 
