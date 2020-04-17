@@ -42,7 +42,7 @@ class Persistence:
 
         self.paths = self.PATHS
         if path:
-            self.paths = (path,) + self.paths
+            self.paths = (path,)
 
         self.base_path = self._get_path()
 
