@@ -5,6 +5,8 @@ import os.path
 import sys
 from typing import Dict, List, Tuple, Type
 
+from opsi.util.path import join
+
 from .manager_schema import (
     Function,
     Hook,
@@ -19,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def import_module(path: ModulePath):
+    """
     # So this sometimes doesn't work if the module name also exists in site-packages
     # But I don't understand exactly when and why this happens
 
@@ -38,9 +41,37 @@ def import_module(path: ModulePath):
         sys.path = path_bak[:]
     """
 
-    # Workaround for now: only allow import .py file, not full package
+    possible_names = (f"{path.name}.py", f"{path.name}/__init__.py")
 
-    full_path = os.path.abspath(os.path.join(path.path, path.name + ".py"))
+    try:
+        for filename in possible_names:
+            module = _import_module(path, filename)
+            if module:
+                return module
+
+        else:
+            # Tried all possible paths, this module does not exist
+            # importlib.import_module would raise ModuleNotFoundError
+            # spec.loader.exec_module would raise FileNotFoundError
+
+            LOGGER.error(
+                "Module %s does not exist, skipping...", path.name,
+            )
+            return
+
+    except ImportError as e:
+        LOGGER.error(
+            "Encountered error when importing module %s due to %r, skipping...",
+            path.name,
+            e,
+        )
+
+
+def _import_module(path: ModulePath, filename: str):
+    # To import a package, pass in the package's __init__.py
+    # Returns None if file does not exist
+
+    full_path = join(path.path, filename)
 
     # https://docs.python.org/3.7/library/importlib.html#importing-a-source-file-directly
 
@@ -51,10 +82,17 @@ def import_module(path: ModulePath):
     # But it's necessary for inspect.getmodule to work
     sys.modules[path.name] = module
 
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except FileNotFoundError:
+        try:
+            del sys.modules[path.name]
+        except KeyError:
+            pass
+
+        return
 
     return module
-    """
 
 
 class Manager:
