@@ -32,7 +32,7 @@ class NodeN(BaseModel):
         inputs: Dict[str, Optional[LinkN]] = {}
     else:
         inputs: Dict[str, InputN] = {}
-    pos: Tuple[int, int] = ()
+    pos: Tuple[int, int] = (20, 20)
 
 
 class NodeTreeN(BaseModel):
@@ -75,8 +75,8 @@ class Network(BaseModel):
     @Enum("Network.Mode")
     class Mode:
         mDNS: ...
-        STATIC: ...
-        LOCALHOST: ...
+        Static: ...
+        Localhost: ...
 
     team: str = 9999
     mode: Mode = Mode.mDNS

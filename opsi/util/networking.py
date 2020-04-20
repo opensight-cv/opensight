@@ -40,18 +40,18 @@ def get_server_url(lifespan, port=80, prefix="/"):
     teamStr = network.team_str
     hostname = f"{socket.gethostname()}.local"
 
-    if network.mode is Network.Mode.STATIC:
+    if network.mode is Network.Mode.Static:
         host_prefix = f"10.{teamStr[:2]}.{teamStr[2:]}"
         static = get_static_hostname(host_prefix)
         hostname = static if static else hostname  # ensure static isn't None
-    elif network.mode is Network.Mode.LOCALHOST:
+    elif network.mode is Network.Mode.Localhost:
         hostname = "localhost"
 
     return f"http://{hostname}{port_str}{prefix}"
 
 
 def get_nt_server(network):
-    if network.mode is Network.Mode.STATIC:
+    if network.mode is Network.Mode.Static:
         teamStr = network.team_str
         hostname = f"10.{teamStr[:2]}.{teamStr[2:]}.2"
     elif network.mode is Network.Mode.mDNS:

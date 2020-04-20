@@ -161,7 +161,7 @@ $(document).ready(function() {
     var form = $("#network-form")[0];
     var data = {
       team: $("#team-number")[0].valueAsNumber,
-      mDNS: ($("#dns-mode")[0].value === "mDNS")
+      mode: $("#dns-mode")[0].value
     };
     if ($("#net-pi-settings").length > 0) {
       data['dhcp'] = ($("#ip-assign")[0].value === "DHCP")
