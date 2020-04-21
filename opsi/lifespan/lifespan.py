@@ -9,22 +9,14 @@ import opsi
 from opsi.backend.network import dhcpcd_writable
 from opsi.manager import Program
 from opsi.manager.manager_schema import ModulePath
-from opsi.util.concurrency import AsyncThread, ShutdownThread
+from opsi.util.concurrency import ShutdownThread
 from opsi.util.networking import choose_port
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
-from opsi.webserver import WebServer
+from opsi.webserver.app import WebServer
 from opsi.webserver.serialize import import_nodetree
 
 from .webserverthread import WebserverThread
-
-try:
-    from networktables import NetworkTables
-
-    NT_AVAIL = True
-except ImportError:
-    NT_AVAIL = False
-
 
 # import optional dependencies
 
@@ -47,7 +39,6 @@ def register_modules(program, module_path):
     if not isdir(moddir):
         return
 
-    files = []
     for path in os.listdir(moddir):
         fullpath = join(moddir, path)
 
@@ -61,7 +52,6 @@ def register_modules(program, module_path):
 
 class Lifespan:
     PORTS = (80, 8000)
-    NT_AVAIL = NT_AVAIL
 
     def __init__(self, args, *, catch_signal=False, load_persist=True, timeout=10):
         self.event = threading.Event()
@@ -108,9 +98,7 @@ class Lifespan:
     def netconf_writable(self):
         if self._netconf is not None:
             return self._netconf
-        self._netconf = False
-        if self.using_systemd and dhcpcd_writable():
-            self._netconf = True
+        self._netconf = self.using_systemd and dhcpcd_writable()
         return self._netconf
 
     def make_threads(self):

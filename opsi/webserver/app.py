@@ -2,13 +2,13 @@ import logging
 from os.path import join
 
 from starlette.applications import Starlette
-from starlette.endpoints import HTTPEndpoint
 from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import PlainTextResponse, RedirectResponse
+from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 import opsi
+from opsi.manager.netdict import NT_AVAIL
 from opsi.util.networking import get_server_url
 from opsi.util.templating import TemplateFolder
 
@@ -34,7 +34,7 @@ class WebServer:
                 "settings.html",
                 persist=self.program.lifespan.persist,
                 daemon=self.program.lifespan.using_systemd,
-                nt=self.program.lifespan.NT_AVAIL,
+                nt=NT_AVAIL,
                 netconf=self.program.lifespan.netconf_writable,
                 version=opsi.__version__,
             ),

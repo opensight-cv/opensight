@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 
-import cv2
-import numpy as np
-
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import RangeType, Slide
-from opsi.util.cv.mat import Mat, MatBW
+from opsi.manager.types import Slide
+from opsi.util.cv.mat import Mat
 
 __package__ = "opsi.imageops"
 __version__ = "0.123"

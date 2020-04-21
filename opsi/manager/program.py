@@ -3,8 +3,6 @@ import queue
 import threading
 from uuid import UUID, uuid4
 
-from opsi.webserver.schema import NodeTreeN
-
 from .manager import Manager
 from .pipeline import Node, Pipeline
 

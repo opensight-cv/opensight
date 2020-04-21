@@ -5,7 +5,7 @@ from numpy import ndarray
 
 from opsi.util.cache import cached_property
 
-from .mat import Mat, MatBW
+from .mat import MatBW
 from .shape import Corners, Point, Rect, RotatedRect
 
 

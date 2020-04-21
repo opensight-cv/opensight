@@ -153,7 +153,6 @@ class FindAngle(Function):
         width = inputs.img.res.x
         height = inputs.img.res.y
 
-        center_x = 0
         x = inputs.point.x
         y = inputs.point.y
 

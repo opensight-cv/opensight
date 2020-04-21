@@ -1,5 +1,4 @@
 import logging
-import time
 from dataclasses import fields
 from itertools import chain
 from queue import deque
@@ -13,13 +12,7 @@ from opsi.util.fps import FPS
 
 from .link import Link, NodeLink, StaticLink
 from .manager_schema import Function, Hook
-
-try:
-    from networktables import NetworkTables
-
-    NT_AVAIL = True
-except ImportError:
-    NT_AVAIL = False
+from .netdict import NT_AVAIL, NetworkTables
 
 LOGGER = logging.getLogger(__name__)
 
@@ -134,7 +127,7 @@ class Pipeline:
             if not n.skip:
                 try:
                     n.run()
-                except Exception as e:
+                except Exception:
                     self.hook.cancel_current()
                     LOGGER.exception(
                         f"Error while running node {n.func_type.__name__}",

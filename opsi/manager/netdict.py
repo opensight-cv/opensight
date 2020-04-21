@@ -1,9 +1,15 @@
 from typing import Callable, List, Union
 
-from _pynetworktables._impl.api import NtCoreApi
-from _pynetworktables._impl.constants import NT_UNASSIGNED
-from _pynetworktables._impl.value import Value
-from networktables import NetworkTableEntry, NetworkTables, NetworkTablesInstance
+try:
+    from _pynetworktables._impl.api import NtCoreApi
+    from _pynetworktables._impl.constants import NT_UNASSIGNED
+    from _pynetworktables._impl.value import Value
+    from networktables import NetworkTableEntry, NetworkTables, NetworkTablesInstance
+
+    NT_AVAIL = True
+except ImportError:
+    NT_AVAIL = False
+    NetworkTables = None
 
 # These are the types that are allowed to be stored in NT
 # Not the actual types themselves, these are the Python equivalents
@@ -24,9 +30,9 @@ _missing = object()
 
 
 class NetworkDict:
-    def __init__(self, table: str, networktable: NetworkTablesInstance = NetworkTables):
-        self.networktable = networktable
-        self.api: NtCoreApi = networktable._api
+    def __init__(self, table: str, networktable: "NetworkTablesInstance" = None):
+        self.networktable = networktable or NetworkTables
+        self.api: NtCoreApi = self.networktable._api
         self.path = (  # Has start and end "/"
             self.networktable.PATH_SEPARATOR
             + self._cleanup_path(table)
@@ -41,7 +47,7 @@ class NetworkDict:
     def _get_path(self, name: str) -> str:
         return self.path + self._cleanup_path(name)
 
-    def _get_entry(self, name: str) -> Value:  # Returns None if entry does not exist
+    def _get_entry(self, name: str) -> "Value":  # Returns None if entry does not exist
         if not isinstance(name, str):
             raise TypeError("Key must be type str")
 
