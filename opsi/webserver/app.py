@@ -3,6 +3,7 @@ from os.path import join
 
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
+from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -38,6 +39,7 @@ class WebServer:
                 version=opsi.__version__,
             ),
         )
+        self.app.add_route("/coffee", self.get_coffee)
 
         self.testclient = WebserverTest(self.app)
         self.api = Api(self.app, self.program)
@@ -79,6 +81,15 @@ class WebServer:
 
     def set_nodes(self, data: str) -> str:
         return self.testclient.post("/api/nodes", data)
+
+    def get_coffee(self, data: str):
+        try:
+            return self.coffee
+        except AttributeError:  # TODO: refactor teapot to support coffee
+            raise HTTPException(
+                status_code=418,
+                detail="Cannot brew coffee. OpenSight only supports brewing tea.",
+            )
 
 
 class CacheControlMiddleware(BaseHTTPMiddleware):

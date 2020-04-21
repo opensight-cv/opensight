@@ -45,8 +45,9 @@
             <br>
             <label for="dns-mode">DNS Mode:</label>
             <select id="dns-mode">
-                <option value="mDNS" {{"selected" if persist.network.mDNS}}>mDNS</option>
-                <option value="Static" {{"selected" if not persist.network.mDNS}}>Static</option>
+                {% for name, value in persist.network.mode.__class__.__members__.items() %}
+                <option value="{{ name }}" {{ "selected" if persist.network.mode == value }}>{{ name }}</option>
+                {% endfor %}
             </select>
             <br>
         </div>

@@ -1,7 +1,9 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 from pydantic import BaseModel, validator
+
+from opsi.util.enum import Enum
 
 # N = NodeTree = often save
 # F = Function = initial load
@@ -30,7 +32,7 @@ class NodeN(BaseModel):
         inputs: Dict[str, Optional[LinkN]] = {}
     else:
         inputs: Dict[str, InputN] = {}
-    pos: list = []
+    pos: Tuple[int, int] = (20, 20)
 
 
 class NodeTreeN(BaseModel):
@@ -70,8 +72,14 @@ class SchemaF(BaseModel):
 
 
 class Network(BaseModel):
+    @Enum("Network.Mode")
+    class Mode:
+        mDNS: ...
+        Static: ...
+        Localhost: ...
+
     team: str = 9999
-    mDNS: bool = True
+    mode: Mode = Mode.mDNS
     dhcp: bool = True
     static_ext: str = 100
     nt_enabled: bool = True
@@ -89,7 +97,7 @@ class Network(BaseModel):
     @property
     def team_str(self):
         team_str = f"{self.team:04d}"
-        assert 1 <= len(team_str) <= 4
+        assert len(team_str) == 4
 
         return team_str
 
