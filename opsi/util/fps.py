@@ -1,8 +1,8 @@
 from collections import deque
-from time import monotonic
+from time import perf_counter
 
-get_time = monotonic  # in case it needs to be changed later
-
+get_time = perf_counter  # in case it needs to be changed later
+# monotonic is too low-res on windows, and causes division by zero issues
 
 # Rolling average framerate
 class FPS:
@@ -15,7 +15,7 @@ class FPS:
 
     def update(self):
         self.times.append(get_time())
-        self.fps = self.ROLLING_AVERAGE_SIZE / (self.times[-1] - self.times[0])
+        self.fps = self.ROLLING_AVERAGE_SIZE / max(1e-4, self.times[-1] - self.times[0])
 
     def reset(self):
         self.times.clear()
