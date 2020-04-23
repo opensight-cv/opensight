@@ -10,8 +10,8 @@ from opsi.util.enum import Enum
 
 
 # Constant flags, to be False eventually
-FUNC_INSTEAD_OF_MODS = True
-LINKS_INSTEAD_OF_INPUTS = True
+FUNC_INSTEAD_OF_MODS = False
+LINKS_INSTEAD_OF_INPUTS = False
 
 
 class LinkN(BaseModel):
