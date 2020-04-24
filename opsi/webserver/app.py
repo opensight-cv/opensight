@@ -1,16 +1,14 @@
 import logging
 from os.path import join
 
-import opsi
-from opsi.util.networking import get_server_url
-from opsi.util.templating import TemplateFolder
 from starlette.applications import Starlette
-from starlette.endpoints import HTTPEndpoint
 from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import PlainTextResponse, RedirectResponse
+from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
+from opsi.util.networking import get_server_url
+from opsi.util.templating import TemplateFolder
 from .api import Api
 from .test import WebserverTest
 

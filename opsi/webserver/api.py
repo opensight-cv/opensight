@@ -22,6 +22,7 @@ origins = [
     "http://localhost:8080",
 ]
 
+
 class Api:
     def __init__(self, parent_app, program, prefix="/api"):
         self.program = program
@@ -31,7 +32,7 @@ class Api:
         )
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=origins,
+            allow_origins=["*"],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
