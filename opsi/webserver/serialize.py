@@ -48,7 +48,7 @@ def _tuple_serialize(type):
     if not isinstance(type, tuple):
         return None
 
-    return InputOutputF(type="Enum", params={"options": type})
+    return InputOutputF(type="Enum", params={"items": type})
 
 
 _type_name: Dict[Type, str] = {AnyType: "Any"}
