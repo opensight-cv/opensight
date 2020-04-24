@@ -1,6 +1,6 @@
 aiofiles==0.4.0
 Click==7.0
-fastapi==0.54.0
+fastapi==0.49.0
 h11==0.9.0
 httptools==0.0.11
 imutils==0.5.3
@@ -13,7 +13,7 @@ pynetworktables==2020.0.3
 pystemd==0.7.0
 python-multipart==0.0.5
 six==1.14.0
-starlette==0.13.2
+starlette==0.12.9
 toposort==1.5
 upgraded-engineer==0.2.1
 uvicorn==0.11.3

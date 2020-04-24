@@ -1,26 +1,16 @@
 import logging
 
-from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-
-from starlette.responses import JSONResponse
-
 import opsi
+from fastapi import FastAPI, File, UploadFile
 from opsi.backend.network import dhcpcd_writable, set_network_mode
 from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
+from starlette.responses import JSONResponse
 
 from .schema import Network, NodeTreeN, SchemaF
 from .serialize import *
 
 LOGGER = logging.getLogger(__name__)
-
-origins = [
-    "http://opensight.local",
-    "http://opensight.local:8080",
-    "http://localhost",
-    "http://localhost:8080",
-]
 
 
 class Api:
@@ -29,13 +19,6 @@ class Api:
 
         self.app = FastAPI(
             title="OpenSight API", version=opsi.__version__, openapi_prefix=prefix
-        )
-        self.app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
         )
 
         self.app.exception_handler(NodeTreeImportError)(self.importerror_handler)
