@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.manager.types import Range, RangeType, Slide
-from opsi.util.cv import Contour, Contours, Mat, MatBW, Point
+from opsi.manager.types import RangeType, Slide
+from opsi.util.cv import Contour, Contours
 
 __package__ = "opsi.contour-filter-ops"
 __version__ = "0.123"

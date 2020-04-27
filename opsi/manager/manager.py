@@ -1,7 +1,6 @@
 import importlib
 import inspect
 import logging
-import os.path
 import sys
 from typing import Dict, List, Tuple, Type
 
@@ -61,7 +60,7 @@ def import_module(path: ModulePath):
 
     except ImportError as e:
         LOGGER.error(
-            "Encountered error when importing module %s due to %r, skipping...",
+            "Encountered error importing module '%s' due to %r, skipping...",
             path.name,
             e,
         )

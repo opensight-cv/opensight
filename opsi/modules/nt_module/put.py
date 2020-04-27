@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from networktables import NetworkTables
-
 from opsi.manager.manager_schema import Function
 from opsi.manager.netdict import NetworkDict
 from opsi.manager.types import AnyType

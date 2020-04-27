@@ -3,8 +3,6 @@ import subprocess
 import tarfile
 import tempfile
 
-from opsi.util.path import join
-
 LOGGER = logging.getLogger(__name__)
 
 

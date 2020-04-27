@@ -494,14 +494,14 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
         try:
             program.pipeline.run()
             program.manager.pipeline_update()
-        except Exception as e:
+        except Exception:
             program.pipeline.broken = True
             if force_save:
                 program.lifespan.persist.nodetree = nodetree
             raise NodeTreeImportError(
                 program,
                 program.pipeline.current,
-                f"Failed test run due to",
+                "Failed test run due to",
                 real_node=True,
             )
 

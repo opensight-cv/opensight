@@ -1,27 +1,21 @@
 import json
+import logging
 import shlex
 import subprocess
-from shlex import split
 from typing import Tuple
 
 from opsi.manager.manager_schema import Hook
-from opsi.util.concurrency import AsyncThread, Snippet
-from opsi.util.cv import Mat, Point
+from opsi.manager.netdict import NT_AVAIL, NetworkDict
 from opsi.util.networking import choose_port
-from opsi.util.templating import LiteralTemplate
 
-try:
-    from opsi.manager.netdict import NetworkDict
-
-    NT_AVAIL = True
-except ImportError:
-    NT_AVAIL = False
+LOGGER = logging.getLogger(__name__)
 
 try:
     import engine
 
     ENGINE_AVAIL = True
 except ImportError:
+    LOGGER.error("upgraded-engineer not found, disabling H264 support")
     ENGINE_AVAIL = False
 
 
@@ -39,7 +33,7 @@ class EngineManager:
         ports = [554, 1181]
         self.port = choose_port(ports)
         if not self.port:
-            raise ValueError("Unable to bind to any of ports {}".format(ports))
+            raise ValueError(f"Unable to bind to any of ports {ports}")
 
     def register(self, func: "H264CameraServer"):
         if func.name in self.pipelines:
@@ -126,7 +120,7 @@ class H264CameraServer:
 
     @property
     def encoder(self):
-        command = split("gst-inspect-1.0 omxh264enc")
+        command = shlex.split("gst-inspect-1.0 omxh264enc")
         out = subprocess.run(
             command,
             env={"PAGER": "cat"},

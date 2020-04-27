@@ -4,17 +4,10 @@ from jinja2 import Template
 from starlette.routing import Route, Router
 
 from opsi.manager.manager_schema import Hook
-from opsi.util.networking import choose_port
+from opsi.manager.netdict import NT_AVAIL, NetworkDict
 from opsi.util.templating import LiteralTemplate
 
 from .mjpeg import MjpegResponse
-
-try:
-    from opsi.manager.netdict import NetworkDict
-
-    NT_AVAIL = True
-except ImportError:
-    NT_AVAIL = False
 
 
 class CamHook(Hook):

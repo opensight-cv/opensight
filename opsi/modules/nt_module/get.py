@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
-from networktables import NetworkTables
-
 from opsi.manager.manager_schema import Hook
-from opsi.manager.netdict import NetworkDict
+from opsi.manager.netdict import NT_AVAIL, NetworkDict
 from opsi.manager.types import AnyType
 
 from .put import PutNT
+
+if not NT_AVAIL:
+    raise ImportError("NetworkTables is not available")
 
 HookInstance = Hook()
 

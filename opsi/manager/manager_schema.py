@@ -1,17 +1,6 @@
 import logging
 from dataclasses import Field, dataclass, fields, is_dataclass
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    FrozenSet,
-    List,
-    NamedTuple,
-    Type,
-    get_type_hints,
-)
-
-from starlette.routing import Router
+from typing import Any, Callable, Dict, List, NamedTuple, Type, get_type_hints
 
 LOGGER = logging.getLogger(__name__)
 

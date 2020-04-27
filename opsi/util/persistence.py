@@ -90,7 +90,7 @@ class Persistence:
         try:
             self._nodetree = NodeTreeN.parse_file(self.nodetree_path)
             return self._nodetree
-        except (ValidationError, JSONDecodeError, ValueError) as e:
+        except (ValidationError, JSONDecodeError, ValueError):
             LOGGER.warning("Unable to parse nodetree persistence")
         except OSError:
             LOGGER.exception("Failed to read from nodetree persistence")
@@ -116,7 +116,7 @@ class Persistence:
         try:
             self._prefs = Preferences.parse_file(self.base_path / "preferences.json")
             return self.prefs
-        except (ValidationError, JSONDecodeError, ValueError) as e:
+        except (ValidationError, JSONDecodeError, ValueError):
             LOGGER.warning("Unable to parse preferences persistence")
         except OSError:
             LOGGER.exception("Failed to read from preferences persistence")

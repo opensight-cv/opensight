@@ -19,7 +19,7 @@ if not __version__:
     try:
         with open(Path(__file__).parent.parent / ".git/HEAD") as f:
             __version__ = "/".join(f.read().split("/")[2:]).strip()
-    except (OSError, IndexError) as e:
+    except (OSError, IndexError):
         pass
 
 if not __version__:

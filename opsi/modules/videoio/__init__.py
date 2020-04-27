@@ -1,25 +1,13 @@
-import logging
 from dataclasses import dataclass
 
 from opsi.manager.manager_schema import Function
-from opsi.util.cv import Mat, MatBW
+from opsi.util.cv import Mat
 from opsi.util.unduplicator import Unduplicator
 
 from .camhook import CamHook
-from .input import create_capture, get_modes, get_settings, parse_cammode
+from .h264 import ENGINE_AVAIL, EngineManager, H264CameraServer
+from .input import create_capture, get_settings, parse_cammode
 from .mjpeg import MjpegCameraServer
-
-LOGGER = logging.getLogger(__name__)
-
-try:
-    import engine
-    from .h264 import EngineManager, H264CameraServer
-
-    ENGINE_AVAIL = True
-except ImportError:
-    ENGINE_AVAIL = False
-    LOGGER.error("upgraded-engineer not found, disabling H264 support")
-
 
 __package__ = "opsi.videoio"
 __version__ = "0.123"
