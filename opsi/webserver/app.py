@@ -4,6 +4,7 @@ from os.path import join
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
@@ -34,8 +35,10 @@ class WebServer:
 
         self.app.mount(
             "/",
-            CacheControlMiddleware(
-                StaticFiles(directory=join(frontend, "dist"), html=True)
+            GZipMiddleware(
+                CacheControlMiddleware(
+                    StaticFiles(directory=join(frontend, "dist"), html=True)
+                ),
             ),
         )
 
