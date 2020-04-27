@@ -34,40 +34,24 @@ def _rangetype_serialize(type):
     if not isinstance(type, RangeType):
         return None
 
-    return InputOutputF(type="range", params=type.serialize())
+    return InputOutputF(type="Range", params=type.serialize())
 
 
 def _slide_serialize(type):
     if not isinstance(type, Slide):
         return None
 
-    return InputOutputF(type="slide", params=type.serialize())
+    return InputOutputF(type="Slide", params=type.serialize())
 
 
 def _tuple_serialize(type):
     if not isinstance(type, tuple):
         return None
 
-    return InputOutputF(type="tup", params={"options": type})
+    return InputOutputF(type="Enum", params={"items": type})
 
 
-_type_name: Dict[Type, str] = {
-    float: "dec",
-    bool: "bol",
-    MatBW: "mbw",
-    Circles: "cls",
-    Color: "col",
-    Segments: "seg",
-    Lines: "lin",
-    Contour: "cnt",
-    Contours: "cts",
-    Point: "pnt",
-    Corners: "crn",
-    Pose3D: "p3d",
-    AnyType: "any",
-}
-_normal_types = {int, str, Mat}
-
+_type_name: Dict[Type, str] = {AnyType: "Any"}
 # Each item in _abnormal_types takes in a type and returns InputOutputF if the
 # parser supports the type, or None if it does not
 _abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
@@ -84,8 +68,6 @@ def get_type(_type: Type) -> InputOutputF:
     if _type in _type_name:
         name = _type_name.get(_type)
         return InputOutputF(type=name)
-    elif _type in _normal_types:
-        return InputOutputF(type=_type.__name__)
 
     for parser in _abnormal_types:
         IO = parser(_type)
@@ -93,7 +75,7 @@ def get_type(_type: Type) -> InputOutputF:
         if IO is not None:
             return IO
 
-    raise TypeError(f"Unknown type {_type} ({type(_type)})")
+    return InputOutputF(type=_type.__name__)
 
 
 def get_field_type(field) -> InputOutputF:
@@ -324,6 +306,11 @@ def _process_node_inputs(program, node: NodeN, ids):
     real_node = program.pipeline.nodes[node.id]
 
     for name in empty_links:
+        # TODO: REMOVE THESE PRINTS
+        print(name, "@")
+        print(real_node, "1")
+        print(real_node.func, "2")
+        print(real_node.func.InputTypes, "3")
         type = real_node.func.InputTypes[name]
         # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
@@ -336,7 +323,6 @@ def _process_node_settings(program, node: NodeN):
         )
 
     real_node = program.pipeline.nodes[node.id]
-    real_node.pos = node.pos
 
     settings = {}
 

@@ -1,12 +1,11 @@
 import logging
 
-from fastapi import FastAPI, File, UploadFile
-from starlette.responses import JSONResponse
-
 import opsi
+from fastapi import FastAPI, File, UploadFile
 from opsi.backend.network import dhcpcd_writable, set_network_mode
 from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
+from starlette.responses import JSONResponse
 
 from .schema import Network, NodeTreeN, SchemaF
 from .serialize import *

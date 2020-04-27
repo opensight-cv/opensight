@@ -185,3 +185,5 @@ $RECYCLE.BIN/
 .vscode/*
 
 .idea/*
+
+opsi/frontend/dist

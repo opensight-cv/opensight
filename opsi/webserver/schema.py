@@ -10,12 +10,12 @@ from opsi.util.enum import Enum
 
 
 # Constant flags, to be False eventually
-FUNC_INSTEAD_OF_MODS = True
-LINKS_INSTEAD_OF_INPUTS = True
+FUNC_INSTEAD_OF_MODS = False
+LINKS_INSTEAD_OF_INPUTS = False
 
 
 class LinkN(BaseModel):
-    id: UUID
+    id: str
     name: str
 
 
@@ -26,17 +26,18 @@ class InputN(BaseModel):
 
 class NodeN(BaseModel):
     type: str
-    id: UUID
+    id: str
     settings: Dict[str, Any] = {}
+    frontend_opts: Dict[str, Any] = {}
     if LINKS_INSTEAD_OF_INPUTS:
         inputs: Dict[str, Optional[LinkN]] = {}
     else:
         inputs: Dict[str, InputN] = {}
-    pos: Tuple[int, int] = (20, 20)
 
 
 class NodeTreeN(BaseModel):
     nodes: List[NodeN] = []
+    frontend_opts: Dict[str, Any] = {}
 
 
 # --------------------------------
