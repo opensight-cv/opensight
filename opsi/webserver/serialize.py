@@ -306,11 +306,6 @@ def _process_node_inputs(program, node: NodeN, ids):
     real_node = program.pipeline.nodes[node.id]
 
     for name in empty_links:
-        # TODO: REMOVE THESE PRINTS
-        print(name, "@")
-        print(real_node, "1")
-        print(real_node.func, "2")
-        print(real_node.func.InputTypes, "3")
         type = real_node.func.InputTypes[name]
         # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
