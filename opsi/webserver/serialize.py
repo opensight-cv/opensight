@@ -447,6 +447,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
 
 
 def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
+    original_nodetree = nodetree
     nodetree, broken = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
 
@@ -492,7 +493,7 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
         except Exception:
             program.pipeline.broken = True
             if force_save:
-                program.lifespan.persist.nodetree = nodetree
+                program.lifespan.persist.nodetree = original_nodetree
             raise NodeTreeImportError(
                 program,
                 program.pipeline.current,
@@ -500,5 +501,5 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
                 real_node=True,
             )
 
-        program.lifespan.persist.nodetree = nodetree
+        program.lifespan.persist.nodetree = original_nodetree
         program.pipeline.broken = False
