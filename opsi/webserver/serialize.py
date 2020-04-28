@@ -412,7 +412,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
                         remove.append(name)
                 for name in remove:
                     del sub.inputs[name]
-        nodetree = NodeTreeN(nodes=nodes, frontend_opts=nodetree.frontend_opts)
+        nodetree = NodeTreeN(nodes=nodes, extras=nodetree.extras)
         # return nodetree and report that there are broken nodes
         return nodetree, True
 
@@ -440,7 +440,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
     nodes = [node for node in nodetree.nodes if node.id in visited]
 
     # make a copy of nodetree to fix broken json save
-    nodetree = NodeTreeN(nodes=nodes, frontend_opts=nodetree.frontend_opts)
+    nodetree = NodeTreeN(nodes=nodes, extras=nodetree.extras)
 
     # return nodetree and report no broken nodes
     return nodetree, False
