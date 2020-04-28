@@ -27,7 +27,7 @@ class NodeN(BaseModel):
     type: str
     id: str
     settings: Dict[str, Any] = {}
-    frontendOpts: Dict[str, Any] = {}
+    extras: Dict[str, Any] = {}
     if LINKS_INSTEAD_OF_INPUTS:
         inputs: Dict[str, Optional[LinkN]] = {}
     else:
@@ -36,7 +36,7 @@ class NodeN(BaseModel):
 
 class NodeTreeN(BaseModel):
     nodes: List[NodeN] = []
-    frontendOpts: Dict[str, Any] = {}
+    extras: Dict[str, Any] = {}
 
 
 # --------------------------------
