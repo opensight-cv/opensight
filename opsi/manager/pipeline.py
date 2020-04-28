@@ -3,7 +3,6 @@ from dataclasses import fields
 from itertools import chain
 from queue import deque
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
-from uuid import UUID
 
 from toposort import toposort
 
@@ -19,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 # Map inputname -> (output_node, output_name)
 class Connection(NamedTuple):
-    id: UUID
+    id: str
     name: str
 
 
@@ -27,7 +26,7 @@ Links = Dict[str, Connection]
 
 
 class Node:
-    def __init__(self, func: Type[Function], id: UUID):
+    def __init__(self, func: Type[Function], id: str):
         self.func_type = func
         self.inputLinks: Dict[str, Link] = dict()
         self.func: Optional[Function] = None
@@ -103,12 +102,12 @@ class Node:
 class Pipeline:
     def __init__(self, program):
         self.program = program
-        self.nodes: Dict[UUID, Node] = {}
+        self.nodes: Dict[id, Node] = {}
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
         self.lock = FifoLock(self.program.queue)
         self.broken = False
-        self.current: Node = None
+        self.current: Optional[Node] = None
         self.fps = FPS()
 
         self.hook = Hook()
@@ -196,7 +195,7 @@ class Pipeline:
     # def cancel_dependents(self, node, path):
     # Iterate through path and skip all nodes which were visited
 
-    def create_node(self, func: Type[Function], uuid: UUID):
+    def create_node(self, func: Type[Function], uuid: str):
         """
         The caller is responsible for calling
         pipeline.create_links(node, ...) and node.set_staticlinks(...),

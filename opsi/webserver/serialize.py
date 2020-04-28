@@ -306,11 +306,6 @@ def _process_node_inputs(program, node: NodeN, ids):
     real_node = program.pipeline.nodes[node.id]
 
     for name in empty_links:
-        # TODO: REMOVE THESE PRINTS
-        print(name, "@")
-        print(real_node, "1")
-        print(real_node.func, "2")
-        print(real_node.func.InputTypes, "3")
         type = real_node.func.InputTypes[name]
         # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
@@ -417,7 +412,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
                         remove.append(name)
                 for name in remove:
                     del sub.inputs[name]
-        nodetree = NodeTreeN(nodes=nodes)
+        nodetree = nodetree.copy(update={"nodes": nodes})
         # return nodetree and report that there are broken nodes
         return nodetree, True
 
@@ -445,13 +440,14 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
     nodes = [node for node in nodetree.nodes if node.id in visited]
 
     # make a copy of nodetree to fix broken json save
-    nodetree = NodeTreeN(nodes=nodes)
+    nodetree = nodetree.copy(update={"nodes": nodes})
 
     # return nodetree and report no broken nodes
     return nodetree, False
 
 
 def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
+    original_nodetree = nodetree
     nodetree, broken = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
 
@@ -497,7 +493,7 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
         except Exception:
             program.pipeline.broken = True
             if force_save:
-                program.lifespan.persist.nodetree = nodetree
+                program.lifespan.persist.nodetree = original_nodetree
             raise NodeTreeImportError(
                 program,
                 program.pipeline.current,
@@ -505,5 +501,5 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
                 real_node=True,
             )
 
-        program.lifespan.persist.nodetree = nodetree
+        program.lifespan.persist.nodetree = original_nodetree
         program.pipeline.broken = False
