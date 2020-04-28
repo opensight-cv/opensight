@@ -187,3 +187,4 @@ $RECYCLE.BIN/
 .idea/*
 
 opsi/frontend/dist
+run.sh

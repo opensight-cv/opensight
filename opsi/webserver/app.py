@@ -8,6 +8,8 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
+import opsi
+from opsi.manager.netdict import NT_AVAIL
 from opsi.util.networking import get_server_url
 from opsi.util.templating import TemplateFolder
 from .api import Api

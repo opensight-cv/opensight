@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Literal
 
 from opsi.manager.manager_schema import Function, Hook
 from opsi.manager.types import AnyType
@@ -54,7 +53,7 @@ class If(Function):
 
     @dataclass
     class Settings:
-        operation: Literal["=", "≠", ">", "<", "≥", "≤"] = "="
+        operation: ("=", "≠", ">", "<", "≥", "≤") = "="
         value: int = 0
 
     @dataclass
