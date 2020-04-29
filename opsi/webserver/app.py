@@ -33,8 +33,8 @@ class WebServer:
 
         self.app.mount(
             "/",
-            GZipMiddleware(
-                CacheControlMiddleware(
+            CacheControlMiddleware(
+                GZipMiddleware(
                     StaticFiles(directory=join(frontend, "dist"), html=True)
                 ),
             ),
