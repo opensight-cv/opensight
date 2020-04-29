@@ -8,11 +8,6 @@ from opsi.util.enum import Enum
 # F = Function = initial load
 
 
-# Constant flags, to be False eventually
-FUNC_INSTEAD_OF_MODS = False
-LINKS_INSTEAD_OF_INPUTS = False
-
-
 class LinkN(BaseModel):
     id: str
     name: str
@@ -27,16 +22,13 @@ class NodeN(BaseModel):
     type: str
     id: str
     settings: Dict[str, Any] = {}
-    extras: Dict[str, Any] = {}
-    if LINKS_INSTEAD_OF_INPUTS:
-        inputs: Dict[str, Optional[LinkN]] = {}
-    else:
-        inputs: Dict[str, InputN] = {}
+    inputs: Dict[str, InputN] = {}
+    extras: Any = {}
 
 
 class NodeTreeN(BaseModel):
     nodes: List[NodeN] = []
-    extras: Dict[str, Any] = {}
+    extras: Any = {}
 
 
 # --------------------------------
@@ -62,10 +54,7 @@ class ModuleF(BaseModel):
 
 
 class SchemaF(BaseModel):
-    if FUNC_INSTEAD_OF_MODS:
-        funcs: List[FunctionF] = []
-    else:
-        modules: List[ModuleF] = []
+    modules: List[ModuleF] = []
 
 
 # --------------------------------
