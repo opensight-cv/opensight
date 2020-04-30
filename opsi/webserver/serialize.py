@@ -10,9 +10,6 @@ from opsi.manager.manager_schema import Function, ModuleItem
 from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
 from opsi.manager.types import *
 from opsi.util.concurrency import FifoLock
-from opsi.util.cv import Contour, Contours, Mat, MatBW, Point
-from opsi.util.cv.mat import Color
-from opsi.util.cv.shape import Circles, Corners, Lines, Pose3D, Segments
 
 from .schema import *
 
