@@ -16,11 +16,10 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
-      - name: Install dependencies
+      - name: Install formatters
         run: |
           python -m pip install --upgrade pip
           pip install autoflake black isort
-          pip install -r requirements_min.txt
       - name: Run black
         run: |
           black --version
