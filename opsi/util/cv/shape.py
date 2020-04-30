@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 import cv2
 import numpy as np
-from numpy.core._multiarray_umath import ndarray
+from numpy import ndarray
 
 from opsi.util.cache import cached_property
 
@@ -246,8 +246,3 @@ class Segments(ndarray):
             "x2": [float(seg[0][2]) for seg in self],
             "y2": [float(seg[0][3]) for seg in self],
         }
-
-
-# Never actually used, but might be in the future?
-class Lines(ndarray):
-    pass
