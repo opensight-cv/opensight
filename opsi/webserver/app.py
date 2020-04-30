@@ -10,6 +10,7 @@ from starlette.staticfiles import StaticFiles
 
 from opsi.util.networking import get_server_url
 from opsi.util.templating import TemplateFolder
+
 from .api import Api
 from .test import WebserverTest
 

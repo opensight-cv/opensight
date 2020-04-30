@@ -4,7 +4,6 @@ import shlex
 import subprocess
 from typing import Tuple
 
-from opsi.manager.manager_schema import Hook
 from opsi.manager.netdict import NT_AVAIL, NetworkDict
 from opsi.util.networking import choose_port
 
