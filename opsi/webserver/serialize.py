@@ -1,24 +1,17 @@
 import logging
 import sys
 from collections import deque
-from dataclasses import MISSING, asdict
+from dataclasses import MISSING
 from typing import Callable, Tuple, Type
 
-from opsi.manager.link import Link, NodeLink, StaticLink
 from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
-from opsi.manager.pipeline import Connection, Links, Pipeline
+from opsi.manager.pipeline import Connection, Links
 from opsi.manager.types import AnyType, RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
-from .schema import *
+from .schema import FunctionF, InputOutputF, ModuleF, SchemaF
 
-__all__ = (
-    "export_manager",
-    "export_nodetree",
-    "import_nodetree",
-    "NodeTreeImportError",
-)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -129,7 +122,7 @@ def export_manager(manager: Manager) -> SchemaF:
 
 class NodeTreeImportError(ValueError):
     def __init__(
-        self, program, node: NodeN = None, msg="", *, exc_info=True, real_node=False
+        self, program, node: "NodeN" = None, msg="", *, exc_info=True, real_node=False
     ):
         program.pipeline.clear()
         program.pipeline.broken = True
@@ -161,7 +154,7 @@ class NodeTreeImportError(ValueError):
         LOGGER.debug(f"Error during importing nodetree. {logMsg}", exc_info=exc_info)
 
 
-def _process_node_links(program, node: NodeN, ids) -> List[str]:
+def _process_node_links(program, node: "NodeN", ids) -> List[str]:
     links: Links = {}
     empty_links: List[str] = []
 
@@ -197,10 +190,9 @@ def _process_widget(type: Type, val):
     return val
 
 
-def _process_node_inputs(program, node: NodeN, ids):
+def _process_node_inputs(program, node: "NodeN", ids):
     empty_links = _process_node_links(program, node, ids)
 
-    # node.inputs : Dict[str, InputN]
     real_node = program.pipeline.nodes[node.id]
 
     for name in empty_links:
@@ -209,7 +201,7 @@ def _process_node_inputs(program, node: NodeN, ids):
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
 
 
-def _process_node_settings(program, node: NodeN):
+def _process_node_settings(program, node: "NodeN"):
     if None in node.settings.values():
         raise NodeTreeImportError(
             program, node, "Cannot have None value in settings", exc_info=False
@@ -272,7 +264,7 @@ def _process_node_settings(program, node: NodeN):
     real_node.settings = settings
 
 
-def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, bool]:
+def _remove_unneeded_nodes(program, nodetree: "NodeTreeN") -> Tuple["NodeTreeN", bool]:
     visited = set()
     broken = set()
     queue = deque()
@@ -335,7 +327,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
     return nodetree, False
 
 
-def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
+def import_nodetree(program, nodetree: "NodeTreeN", force_save: bool = False):
     original_nodetree = nodetree
     nodetree, broken = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
