@@ -1,5 +1,6 @@
 # minimal, cross platform dependencies
 aiofiles==0.4.0
+appdirs @ https://github.com/ActiveState/appdirs/archive/0ae5f6e.zip
 Click==7.0
 fastapi==0.49.0
 h11==0.9.0

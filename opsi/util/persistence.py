@@ -2,6 +2,7 @@ import logging
 from json import JSONDecodeError
 from pathlib import Path
 
+import appdirs
 from fastapi import UploadFile
 from pydantic import ValidationError
 
@@ -11,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Persistence:
-    PATHS = ("/var/lib/opensight", "~/.local/share/opensight")
+    PATHS = (appdirs.user_data_dir(appname="opensight", appauthor=False),)
     NODETREE_DIR = "nodetrees"
     CALIBRATION_DIR = "calibration"
 

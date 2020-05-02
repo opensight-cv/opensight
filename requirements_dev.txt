@@ -1,5 +1,6 @@
 # requirements.txt
 aiofiles
+appdirs
 fastapi
 imutils
 Jinja2
