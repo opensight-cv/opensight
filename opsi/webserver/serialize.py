@@ -2,7 +2,7 @@ import logging
 import sys
 from collections import deque
 from dataclasses import MISSING
-from typing import Callable, Tuple, Type
+from typing import Callable, Dict, List, Optional, Tuple, Type
 
 from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
@@ -11,8 +11,6 @@ from opsi.manager.types import AnyType, RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
 from .schema import FunctionF, InputOutputF, ModuleF, SchemaF
-
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -163,10 +161,13 @@ def _process_node_links(program, node: "NodeN", ids) -> List[str]:
     for name in real_node.func_type.InputTypes.keys():
         input = node.inputs.get(name)
 
-        if input is not None and input.link in ids:
-            links[name] = Connection(input.link.id, input.link.name)
-        else:
-            # link was None, or link points to deleted node
+        try:
+            if input.link.id in ids:
+                links[name] = Connection(input.link.id, input.link.name)
+            else:
+                # link was None, or link points to deleted node
+                empty_links.append(name)
+        except AttributeError:
             empty_links.append(name)
 
     try:
@@ -198,6 +199,10 @@ def _process_node_inputs(program, node: "NodeN", ids):
     for name in empty_links:
         type = real_node.func.InputTypes[name]
         # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
+        if node.inputs[name].value is None:
+            raise NodeTreeImportError(
+                program, node, f"Missing input '{name}'", exc_info=False
+            )
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
 
 
@@ -251,12 +256,12 @@ def _process_node_settings(program, node: "NodeN"):
     except ValueError as e:
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 
-    if (
-        (real_node.func_type.require_restart)  # restart only on changed settings
-        and (real_node.settings is not None)
-        and (not real_node.settings == settings)
-    ) or real_node.func.always_restart:  # or if force always
-        real_node.dispose()
+    if real_node.settings is not None:  # if current settings exist
+        if (
+            (real_node.func_type.require_restart)  # restart only on changed settings
+            and (not real_node.settings == settings)
+        ) or real_node.func.always_restart:  # or if force always
+            real_node.dispose()
 
     if real_node.func:
         real_node.func.settings = settings
