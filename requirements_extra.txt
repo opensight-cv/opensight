@@ -1,0 +1,25 @@
+# extra, optional features
+
+# all image processing
+# cross platform
+# linux: do not install if using distro python3-opencv 4.x
+opencv-python==4.2.0.34
+
+# enables opsi.gpio module
+# cross platform
+# no effect unless on raspberry pi
+colorzero==1.1
+gpiozero==1.5.1
+
+# manage systemctl service
+# used in the deb packages, not needed for development
+# requires linux
+pystemd==0.7.0
+
+# h264 functionality in cameraserver
+# requires linux
+upgraded-engineer==0.2.1
+
+# general async speedup
+# requires linux
+uvloop==0.11.2

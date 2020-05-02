@@ -1,3 +1,4 @@
+# requirements.txt
 aiofiles
 fastapi
 imutils
@@ -5,12 +6,18 @@ Jinja2
 netifaces
 numpy
 pynetworktables
-pystemd
 python-multipart
 toposort
-upgraded-engineer
 uvicorn
 
+# requirements_extra.txt
+gpiozero
+opencv-python
+pystemd
+upgraded-engineer
+uvloop
+
+# dev-only
 black
 isort
 requests
