@@ -260,7 +260,7 @@ def _process_node_settings(program, node: "NodeN"):
         (real_node.func_type.require_restart)  # restart only on changed settings
         and (real_node.settings is not None)
         and (not real_node.settings == settings)
-    ) or real_node.func.always_restart:  # or if force always
+    ) or real_node.func_type.always_restart:  # or if force always
         real_node.dispose()
 
     if real_node.func:
