@@ -44,6 +44,9 @@ class Api:
         if exc.node:
             json.update({"node": str(exc.node.id), "type": exc.type})
 
+        if exc.traceback:
+            json.update({"traceback": exc.traceback})
+
         return JSONResponse(status_code=400, content=json)
 
     def read_funcs(self) -> SchemaF:
