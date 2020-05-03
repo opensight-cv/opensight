@@ -44,8 +44,10 @@ class WebServer:
     def make_hooks(self):
         PREFIX = "/hooks"
         HOOKS = {
-            x[0]: x[1] for x in self.program.manager.hooks.items() if x[1].app
-        }  # {package: app}
+            package: hook
+            for package, hook in self.program.manager.hooks.items()
+            if hook.app
+        }
 
         self.app.add_route(
             PREFIX, self.template("hooks.html", prefix=PREFIX, packages=HOOKS.keys())
@@ -74,7 +76,7 @@ class WebServer:
     def set_nodes(self, data: str) -> str:
         return self.testclient.post("/api/nodes", data)
 
-    def get_coffee(self, data: str):
+    def get_coffee(self, request):
         try:
             return self.coffee
         except AttributeError:  # TODO: refactor teapot to support coffee

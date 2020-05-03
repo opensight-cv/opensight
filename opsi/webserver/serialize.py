@@ -1,25 +1,17 @@
 import logging
 import sys
+import traceback
 from collections import deque
-from dataclasses import _MISSING_TYPE, asdict, fields
-from typing import Callable, Tuple, Type
+from dataclasses import MISSING, fields
+from typing import Callable, Dict, List, Optional, Tuple, Type
 
-from opsi.manager.link import NodeLink
 from opsi.manager.manager import Manager
 from opsi.manager.manager_schema import Function, ModuleItem
-from opsi.manager.pipeline import Connection, Link, Links, Pipeline, StaticLink
-from opsi.manager.types import *
+from opsi.manager.pipeline import Connection, Links
+from opsi.manager.types import AnyType, RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
-from .schema import *
-
-__all__ = (
-    "export_manager",
-    "export_nodetree",
-    "import_nodetree",
-    "NodeTreeImportError",
-)
-
+from .schema import FunctionF, InputOutputF, ModuleF, SchemaF
 
 LOGGER = logging.getLogger(__name__)
 
@@ -59,7 +51,7 @@ _abnormal_types: List[Callable[[Type[any]], Optional[InputOutputF]]] = [
 
 
 def get_type(_type: Type) -> InputOutputF:
-    if (_type is None) or (_type == type(None)):
+    if _type in (None, type(None)):
         return None
 
     if _type in _type_name:
@@ -77,18 +69,14 @@ def get_type(_type: Type) -> InputOutputF:
 
 def get_field_type(field) -> InputOutputF:
     io = get_type(field.type)
-    if field.default and type(field.default) is not _MISSING_TYPE:
+    if field.default and field.default is not MISSING:
         io.params["default"] = field.default
     return io
 
 
 def get_types(types):
-    pruned_types = []
-    # if none, just don't show it
-    for _type in types:
-        if _type[1] is not type(None):
-            pruned_types.append(_type)
-    return {name: get_type(type) for name, type in pruned_types}
+    # there are no instances of an input or output having type None
+    return {name: get_type(_type) for name, _type in types.items()}
 
 
 def get_settings_types(types):
@@ -106,8 +94,8 @@ def _serialize_funcs(funcs: Dict[str, Type[Function]]) -> List[FunctionF]:
             name=func.__name__,
             type=func.type,
             settings=get_settings_types(func.SettingTypes),
-            inputs=get_types(func.InputTypes.items()),
-            outputs=get_types(func.OutputTypes.items()),
+            inputs=get_types(func.InputTypes),
+            outputs=get_types(func.OutputTypes),
         )
         for func in funcs.values()
     ]
@@ -125,96 +113,21 @@ def _serialize_modules(modules: Dict[str, ModuleItem]) -> List[ModuleF]:
 
 
 def export_manager(manager: Manager) -> SchemaF:
-    if FUNC_INSTEAD_OF_MODS:
-        return SchemaF(funcs=_serialize_funcs(manager.funcs))
-    else:
-        return SchemaF(modules=_serialize_modules(manager.modules))
+    return SchemaF(modules=_serialize_modules(manager.modules))
 
 
 # ---------------------------------------------------------
 
 
-# removes all Nones from dict
-def _prune_factory(inp):
-    pruned = {}
-    for i in inp:
-        if i[1] is not None:
-            pruned[i[0]] = i[1]
-    return pruned
-
-
-def _serialize_settings(settings) -> Dict[str, Any]:
-    if settings is None:
-        return {}
-
-    return asdict(settings, dict_factory=_prune_factory)
-
-
-def _serialize_link(link: Optional[Link]) -> Optional[LinkN]:
-    if link is None:
-        return None
-
-    if isinstance(link, StaticLink):
-        return None
-    if isinstance(link, NodeLink):
-        return LinkN(id=link.node.id, name=link.name)
-
-    raise TypeError(f"Unknown link type: {type(link)}")
-
-
-def _serialize_input(link: Optional[Link]) -> InputN:
-    linkn = _serialize_link(link)
-
-    if link is None:
-        return InputN(link=linkn, value=None)
-
-    if isinstance(link, StaticLink):
-        return InputN(link=linkn, value=link.value)
-
-    raise TypeError(f"Unknown link type: {type(link)}")
-
-
-def export_nodetree(pipeline: Pipeline) -> NodeTreeN:
-    nodes: List[NodeN] = []
-
-    for id, node in pipeline.nodes.items():
-        # allow importing legacy nodetrees
-        try:
-            node.pos = [] if node.pos is None else node.pos
-        except AttributeError:
-            node.pos = []
-            LOGGER.debug("Initalized default node position, %s", node.id)
-        nodes.append(
-            NodeN(
-                type=node.func_type.type,
-                id=id,
-                settings=_serialize_settings(node.settings),
-                pos=node.pos,
-                inputs={
-                    name: (
-                        _serialize_link(link)
-                        if LINKS_INSTEAD_OF_INPUTS
-                        else _serialize_input(link)
-                    )
-                    for name, link in node.inputLinks.items()
-                },
-            )
-        )
-
-    return NodeTreeN(nodes=nodes)
-
-
-# ---------------------------------------------------------
-
-
-class NodeTreeImportError(ValueError):
+class NodeTreeImportError(Exception):
     def __init__(
-        self, program, node: NodeN = None, msg="", *, exc_info=True, real_node=False
+        self, program, node: "NodeN" = None, msg="", *, exc_info=True, real_node=None,
     ):
         program.pipeline.clear()
         program.pipeline.broken = True
 
         self.node = node
+        self.traceback = ""
 
         # https://github.com/python/cpython/blob/10ecbadb799ddf3393d1fc80119a3db14724d381/Lib/logging/__init__.py#L1572
         if exc_info:
@@ -223,12 +136,14 @@ class NodeTreeImportError(ValueError):
             elif not isinstance(exc_info, tuple):
                 exc_info = sys.exc_info()
 
-            msg += ": " + str(exc_info[1])
+            msg += f": {exc_info[1]!r}"
+            self.traceback = traceback.format_tb(exc_info[2])
 
-        if real_node:
-            self.type = str(self.node.func_type)
-        else:
+        self.type = "unknown"
+        if self.node:
             self.type = self.node.type
+        elif real_node:
+            self.type = real_node.func_type
 
         logMsg = msg
         if self.node:
@@ -241,35 +156,22 @@ class NodeTreeImportError(ValueError):
         LOGGER.debug(f"Error during importing nodetree. {logMsg}", exc_info=exc_info)
 
 
-def _process_node_links(program, node: NodeN, ids) -> List[str]:
+def _process_node_links(program, node: "NodeN", ids) -> List[str]:
     links: Links = {}
     empty_links: List[str] = []
 
-    link: Optional[LinkN]
     real_node = program.pipeline.nodes[node.id]
 
     for name in real_node.func_type.InputTypes.keys():
         input = node.inputs.get(name)
 
         try:
-            if LINKS_INSTEAD_OF_INPUTS:
-                link = input
+            if input.link.id in ids:
+                links[name] = Connection(input.link.id, input.link.name)
             else:
-                link = input.link
-
-            if link.id not in ids:
-                # Input link points to deleted node, so the key doesn't exist
-                raise AttributeError
-
-            links[name] = Connection(link.id, link.name)
-
-        except AttributeError:  # input or link was None, or key didn't exist
-            if LINKS_INSTEAD_OF_INPUTS:
-                # there is no input.value to fall back on -> missing link
-                raise NodeTreeImportError(
-                    program, node, f"Missing input '{name}'", exc_info=False
-                )
-
+                # link was None, or link points to deleted node
+                empty_links.append(name)
+        except AttributeError:
             empty_links.append(name)
 
     try:
@@ -293,28 +195,29 @@ def _process_widget(type: Type, val):
     return val
 
 
-def _process_node_inputs(program, node: NodeN, ids):
+def _process_node_inputs(program, node: "NodeN", ids):
     empty_links = _process_node_links(program, node, ids)
 
-    if LINKS_INSTEAD_OF_INPUTS:
-        return
-
-    # node.inputs : Dict[str, InputN]
     real_node = program.pipeline.nodes[node.id]
 
     for name in empty_links:
-        type = real_node.func.InputTypes[name]
+        type = real_node.func_type.InputTypes[name]
         # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
+        if node.inputs[name].value is None:
+            raise NodeTreeImportError(
+                program, node, f"Missing input '{name}'", exc_info=False
+            )
         real_node.set_static_link(name, _process_widget(type, node.inputs[name].value))
 
 
-def _process_node_settings(program, node: NodeN):
+def _process_node_settings(program, node: "NodeN"):
     if None in node.settings.values():
         raise NodeTreeImportError(
             program, node, "Cannot have None value in settings", exc_info=False
         )
 
     real_node = program.pipeline.nodes[node.id]
+    defaults = {x.name: x.default for x in fields(real_node.func_type.Settings)}
 
     settings = {}
 
@@ -333,17 +236,13 @@ def _process_node_settings(program, node: NodeN):
             try:
                 setting = _process_widget(field.type, node.settings[field.name])
             except KeyError:
-                default = {
-                    x.name: x.default for x in fields(real_node.func_type.Settings)
-                }[field.name]
-                if default is not None:
+                default = defaults[field.name]
+                if default is not MISSING:
                     setting = default
                 else:
-                    blank = type(field.type)
-                    if blank is not None:
-                        setting = blank
-                    else:
-                        raise ValueError(f"Cannot default initialize type {type}")
+                    # TODO: create table for default values (of all widget types?) (e.g. int - 0)
+                    raise
+
             settings[field.name] = setting
 
         # throws TypeError on missing
@@ -352,34 +251,27 @@ def _process_node_settings(program, node: NodeN):
         # throws ValueError on invalid
         settings = real_node.func_type.validate_settings(settings)
 
-    except (KeyError, TypeError) as e:
-        raise NodeTreeImportError(program, node, "Missing key in settings") from e
+    except (KeyError, TypeError):
+        raise NodeTreeImportError(program, node, "Missing key in settings")
 
-    except ValueError as e:
-        raise NodeTreeImportError(program, node, "Invalid settings") from e
+    except ValueError:
+        raise NodeTreeImportError(program, node, "Invalid settings")
 
-    if LINKS_INSTEAD_OF_INPUTS:
-        restart = False
-        if real_node.func_type.require_restart:
-            if real_node.settings is not None:
-                if not real_node.settings == settings:
-                    restart = True
-        try:
-            if real_node.func.always_restart:
-                restart = True
-        except AttributeError:
-            pass
-        if restart:
-            real_node.dispose()
-        if real_node.func:
-            real_node.func.settings = settings
+    if (
+        (real_node.func_type.require_restart)  # restart only on changed settings
+        and (real_node.settings is not None)
+        and (not real_node.settings == settings)
+    ) or real_node.func_type.always_restart:  # or if force always
+        real_node.dispose()
+
+    if real_node.func:
+        real_node.func.settings = settings
 
     real_node.settings = settings
 
 
-def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, bool]:
+def _remove_unneeded_nodes(program, nodetree: "NodeTreeN") -> Tuple["NodeTreeN", bool]:
     visited = set()
-    broken = set()
     queue = deque()
     nodes = {}
 
@@ -393,25 +285,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
                 queue.append(node.id)
         except KeyError:
             # if function doesn't exist
-            broken.add(node.id)
-
-    # If any broken nodes, don't remove any except broken
-    # We can't be sure which may have been side effect nodes
-    # Remove the outputs of broken nodes
-    if broken:
-        nodes = [node for node in nodetree.nodes if node.id not in broken]
-        # slow and messy but temporary™
-        for node in broken:
-            for sub in nodes:
-                remove = []
-                for name, val in sub.inputs.items():
-                    if val.id == node:
-                        remove.append(name)
-                for name in remove:
-                    del sub.inputs[name]
-        nodetree = nodetree.copy(update={"nodes": nodes})
-        # return nodetree and report that there are broken nodes
-        return nodetree, True
+            raise NodeTreeImportError(program, node, "Unknown function")
 
     # Then, do a DFS over queue, adding all reachable nodes to visited
     while queue:
@@ -423,10 +297,7 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
         visited.add(id)
 
         for input in nodes[id].inputs.values():
-            if LINKS_INSTEAD_OF_INPUTS:
-                link = input
-            else:
-                link = input.link
+            link = input.link
 
             if link is None:
                 continue
@@ -440,12 +311,12 @@ def _remove_unneeded_nodes(program, nodetree: NodeTreeN) -> Tuple[NodeTreeN, boo
     nodetree = nodetree.copy(update={"nodes": nodes})
 
     # return nodetree and report no broken nodes
-    return nodetree, False
+    return nodetree
 
 
-def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
+def import_nodetree(program, nodetree: "NodeTreeN", force_save: bool = False):
     original_nodetree = nodetree
-    nodetree, broken = _remove_unneeded_nodes(program, nodetree)
+    nodetree = _remove_unneeded_nodes(program, nodetree)
     ids = [node.id for node in nodetree.nodes]
 
     # TODO : how to cache FifoLock in the stateless import_nodetree function?
@@ -456,33 +327,29 @@ def import_nodetree(program, nodetree: NodeTreeN, force_save: bool = False):
             if node.id not in program.pipeline.nodes:
                 try:
                     program.create_node(node.type, node.id)
-                except KeyError as e:
-                    raise NodeTreeImportError from e
+                except KeyError:
+                    raise NodeTreeImportError
 
-        if not broken:
-            for node in nodetree.nodes:
+        for node in nodetree.nodes:
+            try:
+                _process_node_settings(program, node)
+                _process_node_inputs(program, node, ids)
+            except NodeTreeImportError:
+                raise
+            except Exception:
+                if not force_save:
+                    raise NodeTreeImportError(program, node, "Error processing node")
+
+            try:
+                program.pipeline.nodes[node.id].ensure_init()
+            except Exception:
                 try:
-                    _process_node_settings(program, node)
-                    if LINKS_INSTEAD_OF_INPUTS:
-                        _process_node_links(program, node, ids)
-                    else:
-                        _process_node_inputs(program, node, ids)
-                except Exception as e:
-                    if not force_save:
-                        raise e
+                    del program.pipeline.nodes[node.id]
+                except KeyError:
+                    pass
 
-                try:
-                    program.pipeline.nodes[node.id].ensure_init()
-                except Exception as e:
-                    try:
-                        del program.pipeline.nodes[node.id]
-                    except KeyError:
-                        pass
-
-                    if not force_save:
-                        raise NodeTreeImportError(
-                            program, node, "Error creating Function"
-                        ) from e
+                if not force_save:
+                    raise NodeTreeImportError(program, node, "Error creating Function")
 
         try:
             program.pipeline.run()
