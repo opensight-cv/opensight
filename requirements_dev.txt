@@ -12,6 +12,7 @@ toposort
 uvicorn
 
 # requirements_extra.txt
+cupy
 gpiozero
 opencv-python
 pystemd

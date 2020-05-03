@@ -1,5 +1,11 @@
 # extra, optional features
 
+# enables opsi.gpu
+# accelerated image processing
+# requires Nvidia + CUPY
+cupy-cuda102==7.4.0
+fastrlock==0.4
+
 # all image processing
 # cross platform
 # linux: do not install if using distro python3-opencv 4.x
