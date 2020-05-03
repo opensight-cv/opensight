@@ -197,7 +197,7 @@ def _process_node_inputs(program, node: "NodeN", ids):
     real_node = program.pipeline.nodes[node.id]
 
     for name in empty_links:
-        type = real_node.func.InputTypes[name]
+        type = real_node.func_type.InputTypes[name]
         # todo: will node.inputs[name].value ever be missing or invalid? if so, raise NodeImportError
         if node.inputs[name].value is None:
             raise NodeTreeImportError(
@@ -256,12 +256,12 @@ def _process_node_settings(program, node: "NodeN"):
     except ValueError as e:
         raise NodeTreeImportError(program, node, "Invalid settings") from e
 
-    if real_node.settings is not None:  # if current settings exist
-        if (
-            (real_node.func_type.require_restart)  # restart only on changed settings
-            and (not real_node.settings == settings)
-        ) or real_node.func.always_restart:  # or if force always
-            real_node.dispose()
+    if (
+        (real_node.func_type.require_restart)  # restart only on changed settings
+        and (real_node.settings is not None)
+        and (not real_node.settings == settings)
+    ) or real_node.func.always_restart:  # or if force always
+        real_node.dispose()
 
     if real_node.func:
         real_node.func.settings = settings
@@ -353,9 +353,13 @@ def import_nodetree(program, nodetree: "NodeTreeN", force_save: bool = False):
                 try:
                     _process_node_settings(program, node)
                     _process_node_inputs(program, node, ids)
+                except NodeTreeImportError:
+                    raise
                 except Exception as e:
                     if not force_save:
-                        raise e
+                        raise NodeTreeImportError(
+                            program, node, "Error processing node"
+                        ) from e
 
                 try:
                     program.pipeline.nodes[node.id].ensure_init()
