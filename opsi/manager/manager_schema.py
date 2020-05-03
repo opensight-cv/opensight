@@ -116,6 +116,9 @@ class Function:
     # Private, do not override
 
     def __init__(self, settings: Settings):
+        if settings is None:
+            raise ValueError("settings cannot be None")
+
         self.settings = settings
         self.alive = True
 

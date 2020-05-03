@@ -9,7 +9,7 @@ from opsi.backend.upgrade import upgrade_opsi
 from opsi.util.concurrency import FifoLock
 
 from .schema import Network, NodeTreeN, SchemaF
-from .serialize import *
+from .serialize import NodeTreeImportError, export_manager, import_nodetree
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +43,9 @@ class Api:
 
         if exc.node:
             json.update({"node": str(exc.node.id), "type": exc.type})
+
+        if exc.traceback:
+            json.update({"traceback": exc.traceback})
 
         return JSONResponse(status_code=400, content=json)
 

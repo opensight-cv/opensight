@@ -97,15 +97,15 @@ class SwitchBoolean(Function):
 class SwitchNumber(Function):
     @dataclass
     class Inputs:
-        thru0: AnyType = None
-        thru1: AnyType = None
-        thru2: AnyType = None
-        thru3: AnyType = None
+        thru0: AnyType
+        thru1: AnyType
+        thru2: AnyType
+        thru3: AnyType
         num: int = 0
 
     @dataclass
     class Outputs:
-        thru: AnyType = None
+        thru: AnyType
 
     def run(self, inputs):
         out = [inputs.thru0, inputs.thru1, inputs.thru2, inputs.thru3][int(inputs.num)]

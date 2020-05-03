@@ -1,5 +1,4 @@
 import logging
-from dataclasses import fields
 from itertools import chain
 from queue import deque
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
@@ -76,7 +75,7 @@ class Node:
 
         self.ensure_init()
 
-        fieldCount = len(fields(self.func_type.Inputs))
+        fieldCount = len(self.func_type.InputTypes)
         inputs = {name: link.get() for name, link in self.inputLinks.items()}
         if fieldCount > len(inputs):
             self.results = None
