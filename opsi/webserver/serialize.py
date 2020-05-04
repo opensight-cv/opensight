@@ -360,9 +360,8 @@ def import_nodetree(program, nodetree: "NodeTreeN", force_save: bool = False):
                 program.lifespan.persist.nodetree = original_nodetree
             raise NodeTreeImportError(
                 program,
-                program.pipeline.current,
-                "Failed test run due to",
-                real_node=True,
+                real_node=program.pipeline.current,
+                msg="Failed test run due to",
             )
 
         program.lifespan.persist.nodetree = original_nodetree
