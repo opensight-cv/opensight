@@ -22,4 +22,5 @@ uvloop
 # dev-only
 black
 isort
+pytest
 requests
