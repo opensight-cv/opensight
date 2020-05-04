@@ -1,5 +1,11 @@
 # extra, optional features
 
+# enables opsi.gpu
+# accelerated image processing
+# requires Nvidia GPU + CUDA toolkit
+# installations are varied, so there's no specified version
+cupy
+
 # all image processing
 # cross platform
 # linux: do not install if using distro python3-opencv 4.x
