@@ -2,9 +2,9 @@
 
 # enables opsi.gpu
 # accelerated image processing
-# requires Nvidia + CUPY
-cupy-cuda102==7.4.0
-fastrlock==0.4
+# requires Nvidia GPU + CUDA toolkit
+# installations are varied, so there's no specified version
+cupy
 
 # all image processing
 # cross platform
