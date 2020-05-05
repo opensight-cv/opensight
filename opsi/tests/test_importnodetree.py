@@ -1,6 +1,7 @@
 import pytest
 
-from .util import create_program, mock_fifolock
+from .util import mock_fifolock  # noqa
+from .util import create_program
 
 
 def test_invalid_function_type_causes_error():
