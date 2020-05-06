@@ -80,6 +80,7 @@
             "remove": []
         },
         "linux": {
+            "extends": "base",
             "add": [
                 "h264",
                 "uvloop"
@@ -87,6 +88,7 @@
             "remove": []
         },
         "packages": {
+            "extends": "linux",
             "add": [
                 "systemd"
             ],
