@@ -1,0 +1,43 @@
+{
+    "base": [
+        "aiofiles",
+        "appdirs",
+        "fastapi",
+        "Jinja2",
+        "netifaces",
+        "numpy",
+        "pynetworktables",
+        "python-multipart",
+        "toposort",
+        "uvicorn"
+    ],
+    "extra": {
+        "gpio": [
+            "gpiozero"
+        ],
+        "gpu": [
+            "cupy"
+        ],
+        "h264": [
+            "upgraded-engineer"
+        ],
+        "imutils": [
+            "imutils"
+        ],
+        "opencv": [
+            "opencv-python"
+        ],
+        "systemd": [
+            "pystemd"
+        ],
+        "uvloop": [
+            "uvloop"
+        ]
+    },
+    "dev": [
+        "black",
+        "isort",
+        "pytest",
+        "requests"
+    ]
+}
