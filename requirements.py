@@ -1,9 +1,9 @@
-import subprocess
-import sys
 import json
-import argparse
+from argparse import ArgumentParser
+from subprocess import check_call
+from sys import executable
 
-parser = argparse.ArgumentParser(
+parser = ArgumentParser(
     description="Install OpenSight dependencies based on required feature-sets"
 )
 parser.add_argument(
@@ -17,12 +17,27 @@ parser.add_argument(
     "-l", "--list", dest="list", action="store_true", help="only list packages",
 )
 parser.add_argument(
+    "-r",
+    "--requirements",
+    dest="requirements",
+    default="requirements.txt",
+    action="store_true",
+    help="filename for requirements.txt",
+)
+parser.add_argument(
     "-f",
     "--filename",
     dest="filename",
     default="requirements_extra.json",
     action="store_true",
-    help="change filename",
+    help="filename for requirements extra",
+)
+parser.add_argument(
+    "-n",
+    "--no-requirements",
+    dest="exclude_requirements",
+    action="store_true",
+    help="exclude requirements.txt",
 )
 parser.add_argument(
     "--exclude", dest="exclude", action="append", nargs="+", help="exclude overlays",
@@ -35,13 +50,10 @@ args = parser.parse_args()
 exclude = args.exclude[0] if args.exclude else []
 
 
-def install(packages):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", *packages])
-
-
 def process_overlay(data, overlay):
     features = []
     parent = overlay.get("extends")
+
     if parent and parent not in exclude:
         features += process_overlay(data, data["overlays"][parent])
     if overlay.get("add"):
@@ -53,8 +65,8 @@ def process_overlay(data, overlay):
 
 
 def process_feature(data, feature):
-    feature = data["features"][feature]
-    return feature["packages"], feature["description"]
+    f = data["features"][feature]
+    return f["packages"], f["description"]
 
 
 def prompt_user(prompt, default=False, autoconfirm=False):
@@ -75,29 +87,50 @@ def prompt_user(prompt, default=False, autoconfirm=False):
     return prompt_user()
 
 
-with open(args.filename) as f:
-    data = json.load(f)
+def process_requirements(data):
+    features = set()
+    for overlay in args.overlays[0]:
+        overlay_features = process_overlay(data, data["overlays"][overlay])
+        features.update(set(overlay_features))
 
-features = set()
-for overlay in args.overlays[0]:
-    overlay_features = process_overlay(data, data["overlays"][overlay])
-    features.update(set(overlay_features))
+    descriptions = {}
+    packages = set()
+    for feature in features:
+        pkgs, description = process_feature(data, feature)
+        descriptions[feature] = description
+        packages.update(set(pkgs))
+    return packages, descriptions
 
-descriptions = {}
-packages = set()
-for feature in features:
-    pkgs, description = process_feature(data, feature)
-    descriptions[feature] = description
-    packages.update(set(pkgs))
 
-if not args.list:
+def print_descriptions(descriptions):
     for description, values in sorted(descriptions.items()):
         print(f"{description}:")
         for line in values:
             print(f"    {line}")
+
+
+def install_requirements(packages):
     prompt = prompt_user("Install packages?", autoconfirm=args.autoconfirm)
     if not prompt:
         raise SystemExit
-    install(packages)
-else:
-    print("\n".join(packages))
+    check_call([executable, "-m", "pip", "install", *packages])
+
+
+with open(args.filename) as f:
+    data = json.load(f)
+
+
+packages, descriptions = process_requirements(data)
+
+if not args.exclude_requirements:
+    with open(args.requirements) as f:
+        requirements = f.read().split("\n")
+        requirements = [item for item in requirements if "#" not in item and item]
+        packages.update(requirements)
+
+if args.list:
+    print("\n".join(sorted(packages)))
+    raise SystemExit
+
+print_descriptions(descriptions)
+install_requirements(packages)
