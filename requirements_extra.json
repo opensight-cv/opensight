@@ -1,0 +1,100 @@
+{
+    "features": {
+        "gpio": {
+            "description": [
+                "enables opsi.gpio module",
+                "cross platform",
+                "no effect unless on raspberry pi"
+            ],
+            "packages": [
+                "colorzero==1.1",
+                "gpiozero==1.5.1"
+            ]
+        },
+        "gpu": {
+            "description": [
+                "enables opsi.gpu",
+                "accelerated image processing",
+                "requires Nvidia GPU + CUDA toolkit",
+                "installations are varied, so there's no specified version"
+            ],
+            "packages": [
+                "cupy"
+            ]
+        },
+        "h264": {
+            "description": [
+                "h264 functionality in cameraserver",
+                "requires linux"
+            ],
+            "packages": [
+                "upgraded-engineer==0.2.1"
+            ]
+        },
+        "imutils": {
+            "description": [
+                "enables image rotation",
+                "requires opencv installed"
+            ],
+            "packages": [
+                "imutils==0.5.3"
+            ]
+        },
+        "opencv": {
+            "description": [
+                "all image processing",
+                "cross platform",
+                "linux: do not install if using distro python3-opencv 4.x"
+            ],
+            "packages": [
+                "opencv-python==4.2.0.34"
+            ]
+        },
+        "systemd": {
+            "description": [
+                "manage systemctl service",
+                "used in the deb packages, not needed for development",
+                "requires linux"
+            ],
+            "packages": [
+                "pystemd==0.7.0"
+            ]
+        },
+        "uvloop": {
+            "description": [
+                "general async speedup",
+                "requires linux"
+            ],
+            "packages": [
+                "uvloop==0.14.0"
+            ]
+        }
+    },
+    "overlays": {
+        "base": {
+            "add": [
+                "gpio",
+                "imutils",
+                "opencv"
+            ],
+            "remove": []
+        },
+        "linux": {
+            "extends": "base",
+            "add": [
+                "h264",
+                "uvloop"
+            ],
+            "remove": []
+        },
+        "packages": {
+            "extends": "linux",
+            "add": [
+                "systemd"
+            ],
+            "remove": [
+                "opencv"
+            ]
+        }
+    }
+}
