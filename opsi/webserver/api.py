@@ -6,9 +6,10 @@ from starlette.responses import JSONResponse
 import opsi
 from opsi.backend.network import dhcpcd_writable, set_network_mode
 from opsi.backend.upgrade import upgrade_opsi
+from opsi.manager.netdict import NT_AVAIL
 from opsi.util.concurrency import FifoLock
 
-from .schema import Network, NodeTreeN, SchemaF
+from .schema import FrontendSettings, Network, NodeTreeN, SchemaF
 from .serialize import NodeTreeImportError, export_manager, import_nodetree
 
 LOGGER = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class Api:
 
         self.app.get("/funcs", response_model=SchemaF)(self.read_funcs)
         self.app.get("/nodes", response_model=NodeTreeN)(self.read_nodes)
+        self.app.get("/config", response_model=FrontendSettings)(self.read_config)
         self.app.post("/nodes")(self.save_nodes)
         self.app.post("/calibration")(self.save_calibration)
         self.app.post("/upgrade")(self.upgrade)
@@ -60,6 +62,18 @@ class Api:
 
             # return export_nodetree(self.program.pipeline)
             return self.program.lifespan.persist.nodetree
+
+    def read_config(self):
+        return FrontendSettings(
+            preferences=self.program.lifespan.persist.prefs,
+            status=FrontendSettings.Status(
+                network_mode=list(Network.Mode.__members__.keys()),
+                daemon=self.program.lifespan.using_systemd,
+                nt=NT_AVAIL,
+                netconf=self.program.lifespan.netconf_writable,
+                version=opsi.__version__,
+            ),
+        )
 
     def save_nodes(self, *, nodetree: NodeTreeN, force_save: bool = False):
         import_nodetree(self.program, nodetree, force_save)

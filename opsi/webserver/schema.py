@@ -103,3 +103,15 @@ class Network(BaseModel):
 class Preferences(BaseModel):
     profile: int = 0
     network: Network = Network()
+
+
+class FrontendSettings(BaseModel):
+    class Status(BaseModel):
+        network_mode: List[str]
+        daemon: bool
+        nt: bool
+        netconf: bool
+        version: str
+
+    preferences: Preferences
+    status: Status
