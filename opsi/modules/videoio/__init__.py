@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from threading import Event, Thread
 
 from opsi.manager.manager_schema import Function
 from opsi.util.cv import Mat
@@ -34,20 +35,53 @@ class CameraInput(Function):
         except Exception:
             raise ValueError(f"Unable to read picture from Camera {camNum}")
 
+        self.latest_frame = None
+        self.stop_event = Event()
+        self.cap_thread = self.start_capture_thread(self.pipeline)
+
     Settings = get_settings()
 
     @dataclass
     class Outputs:
         img: Mat
 
+    # TODO Somehow this needs to timeout, otherwise it could cause opsi to hang when trying to dispose the function
+    #  object 
+    def grab_frame_blocking(self):
+        ret, self.latest_frame = self.cap.read()
+
+    def frame_thread(self, pipeline):
+        while not self.stop_event.is_set():
+            self.grab_frame_blocking()
+            pipeline.frame_ready_queue.put(self)
+
+    def start_capture_thread(self, pipeline):
+        # Minor rant: One thing that really irks me about python is that (foo) isn't a tuple but (foo,) is.
+        # The fact that a trailing comma makes that difference is an enormous minor inconvenience.
+        capture_thread = Thread(target=self.frame_thread, args=(pipeline,), daemon=True)
+        capture_thread.start()
+        return capture_thread
+
     def run(self, inputs):
         frame = None
         if self.cap:
-            ret, frame = self.cap.read()
+            # If the camera has captured a frame since last call, return that frame.
+            # Otherwise return the latest frame (which is likely a duplicate).
+            if self.latest_frame is not None:
+                frame = self.latest_frame
+            else:
+                ret, frame = self.cap.read()
+
+            self.latest_frame = None
+
             frame = Mat(frame)
         return self.Outputs(img=frame)
 
     def dispose(self):
+        # Stops the frame capturing thread
+        self.stop_event.set()
+        self.cap_thread.join()
+
         camNum = parse_cammode(self.settings.mode)[0]
         UndupeInstance.remove(camNum)
 

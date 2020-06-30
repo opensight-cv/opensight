@@ -1,6 +1,9 @@
 import logging
+import time
+from collections import deque
+from dataclasses import fields
 from itertools import chain
-from queue import deque
+from queue import Queue
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 
 from toposort import toposort
@@ -25,7 +28,8 @@ Links = Dict[str, Connection]
 
 
 class Node:
-    def __init__(self, func: Type[Function], id: str):
+    def __init__(self, func: Type[Function], id: str, pipeline):
+        self.pipeline = pipeline
         self.func_type = func
         self.inputLinks: Dict[str, Link] = dict()
         self.func: Optional[Function] = None
@@ -48,7 +52,7 @@ class Node:
         if self.func is not None:
             return
 
-        self.func = self.func_type(self.settings)
+        self.func = self.func_type(self.settings, self.pipeline)
 
     def dispose(self):
         if self.func is None:
@@ -98,11 +102,23 @@ class Node:
         return self.results
 
 
+class UniqueQueue(Queue):
+    """
+    A queue in which each item must be unique. Pushing an item to the queue will do nothing if the item is already
+    in the queue.
+    """
+
+    def put(self, item, block: bool = False, timeout: Optional[float] = None) -> None:
+        if item not in self.queue:
+            Queue.put(self, item, block, timeout)
+
+
 class Pipeline:
     def __init__(self, program):
         self.program = program
         self.nodes: Dict[id, Node] = {}
         self.adjList: Dict[Node, Set[Node]] = {}
+        self.frame_ready_queue = UniqueQueue()
         self.run_order: List[Node] = []
         self.lock = FifoLock(self.program.queue)
         self.broken = False
@@ -137,6 +153,10 @@ class Pipeline:
     def mainloop(self):
         while True:
             try:
+                # Wait for any camera to get a frame
+                # Currently this is using the 'garbage' algorithm where all pipelines are run every time a new frame
+                # is captured.
+                self.frame_ready_queue.get(block=True)
                 with self.lock:
                     self.run()
                 if NT_AVAIL:
@@ -201,7 +221,7 @@ class Pipeline:
         and setting node.settings as appropriate
         """
         self.run_order.clear()
-        temp = Node(func, uuid)
+        temp = Node(func, uuid, self)
 
         self.adjList[temp] = set()
         self.nodes[uuid] = temp

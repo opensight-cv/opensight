@@ -115,10 +115,10 @@ class Function:
 
     # Private, do not override
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, pipeline):
         if settings is None:
             raise ValueError("settings cannot be None")
-
+        self.pipeline = pipeline
         self.settings = settings
         self.alive = True
 

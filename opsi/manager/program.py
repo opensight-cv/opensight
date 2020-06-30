@@ -10,6 +10,8 @@ LOGGER = logging.getLogger(__name__)
 
 class Program:
     def __init__(self, lifespan):
+        global program
+        program = self
         self.queue = queue.Queue()
         self.lifespan = lifespan
 
