@@ -17,7 +17,7 @@ def ensure_apt():
         )
     except subprocess.CalledProcessError:
         LOGGER.info(
-            "Only Debian derivatives may be upgraded. If you are using a Debian derivative and recieving this error, please make a bug report.",
+            "Only Debian derivatives may be upgraded. If you are using a Debian derivative and receiving this error, please make a bug report.",
             exc_info=True,
         )
         return False
@@ -36,5 +36,5 @@ def upgrade_opsi(archive, lifespan):
         LOGGER.info("File provided is not a tar file", exc_info=True)
         return
     command = f"{tempdir}/upgrade.sh"
-    subprocess.Popen(command, cwd=tempdir, shell=True)
+    subprocess.Popen(command, cwd=tempdir)
     lifespan.shutdown()
