@@ -1,5 +1,8 @@
+#!/usr/bin/python3
+
 import argparse
 import json
+import pathlib
 import subprocess
 import sys
 
@@ -24,16 +27,15 @@ parser.add_argument(
     "-r",
     "--requirements",
     dest="requirements",
-    default="requirements.txt",
+    default=None,
     help="specify alternative requirements.txt",
 )
 parser.add_argument(
     "-f",
     "--filename",
     dest="requirements_extra",
-    default="requirements_extra.json",
-    help="specify alternative requirements_extra.txt",
-    type=argparse.FileType(),
+    default=None,
+    help="specify alternative requirements_extra.json",
 )
 parser.add_argument(
     "-n",
@@ -44,6 +46,13 @@ parser.add_argument(
 )
 parser.add_argument(
     "-e", "--exclude", dest="excludes", action="append", help="exclude features",
+)
+parser.add_argument(
+    "-p",
+    "--print",
+    dest="print_overlays",
+    action="store_true",
+    help="print available overlays and exit",
 )
 
 
@@ -72,6 +81,13 @@ def parse_args(*args, **kwargs):
     args.overlays = args.overlays[-1]
 
     return args
+
+
+def open_file(filename_arg, default, **kwargs):
+    if filename_arg is None:
+        # open file with default name, from the script's dir, not cwd
+        return open(pathlib.Path(__file__).parent.absolute() / default, **kwargs)
+    return open(filename_arg, **kwargs)
 
 
 def prompt_user(prompt, default=False, autoconfirm=False):
@@ -156,8 +172,15 @@ def install_requirements(packages):
 def main(*args, **kwargs):
     args = parse_args(*args, **kwargs)
 
-    with args.requirements_extra as f:
+    with open_file(args.requirements_extra, "requirements_extra.json") as f:
         data = json.load(f)
+
+    if args.print_overlays:
+        print("Available overlays:")
+        for overlay in data["overlays"].keys():
+            print("   ", overlay)
+        print()
+        return
 
     error = check_args_exist(data, args.overlays, args.excludes)
     if error:
@@ -166,7 +189,7 @@ def main(*args, **kwargs):
     packages, descriptions = process_requirements(data, args.overlays, args.excludes)
 
     if not args.exclude_requirements:
-        with open(args.requirements) as f:
+        with open_file(args.requirements, "requirements.txt") as f:
             for line in f:
                 requirement = line.split("#")[0].strip()
                 if requirement:
