@@ -83,11 +83,11 @@ def parse_args(*args, **kwargs):
     return args
 
 
-def open_file(filename_arg, default):
+def open_file(filename_arg, default, **kwargs):
     if filename_arg is None:
         # open file with default name, from the script's dir, not cwd
-        return (pathlib.Path(__file__).parent.absolute() / default).open()
-    return open(filename_arg)
+        return open(pathlib.Path(__file__).parent.absolute() / default, **kwargs)
+    return open(filename_arg, **kwargs)
 
 
 def prompt_user(prompt, default=False, autoconfirm=False):
