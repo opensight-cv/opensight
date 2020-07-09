@@ -100,6 +100,19 @@ class CalculatedItemPerformance(NamedTuple):
             max=max(data),
         )
 
+    def _pretty(self, header):
+        INDENT = " " * 4
+        DICT = self._asdict()
+        LEN_HEADER = max(map(len, DICT.keys())) + 1
+
+        yield f"{header}:"
+
+        for name, value in DICT.items():
+            name = f"{name.title()}:"
+            yield f"{INDENT}{name:{LEN_HEADER}}{value*1000: 6.2f}ms"
+
+        yield ""
+
     average: float
     median: float
     min: float
@@ -114,6 +127,16 @@ class CalculatedPerformance(NamedTuple):
             "pipeline": dict(self.pipeline._asdict()),
             "overhead": dict(self.overhead._asdict()),
         }
+
+    def _pretty(self):
+        yield from self.pipeline._pretty("Pipeline")
+        yield from self.overhead._pretty("Overhead")
+
+        for name, data in self.nodes.items():
+            yield from data._pretty(f"Node '{name}'")
+
+    def pretty(self):
+        return "\n".join(self._pretty())
 
     nodes: Dict[str, CalculatedItemPerformance]
     pipeline: CalculatedItemPerformance
@@ -234,6 +257,7 @@ class Pipeline:
                     n.run()
                 except Exception:
                     self.hook.cancel_current()
+                    self.benchmarking = False
                     LOGGER.exception(
                         f"Error while running node {n.func_type.__name__}",
                         exc_info=True,
