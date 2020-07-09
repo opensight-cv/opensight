@@ -5,6 +5,7 @@
         "fastapi",
         "Jinja2",
         "netifaces",
+        "networkx",
         "numpy",
         "pynetworktables",
         "python-multipart",
