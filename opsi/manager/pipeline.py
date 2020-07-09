@@ -32,10 +32,13 @@ class SingleRunPerformance(NamedTuple):
 
 
 class Performance:
-    __slots__ = ("nodes", "pipeline", "sum_nodes", "current_run")
+    __slots__ = ("nodes", "node_types", "pipeline", "sum_nodes", "current_run")
 
-    def __init__(self, nodes: List[str]):
-        self.nodes: Dict[str, List[float]] = {id: [] for id in nodes}
+    def __init__(self, nodes: Dict[str, "Node"]):
+        self.nodes: Dict[str, List[float]] = {id: [] for id in nodes.keys()}
+        self.node_types: Dict[str, str] = {
+            id: node.func_type.type for id, node in nodes.items()
+        }
         self.pipeline: List[float] = []
         self.sum_nodes: List[float] = []
         self.current_run: SingleRunPerformance = None
@@ -86,7 +89,10 @@ class Performance:
         overhead_perf = CalculatedItemPerformance.calculate(overhead)
 
         return CalculatedPerformance(
-            nodes=node_perf, pipeline=pipeline_perf, overhead=overhead_perf
+            nodes=node_perf,
+            node_types=self.node_types,
+            pipeline=pipeline_perf,
+            overhead=overhead_perf,
         )
 
 
@@ -124,6 +130,7 @@ class CalculatedPerformance(NamedTuple):
         # cannot use namedtuple._asdict() because it doesnt convert recursively
         return {
             "nodes": {id: dict(perf._asdict()) for id, perf in self.nodes.items()},
+            "node_types": self.node_types,
             "pipeline": dict(self.pipeline._asdict()),
             "overhead": dict(self.overhead._asdict()),
         }
@@ -132,13 +139,14 @@ class CalculatedPerformance(NamedTuple):
         yield from self.pipeline._pretty("Pipeline")
         yield from self.overhead._pretty("Overhead")
 
-        for name, data in self.nodes.items():
-            yield from data._pretty(f"Node '{name}'")
+        for id, data in self.nodes.items():
+            yield from data._pretty(f"Node '{id}' [{self.node_types[id]}]")
 
     def pretty(self):
         return "\n".join(self._pretty())
 
     nodes: Dict[str, CalculatedItemPerformance]
+    node_types: Dict[str, str]
     pipeline: CalculatedItemPerformance
     overhead: CalculatedItemPerformance
 
@@ -356,7 +364,7 @@ class Pipeline:
             # This is being written with the assumption that the nodes of pipeline will never change
             # Aka, a new pipeline is made for each new non-trivial nodetree import
             if not old_benchmarking:
-                self.perf = Performance(self.nodes.keys())
+                self.perf = Performance(self.nodes)
         else:
             self.perf = None
 
