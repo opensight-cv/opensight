@@ -93,22 +93,26 @@ class Performance:
 class CalculatedItemPerformance(NamedTuple):
     @classmethod
     def calculate(cls, data):
-        return cls(average=statistics.mean(data), median=statistics.median(data))
-
-    def asdict(self):
-        return {"average": self.average, "median": self.median}
+        return cls(
+            average=statistics.mean(data),
+            median=statistics.median(data),
+            min=min(data),
+            max=max(data),
+        )
 
     average: float
     median: float
+    min: float
+    max: float
 
 
 class CalculatedPerformance(NamedTuple):
     def asdict(self):
         # cannot use namedtuple._asdict() because it doesnt convert recursively
         return {
-            "nodes": {id: perf.asdict() for id, perf in self.nodes.items()},
-            "pipeline": self.pipeline.asdict(),
-            "overhead": self.overhead.asdict(),
+            "nodes": {id: dict(perf._asdict()) for id, perf in self.nodes.items()},
+            "pipeline": dict(self.pipeline._asdict()),
+            "overhead": dict(self.overhead._asdict()),
         }
 
     nodes: Dict[str, CalculatedItemPerformance]
