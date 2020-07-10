@@ -32,6 +32,7 @@ class SingleRunPerformance(NamedTuple):
 
 
 class Performance:
+    # All floats here are time durations measured in seconds
     __slots__ = ("nodes", "node_types", "pipeline", "sum_nodes", "current_run")
 
     def __init__(self, nodes: Dict[str, "Node"]):
@@ -98,7 +99,7 @@ class Performance:
 
 class CalculatedItemPerformance(NamedTuple):
     @classmethod
-    def calculate(cls, data):
+    def calculate(cls, data: List[float]):
         return cls(
             average=statistics.mean(data),
             median=statistics.median(data),
@@ -106,7 +107,7 @@ class CalculatedItemPerformance(NamedTuple):
             max=max(data),
         )
 
-    def _pretty(self, header):
+    def _pretty(self, header: str):
         INDENT = " " * 4
         DICT = self._asdict()
         LEN_HEADER = max(map(len, DICT.keys())) + 1
