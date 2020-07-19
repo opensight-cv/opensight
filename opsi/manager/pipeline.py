@@ -1,6 +1,9 @@
 import logging
+import math
+import statistics
 from itertools import chain
 from queue import deque
+from time import perf_counter
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
 
 from toposort import toposort
@@ -24,12 +27,138 @@ class Connection(NamedTuple):
 Links = Dict[str, Connection]
 
 
+class SingleRunPerformance(NamedTuple):
+    nodes: Dict[str, float]
+
+
+class Performance:
+    # All floats here are time durations measured in seconds
+    __slots__ = ("nodes", "node_types", "pipeline", "sum_nodes", "current_run")
+
+    def __init__(self, nodes: Dict[str, "Node"]):
+        self.nodes: Dict[str, List[float]] = {id: [] for id in nodes.keys()}
+        self.node_types: Dict[str, str] = {
+            id: node.func_type.type for id, node in nodes.items()
+        }
+        self.pipeline: List[float] = []
+        self.sum_nodes: List[float] = []
+        self.current_run: SingleRunPerformance = None
+
+    def new_run(self):
+        self.current_run = SingleRunPerformance(nodes=dict.fromkeys(self.nodes.keys()))
+
+    def log_node_run(self, id, time):
+        self.current_run.nodes[id] = time
+
+    def finalize_run(self, pipeline_perf):
+        # filter out None and zero
+        self.sum_nodes.append(math.fsum(filter(None, self.current_run.nodes.values())))
+
+        for id, data in self.nodes.items():
+            entry = self.current_run.nodes[id]
+            if entry is not None:
+                data.append(entry)
+
+        self.pipeline.append(pipeline_perf)
+
+        self.current_run = None
+
+    def ensure_consistency(self):
+        wanted_length = len(self.pipeline)
+        ERROR = f"Pipeline length {wanted_length} does not match "
+
+        if wanted_length != len(self.sum_nodes):
+            raise RuntimeError(ERROR + f"sum_nodes length {len(self.sum_nodes)}")
+
+        for id, data in self.nodes.items():
+            if wanted_length != len(data):
+                raise RuntimeError(ERROR + f"node '{id}' length {len(data)}")
+
+    def calculate(self):
+        self.ensure_consistency()  # TODO: remove if this is never an issue
+
+        node_perf = {
+            id: CalculatedItemPerformance.calculate(data)
+            for id, data in self.nodes.items()
+        }
+
+        pipeline_perf = CalculatedItemPerformance.calculate(self.pipeline)
+
+        overhead = [  # Total time spent in pipeline, that was not spent in a node, per fun
+            pipeline - nodes for pipeline, nodes in zip(self.pipeline, self.sum_nodes)
+        ]
+        overhead_perf = CalculatedItemPerformance.calculate(overhead)
+
+        return CalculatedPerformance(
+            nodes=node_perf,
+            node_types=self.node_types,
+            pipeline=pipeline_perf,
+            overhead=overhead_perf,
+        )
+
+
+class CalculatedItemPerformance(NamedTuple):
+    @classmethod
+    def calculate(cls, data: List[float]):
+        return cls(
+            average=statistics.mean(data),
+            median=statistics.median(data),
+            min=min(data),
+            max=max(data),
+        )
+
+    def _pretty(self, header: str):
+        INDENT = " " * 4
+        DICT = self._asdict()
+        LEN_HEADER = max(map(len, DICT.keys())) + 1
+
+        yield f"{header}:"
+
+        for name, value in DICT.items():
+            name = f"{name.title()}:"
+            yield f"{INDENT}{name:{LEN_HEADER}}{value*1000: 6.2f}ms"
+
+        yield ""
+
+    average: float
+    median: float
+    min: float
+    max: float
+
+
+class CalculatedPerformance(NamedTuple):
+    def asdict(self):
+        # cannot use namedtuple._asdict() because it doesnt convert recursively
+        return {
+            "nodes": {id: dict(perf._asdict()) for id, perf in self.nodes.items()},
+            "node_types": self.node_types,
+            "pipeline": dict(self.pipeline._asdict()),
+            "overhead": dict(self.overhead._asdict()),
+        }
+
+    def _pretty(self):
+        yield from self.pipeline._pretty("Pipeline")
+        yield from self.overhead._pretty("Overhead")
+
+        for id, data in self.nodes.items():
+            yield from data._pretty(f"Node '{id}' [{self.node_types[id]}]")
+
+    def pretty(self):
+        return "\n".join(self._pretty())
+
+    nodes: Dict[str, CalculatedItemPerformance]
+    node_types: Dict[str, str]
+    pipeline: CalculatedItemPerformance
+    overhead: CalculatedItemPerformance
+
+
 class Node:
-    def __init__(self, func: Type[Function], id: str):
+    def __init__(self, func: Type[Function], id: str, perf_callback=lambda id, t: None):
         self.func_type = func
         self.inputLinks: Dict[str, Link] = dict()
         self.func: Optional[Function] = None
         self.id = id
+        self.perf_callback = perf_callback
 
         self.results = None
         self.has_run: bool = False
@@ -83,7 +212,12 @@ class Node:
             return
 
         inputs = self.func_type.Inputs(**inputs)
+
+        start = perf_counter()
         self.results = self.func.run(inputs)
+        end = perf_counter()
+
+        self.perf_callback(self.id, end - start)
 
         if self.results is None:
             try:
@@ -108,6 +242,7 @@ class Pipeline:
         self.broken = False
         self.current: Optional[Node] = None
         self.fps = FPS()
+        self.benchmarking = False
 
         self.hook = Hook()
         self.hook.pipeline = self
@@ -119,6 +254,10 @@ class Pipeline:
         if not self.run_order:
             self.run_order = list(chain.from_iterable(toposort(self.adjList)))
 
+        if self.benchmarking:
+            self.perf.new_run()
+            start = perf_counter()
+
         for n in self.run_order:  # Each node to be processed
             n.next_frame()
             self.current = n
@@ -127,12 +266,17 @@ class Pipeline:
                     n.run()
                 except Exception:
                     self.hook.cancel_current()
+                    self.benchmarking = False
                     LOGGER.exception(
                         f"Error while running node {n.func_type.__name__}",
                         exc_info=True,
                     )
 
             n.skip = False
+
+        if self.benchmarking:
+            end = perf_counter()
+            self.perf.finalize_run(end - start)
 
     def mainloop(self):
         while True:
@@ -201,12 +345,42 @@ class Pipeline:
         and setting node.settings as appropriate
         """
         self.run_order.clear()
-        temp = Node(func, uuid)
+        temp = Node(func, uuid, self.perf_callback)
 
         self.adjList[temp] = set()
         self.nodes[uuid] = temp
 
         return temp
+
+    @property
+    def benchmarking(self):
+        return self._benchmarking
+
+    @benchmarking.setter
+    def benchmarking(self, val):
+        old_benchmarking = getattr(self, "_benchmarking", False)  # handle first run
+        self._benchmarking = bool(val)
+
+        if val:
+            # This is being written with the assumption that the nodes of pipeline will never change
+            # Aka, a new pipeline is made for each new non-trivial nodetree import
+            if not old_benchmarking:
+                self.perf = Performance(self.nodes)
+        else:
+            self.perf = None
+
+    def perf_callback(self, id, time):
+        if not self.benchmarking:
+            return
+
+        self.perf.log_node_run(id, time)
+
+    def get_benchmark_stats(self):
+        with self.lock:  # ensure all nodes have run equal amount of times
+            if not self.benchmarking:
+                raise ValueError("Not currently benchmarking")
+
+            return self.perf.calculate()
 
     def create_links(self, input_node_id, links: Links):
         self.run_order.clear()
@@ -219,6 +393,8 @@ class Pipeline:
             input_node.inputLinks[input_name] = NodeLink(output_node, conn.name)
 
     def clear(self):
+        self.benchmarking = False  # temporary before immutable pipeline rewrite
+
         self.run_order.clear()
         for node in self.nodes.values():
             node.reset_links()
