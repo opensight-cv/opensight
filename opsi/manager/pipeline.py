@@ -1,4 +1,5 @@
 import logging
+import time
 from itertools import chain
 from queue import deque
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Type
@@ -105,7 +106,7 @@ class Pipeline:
         self.adjList: Dict[Node, Set[Node]] = {}
         self.run_order: List[Node] = []
         self.lock = FifoLock(self.program.queue)
-        self.broken = False
+        self.broken = True
         self.current: Optional[Node] = None
         self.fps = FPS()
 
@@ -139,6 +140,8 @@ class Pipeline:
             try:
                 with self.lock:
                     self.run()
+                if self.broken:
+                    time.sleep(4)
                 if NT_AVAIL:
                     NetworkTables.flush()
 

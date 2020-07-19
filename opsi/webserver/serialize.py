@@ -322,6 +322,9 @@ def import_nodetree(program, nodetree: "NodeTreeN", force_save: bool = False):
     # TODO : how to cache FifoLock in the stateless import_nodetree function?
     with FifoLock(program.queue):
         program.pipeline.prune_nodetree(ids)
+        if not ids:
+            program.pipeline.broken = True
+            return
 
         for node in nodetree.nodes:
             if node.id not in program.pipeline.nodes:
