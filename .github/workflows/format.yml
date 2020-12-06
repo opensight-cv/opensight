@@ -28,7 +28,7 @@ jobs:
       - name: Run isort
         run: |
           isort --version-number
-          isort --check-only --quiet
+          isort --check-only --quiet .
       - name: Run autoflake
         run: |
           autoflake --version

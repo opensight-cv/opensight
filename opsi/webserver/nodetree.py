@@ -10,7 +10,6 @@ from opsi.manager.pipeline import Connection, Node
 from opsi.manager.types import RangeType, Slide
 from opsi.util.concurrency import FifoLock
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -186,7 +185,7 @@ def create_settings(node):
     node["settings"] = settings
 
 
-def get_separate_graphs(graph):
+def get_separate_graphs(graph):  # TODO: use for split pipelines
     return (
         graph.subgraph(nodes)
         for nodes in nx.algorithms.components.connected_components(
@@ -209,22 +208,19 @@ class Importer:
             node["func_type"] = func_type
 
     def apply_nodetree(self, graph):
-        self.program.pipelines.clear()
+        self.program.pipeline.hard_reset()
 
-        for split_graph in get_separate_graphs(graph):
-            pipeline = self.program.pipelines.create_new_pipeline
+        entries = []
+        for node_data in graph.nodes.values():
+            node = self.program.pipeline.create_node(
+                node_data["func_type"], node_data["id"]
+            )
+            node.set_static_links(node_data["static_links"])
 
-            entries = []
-            for node in split_graph.nodes.values():
-                entry = self.program.pipelines.create_node(
-                    pipeline, node["func_type"], node["id"]
-                )
-                entry.node.set_static_links(node["static_links"])
+            entries.append((node, node_data))
 
-                entries.append((entry, node))
-
-            for entry, node in entries:
-                self.program.pipelines.create_links(entry, node["connections"])
+        for node, node_data in entries:
+            self.program.pipeline.create_links(node.id, node_data["connections"])
 
     def import_nodetree(self, nodetree: "NodeTreeN"):
         graph = create_graph(nodetree)
@@ -241,3 +237,26 @@ class Importer:
             print("import lol")
             print(graph)
             self.apply_nodetree(graph)
+
+
+if True:
+    try:
+        from unittest.mock import MagicMock, Mock
+
+        import opsi
+        from opsi.lifespan.lifespan import Program, register_modules
+
+        from .schema import NodeTreeN
+
+        globals()["NT"] = NodeTreeN.parse_file("sample2.json")
+
+        globals()["program"] = Program(Mock())
+        program.importer.lock = MagicMock()
+        register_modules(program, opsi.__file__)
+
+        globals()["graph"] = program.import_nodetree(NT)
+    except:
+        import sys
+        import traceback
+
+        traceback.print_exception(*sys.exc_info())

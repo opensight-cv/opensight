@@ -228,7 +228,7 @@ class Pipeline:
             node.dispose()
 
     def hard_reset(self):
+        self.clear()
         self.dispose_all()
         self.nodes.clear()
         self.adjList.clear()
-        self.run_order.clear()

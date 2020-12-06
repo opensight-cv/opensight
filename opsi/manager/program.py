@@ -2,6 +2,8 @@ import logging
 import queue
 import threading
 
+from opsi.webserver import nodetree as nodetree_mod
+
 from .manager import Manager
 from .pipeline import Pipeline
 
@@ -15,14 +17,14 @@ class Program:
 
         self.pipeline = Pipeline(self)
         self.manager = Manager(self.pipeline)
-        self.importer = Importer(self)
+        self.importer = nodetree_mod.Importer(self)
 
         self.p_thread = None
 
     def import_nodetree(self, nodetree: "NodeTreeN", force_save=False):
         try:
             self.importer.import_nodetree(nodetree)
-        except NodeTreeImportError:
+        except nodetree_mod.NodeTreeImportError:
             if force_save:
                 self.lifespan.persist.nodetree = nodetree
             raise
