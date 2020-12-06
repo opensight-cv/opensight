@@ -6,7 +6,7 @@ from .util import create_program
 
 def test_invalid_function_type_causes_error():
     from opsi.webserver.schema import NodeN, NodeTreeN
-    from opsi.webserver.serialize import NodeTreeImportError, import_nodetree
+    from opsi.webserver.serialize import NodeTreeImportError
 
     program = create_program()
 
@@ -16,9 +16,7 @@ def test_invalid_function_type_causes_error():
     nodetree = NodeTreeN(nodes=[node])
 
     with pytest.raises(NodeTreeImportError) as excinfo:
-        import_nodetree(program, nodetree)
+        program.import_nodetree(nodetree)
 
     error: NodeTreeImportError = excinfo.value
-    assert error.node == node
-
-    assert program.pipeline.broken
+    assert error.node == node.id

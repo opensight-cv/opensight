@@ -3,6 +3,7 @@ import os
 import signal
 import subprocess
 import threading
+from functools import partial
 from os.path import isdir, isfile, splitext
 
 import opsi
@@ -14,7 +15,6 @@ from opsi.util.networking import choose_port
 from opsi.util.path import join
 from opsi.util.persistence import Persistence
 from opsi.webserver.app import WebServer
-from opsi.webserver.serialize import import_nodetree
 
 from .webserverthread import WebserverThread
 
@@ -79,9 +79,7 @@ class Lifespan:
         if nodetree is not None:
             # queue import_nodetree to run at start of mainloop
             threading.Thread(
-                target=import_nodetree,
-                args=(program, nodetree),
-                kwargs={"force_save": True},
+                target=partial(program.import_nodetree, nodetree, force_save=True),
             ).start()
 
     @property

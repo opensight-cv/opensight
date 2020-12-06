@@ -3,7 +3,7 @@ import queue
 import threading
 
 from .manager import Manager
-from .pipeline import Node, Pipeline
+from .pipeline import Pipeline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,16 +15,19 @@ class Program:
 
         self.pipeline = Pipeline(self)
         self.manager = Manager(self.pipeline)
+        self.importer = Importer(self)
 
         self.p_thread = None
 
-    def create_node(self, func_type: str, uuid: str) -> Node:
+    def import_nodetree(self, nodetree: "NodeTreeN", force_save=False):
         try:
-            func = self.manager.funcs[func_type]
-        except KeyError:
-            raise ValueError(f"Function {func_type} not found")
-
-        return self.pipeline.create_node(func, uuid)
+            self.importer.import_nodetree(nodetree)
+        except NodeTreeImportError:
+            if force_save:
+                self.lifespan.persist.nodetree = nodetree
+            raise
+        else:
+            self.lifespan.persist.nodetree = nodetree
 
     def mainloop(self, shutdown):
         self.shutdown = shutdown
@@ -38,6 +41,7 @@ class Program:
         while not self.shutdown.is_set():
             task = self.queue.get()  # todo: blocking & timeout?
             task.run()  # won't send exceptions because runs in seperate thead
+
         LOGGER.info("Program main loop is shutting down...")
         self.pipeline.dispose_all()
         self.pipeline.clear()

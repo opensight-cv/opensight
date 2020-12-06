@@ -227,17 +227,8 @@ class Pipeline:
         for node in self.nodes.values():
             node.dispose()
 
-    def prune_nodetree(self, new_node_ids):
-        old_node_ids = set(self.nodes.keys())
-        new_node_ids = set(new_node_ids)
-        removed = old_node_ids - new_node_ids
-
-        self.clear()
-        # remove deleted nodes
-        for uuid in removed:
-            try:
-                self.nodes[uuid].dispose()
-                del self.adjList[self.nodes[uuid]]
-                del self.nodes[uuid]
-            except KeyError:
-                pass
+    def hard_reset(self):
+        self.dispose_all()
+        self.nodes.clear()
+        self.adjList.clear()
+        self.run_order.clear()
