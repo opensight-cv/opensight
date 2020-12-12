@@ -9,7 +9,7 @@ from opsi.backend.upgrade import upgrade_opsi
 from opsi.manager.netdict import NT_AVAIL
 from opsi.util.concurrency import FifoLock
 
-from .schema import FrontendSettings, Network, NodeTreeN, SchemaF
+from .schema import FrontendSettings, IncrementalUpdateN, Network, NodeTreeN, SchemaF
 from .serialize import NodeTreeImportError, export_manager, import_nodetree
 
 LOGGER = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class Api:
         self.app.get("/nodes", response_model=NodeTreeN)(self.read_nodes)
         self.app.get("/config", response_model=FrontendSettings)(self.read_config)
         self.app.post("/nodes")(self.save_nodes)
+        self.app.post("/incremental-update")(self.incremental_update)
         self.app.post("/calibration")(self.save_calibration)
         self.app.post("/upgrade")(self.upgrade)
         self.app.post("/shutdown")(self.shutdown)
@@ -80,6 +81,9 @@ class Api:
         # only save if successful import
         # self.program.lifespan.persist.nodetree = nodetree
         return nodetree
+
+    def incremental_update(self, *, updates: List[IncrementalUpdateN]):
+        pass
 
     def save_calibration(self, *, file: UploadFile = File(...)):
         if file.content_type == "application/x-yaml":

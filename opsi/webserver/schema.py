@@ -31,6 +31,12 @@ class NodeTreeN(BaseModel):
     extras: Any = {}
 
 
+class IncrementalUpdateN(BaseModel):
+    id: str
+    input: str
+    val: Any
+
+
 # --------------------------------
 
 
