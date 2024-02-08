@@ -9,8 +9,8 @@ from opsi.backend.upgrade import upgrade_opsi
 from opsi.manager.netdict import NT_AVAIL
 from opsi.util.concurrency import FifoLock
 
+from .nodetree import NodeTreeImportError
 from .schema import FrontendSettings, Network, NodeTreeN, SchemaF
-from .serialize import NodeTreeImportError, export_manager, import_nodetree
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class Api:
         json = {"error": "Invalid Nodetree", "message": exc.args[0]}
 
         if exc.node:
-            json.update({"node": str(exc.node.id), "type": exc.type})
+            json.update({"node": str(exc.node), "type": exc.type})
 
         if exc.traceback:
             json.update({"traceback": exc.traceback})
@@ -52,7 +52,7 @@ class Api:
         return JSONResponse(status_code=400, content=json)
 
     def read_funcs(self) -> SchemaF:
-        return export_manager(self.program.manager)
+        return self.program.manager.export()
 
     def read_nodes(self) -> NodeTreeN:
         with FifoLock(self.program.queue):
@@ -76,7 +76,7 @@ class Api:
         )
 
     def save_nodes(self, *, nodetree: NodeTreeN, force_save: bool = False):
-        import_nodetree(self.program, nodetree, force_save)
+        self.program.import_nodetree(nodetree, force_save)
         # only save if successful import
         # self.program.lifespan.persist.nodetree = nodetree
         return nodetree
@@ -112,8 +112,8 @@ class Api:
             return
         self.program.lifespan.persist.profile = profile
         self.program.lifespan.persist.update_nodetree()
-        import_nodetree(
-            self.program, self.program.lifespan.persist.nodetree, force_save=True
+        self.program.import_nodetree(
+            self.program.lifespan.persist.nodetree, force_save=True
         )
         return profile
 

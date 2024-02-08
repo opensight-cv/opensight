@@ -2,7 +2,6 @@ import enum as _enum
 from functools import partial
 from typing import get_type_hints
 
-
 """
 Usage:
     @Enum

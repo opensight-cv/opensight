@@ -1,5 +1,4 @@
 import math
-from typing import NamedTuple
 
 import cv2
 import imutils
@@ -193,12 +192,3 @@ class MatBW:
             return None
         else:
             return segments.view(Segments)
-
-
-class Color(NamedTuple):
-    red: int
-    green: int
-    blue: int
-
-    def nt_serialize(self):
-        return {"red": self.red, "green": self.green, "blue": self.blue}

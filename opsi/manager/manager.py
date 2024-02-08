@@ -5,6 +5,7 @@ import sys
 from typing import Dict, List, Tuple, Type
 
 from opsi.util.path import join
+from opsi.webserver.funcs import export_manager
 
 from .manager_schema import (
     Function,
@@ -100,6 +101,7 @@ class Manager:
         self.modules: Dict[str, ModuleItem] = {}
         self.funcs: Dict[str, Type[Function]] = {}
         self.hooks: Dict[str, Hook] = {}
+        self.funcs_export: "SchemaF" = None
 
     @classmethod
     def is_valid_function(cls, module):
@@ -152,6 +154,7 @@ class Manager:
             self.funcs[func.type] = func
 
         self.modules[info.package] = ModuleItem(info, funcs)
+        self.funcs_export = None
 
     def pipeline_update(self):
         for hook in self.hooks.values():
@@ -160,3 +163,9 @@ class Manager:
     def shutdown(self):
         for hook in self.hooks.values():
             hook.shutdown()
+
+    def export(self):
+        if self.funcs_export is None:
+            self.funcs_export = export_manager(self)
+
+        return self.funcs_export

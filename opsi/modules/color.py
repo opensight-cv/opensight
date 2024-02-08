@@ -6,8 +6,7 @@ import numpy as np
 from opsi.manager.manager_schema import Function
 from opsi.manager.types import RangeType, Slide
 from opsi.util.cv import Mat, MatBW
-from opsi.util.cv.mat import Color
-from opsi.util.cv.shape import Point
+from opsi.util.types import Color, Point
 
 __package__ = "opsi.colorops"
 __version__ = "0.123"
